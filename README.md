@@ -28,6 +28,8 @@ Lightweight Reddit saved posts and comments manager and organizer
 https://www.youtube.com/watch?v=ilDSd3W_6UI&t=733s
 https://github.com/reddit-archive/reddit/wiki/API
 https://www.reddit.com/api/v1/scopes
+https://tasoskakour.com/blog/react-use-oauth2
+https://auth0.com/blog/complete-guide-to-react-user-authentication/
 
 ## Similar solutions
 
