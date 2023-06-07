@@ -13,7 +13,6 @@ export const Header: FC = () => {
     <header className={styles.root}>
       <img src={store.theme == "dark" ? LOGO_WHITE : LOGO} />
       <button id="theme" className="btn-icon" onClick={changeTheme}>
-        {/* <SunIcon /> */}
         {store.theme == "dark" ? <Sun /> : <Moon />}
       </button>
     </header>

@@ -32,6 +32,8 @@
 :root {
   --orange: #ff4500;
   --border-radius: 4px;
+  --btn-border-radius: 9999px;
+  --btn-hover-color: #ef6a3a;
   .light {
     --bg-primary: #dae0e6;
     --bg-secondary: #fff;
@@ -110,6 +112,10 @@ textarea {
   //max-height: 6rem;
 }
 
+
+
+*/
+
 button {
   height: 32px;
   cursor: pointer;
@@ -117,20 +123,17 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: var(--button-default-color);
-  border-radius: 10px;
-  background-color: var(--button-default-background);
-  font-weight: 700;
-  font-size: 12px;
-  border: 1px solid var(--button-default-border-color);
-  padding: 0.5rem 1rem;
+  color: #fff;
+  border-radius: var(--btn-border-radius);
+  background-color: var(--orange);
+  font-weight: 600;
+  font-size: 24px;
+  border: none;
+  padding: 1.5rem 3rem;
   &:hover {
-    background-color: var(--button-hover-background);
-    box-shadow: var(--button-hover-box-shadow);
+    background-color: var(--btn-hover-color);
   }
 }
-
-*/
 
 .btn-icon {
   background-color: unset;

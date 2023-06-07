@@ -1,0 +1,17 @@
+.icon {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  height: 100vh;
+  img {
+    scale: 2;
+  }
+}

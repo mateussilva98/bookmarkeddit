@@ -1,6 +1,6 @@
 # bookmarkeddit
 
-Lightweight Reddit saved posts and comments manager and organizer
+Modern tool to organize your Reddit saved posts and comments
 
 - Safely connect to your Reddit account
 - Search for anything using our smart search

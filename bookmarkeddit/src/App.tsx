@@ -1,19 +1,17 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import styles from "./App.module.scss";
 import { StoreProvider } from "./hooks/use-store";
-import { Header } from "./components/Header";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { Home } from "./components/Home";
+import { Posts } from "./components/Posts";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
     <StoreProvider>
-      <Header />
-      <div className={styles.root}>
-        <h1>welelele</h1>
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/posts" element={<Posts />} />
+        <Route path="*" element={<Navigate to={"/"} />} />
+      </Routes>
     </StoreProvider>
   );
 }
