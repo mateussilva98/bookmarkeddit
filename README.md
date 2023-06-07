@@ -22,6 +22,7 @@ Lightweight Reddit saved posts and comments manager and organizer
 - Layout: default (3 columns), 1 column, 2 columns and dynamic (depends on window size)
 - Tooltip on unsave
 - Toast message on unsave
+- add locale
 
 ## Useful links
 

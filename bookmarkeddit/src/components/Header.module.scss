@@ -1,0 +1,12 @@
+.root {
+  background-color: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-bottom: var(--border);
+}

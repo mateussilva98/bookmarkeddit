@@ -1,53 +1,61 @@
+@font-face {
+  font-family: "IBMPlexSans";
+  font-weight: 400;
+  font-display: "swap";
+  font-style: "normal";
+  src: url("../src/assets/fonts/IBMPlexSans-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IBMPlexSans";
+  font-weight: 500;
+  font-display: "swap";
+  font-style: "normal";
+  src: url("../src/assets/fonts/IBMPlexSans-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "IBMPlexSans";
+  font-weight: 600;
+  font-display: "swap";
+  font-style: "normal";
+  src: url("../src/assets/fonts/IBMPlexSans-SemiBold.ttf") format("truetype");
+}
+
 * {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: IBMPlexSans, Arial, sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* :root {
-  --red: #e64040;
-  --purple: #a16ceb;
-  --blue: #3489ff;
+:root {
+  --orange: #ff4500;
+  --border-radius: 4px;
   .light {
-    --shadow: 0 14px 14px -6px #a8b3cfa3;
-    --card-shadow: 0 6px 6px -2px #a8b3cf66;
-    --background-primary: #fff;
-    --background-secondary: #f5f8fc;
-    --border-color: #52586633;
-    --border-color-focus: #1c1d2133;
-    --input-background: #f0f2f5;
-    --color-primary: #0e1217;
-    --color-invert: #fff;
-    --color-tertiary: #525866;
-    --button-default-color: var(--color-invert);
-    --button-default-border-color: transparent;
-    --button-hover-box-shadow: var(--shadow);
-    --button-default-background: #0e1217;
-    --button-hover-background: #2d313a;
+    --bg-primary: #dae0e6;
+    --bg-secondary: #fff;
+    --border-color: #ccc;
+    --border: 1px solid var(--border-color);
+    --color-primary: #222222;
+    --color-secondary: #787c7e;
   }
   .dark {
-    --shadow: 0 14px 14px -6px #000000a3;
-    --card-shadow: 0 6px 6px -2px #00000066;
-    --background-primary: #0e1217;
-    --background-secondary: #1c1f26;
-    --border-color: #a8b3cf33;
-    --border-color-focus: #e4e8f333;
-    --input-background: #3a3b3c;
-    --color-primary: #fff;
-    --color-invert: #0e1217;
-    --color-tertiary: #a8b3cf;
-    --button-default-color: var(--color-invert);
-    --button-default-background: #fff;
-    --button-default-border-color: transparent;
-    --button-hover-background: #cfd6e6;
-    --button-hover-box-shadow: var(--shadow);
+    --bg-primary: #030303;
+    --bg-secondary: #1a1a1b;
+    --border-color: #343536;
+    --border: 1px solid var(--border-color);
+    --color-primary: #d7dadc;
+    --color-secondary: #818384;
   }
 }
 
 body {
+  background-color: var(--bg-primary);
+  color: var(--color-primary);
+}
+
+/* body {
   color: var(--color);
   //scroll-snap-type: y mandatory;
   //height: 100vh;
@@ -122,17 +130,19 @@ button {
   }
 }
 
+*/
+
 .btn-icon {
   background-color: unset;
   color: var(--color-primary);
   border: unset;
   padding: unset;
   &:hover {
-    color: var(--purple);
+    color: var(--orange);
     background-color: transparent;
     box-shadow: unset;
   }
-} */
+}
 
 /* .btn-secondary {
   background-color: transparent;
