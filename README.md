@@ -31,6 +31,7 @@ https://github.com/reddit-archive/reddit/wiki/API
 https://www.reddit.com/api/v1/scopes
 https://tasoskakour.com/blog/react-use-oauth2
 https://auth0.com/blog/complete-guide-to-react-user-authentication/
+https://www.reddit.com/prefs/apps
 
 ## Similar solutions
 
@@ -41,5 +42,3 @@ https://github.com/sergeystoma/updoot
 ## Notes
 
 Each saved post should show subreddit, user, date, title, description and image. Option to blur image is NSFW
-
-https://www.reddit.com/api/v1/authorize?client_id=OoEgjkFRbcVOWQ&response_type=code&state=Ky6c531vwk73yfBiQkaXnCSAEjGrThJHt9edDp2fmx8Ld6hd2ExR9NvyO8pPDVPo&redirect_uri=https://updoot.app/api/oauth&duration=permanent&scope=identity%20history%20save

@@ -13,10 +13,14 @@ type ThemeType = "dark" | "light";
 
 interface StoreProps {
   theme: ThemeType;
+  access_token: string;
+  refresh_token: string;
 }
 
 const initialStore: StoreProps = {
   theme: "dark",
+  access_token: "",
+  refresh_token: "",
 };
 
 export const StoreContext = createContext<{
@@ -36,10 +40,22 @@ export const useStore = () => {
     setStore((currentStore) => ({ ...currentStore, theme: newTheme }));
   }
 
+  function setAccessToken(token: string) {
+    localStorage.setItem("access_token", token);
+    setStore((currentStore) => ({ ...currentStore, access_token: token }));
+  }
+
+  function setRefreshToken(token: string) {
+    localStorage.setItem("refresh_token", token);
+    setStore((currentStore) => ({ ...currentStore, refresh_token: token }));
+  }
+
   return {
     store,
     setStore,
     changeTheme,
+    setAccessToken,
+    setRefreshToken,
   };
 };
 

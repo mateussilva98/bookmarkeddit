@@ -8,6 +8,16 @@ import LOGO_WHITE from "../assets/images/logo_white.svg";
 
 export const Home: FC = () => {
   const { store, changeTheme } = useStore();
+
+  const openLogin = () => {
+    const clientId = import.meta.env.VITE_CLIENT_ID;
+    const redirectURI = window.location.origin + "/login/callback";
+    window.open(
+      `https://www.reddit.com/api/v1/authorize?client_id=${clientId}&response_type=code&state=yolo&redirect_uri=${redirectURI}&duration=permanent&scope=identity,history,save`,
+      "_self"
+    );
+  };
+
   return (
     <>
       <div className={styles.icon}>
@@ -18,7 +28,7 @@ export const Home: FC = () => {
       <div className={styles.main}>
         <img src={store.theme == "dark" ? LOGO_WHITE : LOGO} />
         <h1>Modern tool to organize your Reddit saved posts and comments</h1>
-        <button>LOGIN</button>
+        <button onClick={() => openLogin()}>LOGIN</button>
       </div>
     </>
   );
