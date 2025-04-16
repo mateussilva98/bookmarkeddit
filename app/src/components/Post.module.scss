@@ -37,6 +37,63 @@
   }
 }
 
+.nsfw {
+  color: red;
+  border: 1px solid red;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem;
+  //use only needed width
+  width: fit-content;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+
+  .warningIcon {
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  span {
+    font-size: x-small;
+    font-weight: 100;
+    color: red;
+  }
+}
+
 .description {
   color: var(--color-secondary) !important;
+  margin-bottom: 1rem;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  a {
+    text-decoration: none;
+    color: var(--color-primary);
+  }
+
+  .stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    .stat {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+    }
+  }
 }

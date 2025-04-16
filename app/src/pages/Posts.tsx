@@ -61,6 +61,7 @@ export const Posts: FC = () => {
             thumbnail: post.data.thumbnail ? post.data.thumbnail : "",
             type: post.kind == "t3" ? "Post" : "Comment",
             nsfw: post.data.over_18,
+            commentCount: post.data.num_comments,
           };
 
           setPosts((prevPosts) => [...prevPosts, postP]);

@@ -54,5 +54,6 @@ https://www.reddit.com/user/mateus_silva_98/saved/
 
 search box: https://www.fusejs.io/examples.html#extended-search
 
-add upvotes count
-add comments count
+compact or no compact in settings (elipsis on title and description)
+
+if going to /posts not logged in it should go back to login

@@ -1,6 +1,10 @@
 import { FC } from "react";
 import { Post } from "../types/Post";
 import styles from "./Post.module.scss"; // Assuming a CSS module file exists
+import { Warning } from "./icons/Warning";
+import { Up } from "./icons/Up";
+import { Comment } from "./icons/Comment";
+import { Open } from "./icons/Open";
 
 interface PostProps {
   post: Post;
@@ -57,8 +61,37 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </h6>
       </div>
 
+      {post.nsfw && (
+        <div className={styles.nsfw}>
+          <div className={styles.warningIcon}>
+            <Warning />
+          </div>
+          <span>NSFW</span>
+        </div>
+      )}
+
       <h3>{post.title}</h3>
       <p className={styles.description}>{post.description}</p>
+
+      {/* TODO add images in case you have. check thumbnail dimentions */}
+
+      <div className={styles.bottom}>
+        <div className={styles.stats}>
+          <div className={styles.stat}>
+            <Up />
+            {post.score}
+          </div>
+          <div className={styles.stat}>
+            <Comment />
+            {post.commentCount}
+          </div>
+        </div>
+        <div className={styles.open}>
+          <a href={post.url} target="_blank" rel="noopener noreferrer">
+            <Open />
+          </a>
+        </div>
+      </div>
       {/* <a href={post.url} target="_blank" rel="noopener noreferrer">
         Read more
       </a> */}

@@ -11,4 +11,5 @@ export type Post = {
   thumbnail?: string;
   type: string;
   nsfw: boolean;
+  commentCount: number;
 };
