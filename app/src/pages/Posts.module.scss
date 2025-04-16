@@ -1,0 +1,21 @@
+/* Add styles for the main layout */
+.root {
+  display: flex;
+  height: calc(
+    100vh - 60px
+  ); /* Adjust for header height (replace 60px with actual header height) */
+}
+
+/* Update styles to ensure both Filters and PostsList use 100% height and scroll if content overflows */
+.filters {
+  width: 250px; /* Fixed width for the sidebar */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  height: 100%; /* Ensure full height */
+  //overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+.postsList {
+  flex: 1; /* Take the remaining space */
+  height: 100%; /* Ensure full height */
+  //overflow-y: auto; /* Allow scrolling if content overflows */
+}

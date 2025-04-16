@@ -15,6 +15,7 @@ Modern tool to organize your Reddit saved posts and comments
 - Export Saved Items to your computer
 - View Thread/Context for Links
 - Search through all Saved Items or specific sub
+- Filter to show Posts or Comments
 
 ## Other features
 
@@ -23,8 +24,9 @@ Modern tool to organize your Reddit saved posts and comments
 - Tooltip on unsave
 - Toast message on unsave
 - add locale
+- export to csv
 
-- improve logic on login. when going to main sire, if there's already tokens, redirect to posts page
+- improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
 
 ## Useful links
 
@@ -44,7 +46,13 @@ https://github.com/sergeystoma/updoot
 
 Each saved post should show subreddit, user, date, title, description and image. Option to blur image is NSFW
 
-
-
+"""Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch."""
 
 https://www.reddit.com/prefs/apps
+
+https://www.reddit.com/user/mateus_silva_98/saved/
+
+search box: https://www.fusejs.io/examples.html#extended-search
+
+add upvotes count
+add comments count

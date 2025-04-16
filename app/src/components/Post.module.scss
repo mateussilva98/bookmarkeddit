@@ -1,0 +1,42 @@
+.root {
+  padding: 0.5rem 1rem;
+}
+
+.root:hover {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+}
+
+.header {
+  /* display: flex;
+  justify-content: space-between;
+  align-items: center; */
+  margin-bottom: 0.5rem;
+
+  h5 {
+    a {
+      text-decoration: none;
+      color: var(--color-primary);
+      font-weight: 500;
+      font-size: normal;
+    }
+    span {
+      font-size: small;
+      font-weight: 100;
+      color: var(--color-secondary);
+    }
+  }
+
+  h6 {
+    a {
+      text-decoration: none;
+      color: var(--color-secondary);
+      font-weight: 500;
+      font-size: normal;
+    }
+  }
+}
+
+.description {
+  color: var(--color-secondary) !important;
+}

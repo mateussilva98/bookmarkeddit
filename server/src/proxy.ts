@@ -33,6 +33,12 @@ app.get("/reddit/saved", async (req: Request, res: Response) => {
     }
 
     const data = await response.json();
+
+    // todo: filter and send only the data we need
+
+    // get all posts using /saved?after=...
+
+
     res.json(data);
   } catch (error) {
     console.error("Error fetching saved posts:", error);

@@ -1,0 +1,6 @@
+/* Ensure PostsList component uses 100% height and scrolls if content overflows */
+.root {
+  height: 100%; /* Full height */
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  padding: 2rem; /* Add some padding */
+}
