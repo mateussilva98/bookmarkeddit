@@ -2,12 +2,56 @@
   background-color: var(--bg-secondary);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+  //align-items: center;
   gap: 0.25rem;
   border-right: var(--border);
-  padding: 2rem;
+  padding: 4rem 0.5rem;
   width: 100%;
   height: 100%; /* Full height */
   overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+
+  &:hover {
+    cursor: pointer;
+    background-color: var(--bg-primary);
+  }
+
+  p {
+    font-size: small;
+    font-weight: 100;
+    color: var(--color-primary);
+  }
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  gap: 0.5rem;
+  &:hover {
+    cursor: pointer;
+    background-color: var(--bg-primary);
+  }
+
+  h4 {
+    font-size: medium;
+    font-weight: 400;
+    color: var(--color-primary);
+  }
+  p {
+    font-size: small;
+    font-weight: 100;
+    color: var(--color-secondary);
+  }
 }

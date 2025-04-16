@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Post } from "../types/Post";
 import styles from "./Post.module.scss"; // Assuming a CSS module file exists
 import { Warning } from "./icons/Warning";
-import { Up } from "./icons/Up";
+import { Ups } from "./icons/Ups";
 import { Comment } from "./icons/Comment";
 import { Open } from "./icons/Open";
 
@@ -78,7 +78,7 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
       <div className={styles.bottom}>
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <Up />
+            <Ups />
             {post.score}
           </div>
           <div className={styles.stat}>

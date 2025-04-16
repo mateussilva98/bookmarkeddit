@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-export const Up: FC = () => {
+export const Ups: FC = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -12,9 +12,10 @@ export const Up: FC = () => {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="feather feather-chevron-up"
+      className="feather feather-arrow-up"
     >
-      <polyline points="18 15 12 9 6 15"></polyline>
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
     </svg>
   );
 };

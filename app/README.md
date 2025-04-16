@@ -61,3 +61,9 @@ if going to /posts not logged in it should go back to login
 fix on url on comments
 
 identify domehow that they are comments
+
+hide filters and reopen from header
+
+settings button that opens modal
+
+button to reset all filters

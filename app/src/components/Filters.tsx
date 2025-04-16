@@ -1,5 +1,7 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import styles from "./Filters.module.scss"; // Assuming a CSS module file exists
+import { Up } from "./icons/Up";
+import { Down } from "./icons/Down";
 
 type SubredditCount = {
   subreddit: string;
@@ -12,31 +14,53 @@ type FiltersProps = {
 };
 
 export const Filters: FC<FiltersProps> = ({ subredditCounts, typeCounts }) => {
+  const [showCommunities, setShowCommunities] = useState(true);
+  const [showTypes, setShowTypes] = useState(true);
+
   return (
     <div className={styles.root}>
       <div>
-        <div className={styles.headercomunities}>
+        <div
+          className={styles.header}
+          onClick={() => setShowCommunities(!showCommunities)}
+        >
           <p>Communities</p>
-          {/* icon and hover effect and show/hide communities bases on variable */}
+          {showCommunities ? <Up /> : <Down />}
         </div>
 
-        <input type="text" placeholder="Search communities" />
-        {/* TODO implement filter */}
-        {subredditCounts.map(({ subreddit, count }) => (
-          <li key={subreddit}>
-            {subreddit}: {count}
-          </li>
-        ))}
-      </div>
+        {showCommunities && (
+          <div>
+            <input type="text" placeholder="Search communities" />
+            {/* TODO implement filter */}
 
-      <h4>Types</h4>
-      <ul>
-        {typeCounts.map(({ type, count }) => (
-          <li key={type}>
-            {type}: {count}
-          </li>
-        ))}
-      </ul>
+            {subredditCounts.map(({ subreddit, count }) => (
+              <div className={styles.item} key={subreddit}>
+                <h4>r/{subreddit}</h4>
+                <p>{count}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <hr />
+
+      <div>
+        <div className={styles.header} onClick={() => setShowTypes(!showTypes)}>
+          <p>Type</p>
+          {showTypes ? <Up /> : <Down />}
+        </div>
+
+        {showTypes && (
+          <div>
+            {typeCounts.map(({ type, count }) => (
+              <div className={styles.item} key={type}>
+                <h4>{type}</h4>
+                <p>{count}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

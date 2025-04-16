@@ -9,7 +9,7 @@
 /* Update styles to ensure both Filters and PostsList use 100% height and scroll if content overflows */
 .filters {
   width: 250px; /* Fixed width for the sidebar */
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  //box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
   height: 100%; /* Ensure full height */
   //overflow-y: auto; /* Allow scrolling if content overflows */
 }
