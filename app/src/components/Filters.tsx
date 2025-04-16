@@ -8,20 +8,27 @@ type SubredditCount = {
 
 type FiltersProps = {
   subredditCounts: SubredditCount[];
-  typeCounts: { type: string; count: number }[]; // New property
+  typeCounts: { type: string; count: number }[];
 };
 
 export const Filters: FC<FiltersProps> = ({ subredditCounts, typeCounts }) => {
   return (
     <div className={styles.root}>
-      <h3>Filters</h3>
-      <ul>
+      <div>
+        <div className={styles.headercomunities}>
+          <p>Communities</p>
+          {/* icon and hover effect and show/hide communities bases on variable */}
+        </div>
+
+        <input type="text" placeholder="Search communities" />
+        {/* TODO implement filter */}
         {subredditCounts.map(({ subreddit, count }) => (
           <li key={subreddit}>
             {subreddit}: {count}
           </li>
         ))}
-      </ul>
+      </div>
+
       <h4>Types</h4>
       <ul>
         {typeCounts.map(({ type, count }) => (

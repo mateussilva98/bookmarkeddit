@@ -75,28 +75,32 @@ export const Posts: FC = () => {
     fetchSavedPosts();
   }, [store.access_token]); // Re-run effect if token changes
 
-  // Calculate distinct subreddits and their counts
+  // Calculate distinct subreddits and their counts, ordered by count descending
   const subredditCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     posts.forEach((post) => {
       counts[post.subreddit] = (counts[post.subreddit] || 0) + 1;
     });
-    return Object.entries(counts).map(([subreddit, count]) => ({
-      subreddit,
-      count,
-    }));
+    return Object.entries(counts)
+      .map(([subreddit, count]) => ({
+        subreddit,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [posts]);
 
-  // Calculate distinct types and their counts
+  // Calculate distinct types and their counts, ordered by count descending
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     posts.forEach((post) => {
       counts[post.type] = (counts[post.type] || 0) + 1;
     });
-    return Object.entries(counts).map(([type, count]) => ({
-      type,
-      count,
-    }));
+    return Object.entries(counts)
+      .map(([type, count]) => ({
+        type,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [posts]);
 
   return (

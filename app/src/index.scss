@@ -89,6 +89,25 @@ hr {
   margin: 1rem 0;
 }
 
+input,
+textarea {
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: var(--bg-primary);
+  width: 100%;
+  color: var(--color-primary);
+  //font-weight: 400;
+  //font-size: 1.25rem;
+  outline: unset;
+  &:focus {
+    outline: 2px solid var(--border-color);
+  }
+  &::placeholder {
+    color: var(--color-secondary);
+  }
+}
+
 /* body {
   color: var(--color);
   //scroll-snap-type: y mandatory;

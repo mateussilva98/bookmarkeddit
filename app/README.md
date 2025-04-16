@@ -57,3 +57,7 @@ search box: https://www.fusejs.io/examples.html#extended-search
 compact or no compact in settings (elipsis on title and description)
 
 if going to /posts not logged in it should go back to login
+
+fix on url on comments
+
+identify domehow that they are comments
