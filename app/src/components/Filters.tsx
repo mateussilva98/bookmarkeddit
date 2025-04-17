@@ -29,7 +29,11 @@ export const Filters: FC<FiltersProps> = ({ subredditCounts, typeCounts }) => {
         </div>
 
         {showCommunities && (
-          <div>
+          <div
+            className={`${styles.itemContainer} ${
+              showCommunities ? styles.fadeIn : styles.fadeOut
+            }`}
+          >
             <input type="text" placeholder="Search communities" />
             {/* TODO implement filter */}
 
@@ -42,7 +46,14 @@ export const Filters: FC<FiltersProps> = ({ subredditCounts, typeCounts }) => {
           </div>
         )}
       </div>
-      <hr />
+
+      <hr
+        /* not sure why do i need this */
+        style={{
+          margin: "10px 0",
+          border: "1px solid var(--border-color)!important",
+        }}
+      />
 
       <div>
         <div className={styles.header} onClick={() => setShowTypes(!showTypes)}>
@@ -51,7 +62,11 @@ export const Filters: FC<FiltersProps> = ({ subredditCounts, typeCounts }) => {
         </div>
 
         {showTypes && (
-          <div>
+          <div
+            className={`${styles.itemContainer} ${
+              showTypes ? styles.fadeIn : styles.fadeOut
+            }`}
+          >
             {typeCounts.map(({ type, count }) => (
               <div className={styles.item} key={type}>
                 <h4>{type}</h4>
