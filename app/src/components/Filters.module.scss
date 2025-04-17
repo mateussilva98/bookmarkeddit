@@ -9,6 +9,7 @@
   width: 100%;
   height: 100%; /* Full height */
   overflow-y: auto; /* Allow scrolling if content overflows */
+  position: relative;
 }
 
 .header {
@@ -80,4 +81,26 @@
   to {
     opacity: 0;
   }
+}
+
+.clearFilters {
+  margin-top: 2rem;
+  //height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #fff;
+  border-radius: var(--btn-border-radius);
+  background-color: var(--orange);
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  padding: 1rem 1rem;
+  width: fit-content;
+  &:hover {
+    background-color: var(--btn-hover-color);
+  }
+  align-self: flex-end;
 }

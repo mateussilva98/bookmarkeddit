@@ -103,12 +103,31 @@ export const Posts: FC = () => {
       .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [posts]);
 
+  // Calculate distinct NSFW counts, categorized as "Yes" or "No", ordered by count descending
+  const nsfwCounts = useMemo(() => {
+    const counts: Record<string, number> = { Yes: 0, No: 0 };
+    posts.forEach((post) => {
+      const key = post.nsfw ? "Yes" : "No";
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([nsfw, count]) => ({
+        nsfw,
+        count,
+      }))
+      .sort((a, b) => b.count - a.count); // Sort by count descending
+  }, [posts]);
+
   return (
     <>
       <Header />
       <main className={styles.root}>
         <div className={styles.filters}>
-          <Filters subredditCounts={subredditCounts} typeCounts={typeCounts} />
+          <Filters
+            subredditCounts={subredditCounts}
+            typeCounts={typeCounts}
+            nsfwCounts={nsfwCounts}
+          />
         </div>
         <div className={styles.postsList}>
           {/* TODO: send filtered posts */}
