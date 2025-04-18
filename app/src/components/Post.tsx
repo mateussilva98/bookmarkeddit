@@ -78,17 +78,23 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
       <div className={styles.bottom}>
         <div className={styles.stats}>
           <div className={styles.stat}>
-            <Ups />
-            {post.score}
+            <div className={styles.icon}>
+              <Ups />
+            </div>
+            <span>{post.score}</span>
           </div>
           <div className={styles.stat}>
-            <Comment />
-            {post.commentCount}
+            <div className={styles.icon}>
+              <Comment />
+            </div>
+            <span>{post.commentCount}</span>
           </div>
         </div>
         <div className={styles.open}>
           <a href={post.url} target="_blank" rel="noopener noreferrer">
-            <Open />
+            <button className="btn-icon">
+              <Open />
+            </button>
           </a>
         </div>
       </div>

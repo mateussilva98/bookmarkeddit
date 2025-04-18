@@ -103,11 +103,17 @@ export const Posts: FC = () => {
       .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [posts]);
 
-  // Calculate distinct NSFW counts, categorized as "Yes" or "No", ordered by count descending
+  // Calculate distinct NSFW counts, categorized as "Only NSFW posts" or "Only non-NSFW posts", ordered by count descending. Send empty array if no posts are found.
   const nsfwCounts = useMemo(() => {
-    const counts: Record<string, number> = { Yes: 0, No: 0 };
+    if (posts.length === 0) {
+      return [];
+    }
+    const counts: Record<string, number> = {
+      "Only NSFW posts": 0,
+      "Only non-NSFW posts": 0,
+    };
     posts.forEach((post) => {
-      const key = post.nsfw ? "Yes" : "No";
+      const key = post.nsfw ? "Only NSFW posts" : "Only non-NSFW posts";
       counts[key] = (counts[key] || 0) + 1;
     });
     return Object.entries(counts)
