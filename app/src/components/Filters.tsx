@@ -144,7 +144,7 @@ export const Filters: FC<FiltersProps> = ({
                 onClick={() => handleCommunityClick(subreddit)}
                 style={{
                   backgroundColor: selectedCommunities.includes(subreddit)
-                    ? "var(--bg-selected)"
+                    ? "var(--btn-hover-color)"
                     : undefined,
                 }}
               >
@@ -182,7 +182,9 @@ export const Filters: FC<FiltersProps> = ({
                 onClick={() => handleTypeClick(type)}
                 style={{
                   backgroundColor:
-                    selectedType === type ? "var(--bg-selected)" : undefined,
+                    selectedType === type
+                      ? "var(--btn-hover-color)"
+                      : undefined,
                 }}
               >
                 <h4>{type}</h4>
@@ -219,7 +221,9 @@ export const Filters: FC<FiltersProps> = ({
                 onClick={() => handleNSFWClick(nsfw)}
                 style={{
                   backgroundColor:
-                    selectedNSFW === nsfw ? "var(--bg-selected)" : undefined,
+                    selectedNSFW === nsfw
+                      ? "var(--btn-hover-color)"
+                      : undefined,
                 }}
               >
                 <h4>{nsfw}</h4>

@@ -64,8 +64,12 @@ identify somehow that they are comments
 
 settings button that opens modal
 
-button to reset all filters
-
 add "no saved posts"
 
 feature to share link
+
+order by most recent saved, most upvotes, most comments
+
+filter on posts to filter the filtered posts
+
+add loader
