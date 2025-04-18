@@ -34,6 +34,7 @@
   --border-radius: 4px;
   --btn-border-radius: 9999px;
   --btn-hover-color: #ef6a3a;
+  --bg-selected: #3a536b;
   .light {
     --bg-primary: #dae0e6;
     --bg-secondary: #fff;
@@ -97,11 +98,12 @@ textarea {
   background-color: var(--bg-primary);
   width: 100%;
   color: var(--color-primary);
+  margin-bottom: 1rem;
   //font-weight: 400;
   //font-size: 1.25rem;
   outline: unset;
   &:focus {
-    outline: 2px solid var(--border-color);
+    outline: 2px solid var(--btn-hover-color);
   }
   &::placeholder {
     color: var(--color-secondary);

@@ -67,3 +67,5 @@ settings button that opens modal
 button to reset all filters
 
 add "no saved posts"
+
+feature to share link

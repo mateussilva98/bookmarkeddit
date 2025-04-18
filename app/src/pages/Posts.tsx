@@ -2,7 +2,7 @@ import { FC, useEffect, useState, useMemo } from "react";
 import { useStore } from "../hooks/use-store";
 import { Header } from "../components/Header";
 import { Post } from "../types/Post";
-import { Filters } from "../components/Filters";
+import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
 import styles from "./Posts.module.scss";
 
@@ -12,6 +12,11 @@ export const Posts: FC = () => {
   // TODO : add loading state to show a spinner or loading message
   const [loading, setLoading] = useState<boolean>(true); // Loading state to manage UI during fetch
   const [posts, setPosts] = useState<Post[]>([]); // State to hold fetched posts
+  const [activeFilters, setActiveFilters] = useState<SelectedFilters>({
+    communities: [],
+    type: null,
+    nsfw: null,
+  });
 
   useEffect(() => {
     const accessToken = store.access_token;
@@ -124,6 +129,40 @@ export const Posts: FC = () => {
       .sort((a, b) => b.count - a.count); // Sort by count descending
   }, [posts]);
 
+  // Handle filter change from Filters component
+  const handleFilterChange = (filters: SelectedFilters) => {
+    setActiveFilters(filters);
+  };
+
+  // Apply filters to posts
+  const filteredPosts = useMemo(() => {
+    return posts.filter((post) => {
+      // Filter by communities (if any are selected)
+      if (
+        activeFilters.communities.length > 0 &&
+        !activeFilters.communities.includes(post.subreddit)
+      ) {
+        return false;
+      }
+
+      // Filter by type (if selected)
+      if (activeFilters.type && post.type !== activeFilters.type) {
+        return false;
+      }
+
+      // Filter by NSFW status (if selected)
+      if (activeFilters.nsfw) {
+        if (activeFilters.nsfw === "Only NSFW posts" && !post.nsfw) {
+          return false;
+        } else if (activeFilters.nsfw === "Only non-NSFW posts" && post.nsfw) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [posts, activeFilters]);
+
   return (
     <>
       <Header />
@@ -133,11 +172,11 @@ export const Posts: FC = () => {
             subredditCounts={subredditCounts}
             typeCounts={typeCounts}
             nsfwCounts={nsfwCounts}
+            onFilterChange={handleFilterChange}
           />
         </div>
         <div className={styles.postsList}>
-          {/* TODO: send filtered posts */}
-          <PostsList posts={posts} />
+          <PostsList posts={filteredPosts} />
         </div>
       </main>
     </>
