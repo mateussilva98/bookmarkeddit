@@ -103,6 +103,7 @@ export const Filters: FC<FiltersProps> = ({
     setSelectedCommunities([]);
     setSelectedType(null);
     setSelectedNSFW(null);
+    setCommunitySearch(""); // Reset community search input
 
     // Update parent component that filters were cleared
     onFilterChange({
