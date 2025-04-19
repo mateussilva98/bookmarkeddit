@@ -4,3 +4,102 @@
   overflow-y: auto; /* Allow scrolling if content overflows */
   padding: 2rem; /* Add some padding */
 }
+
+.controlsContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+
+.searchInputContainer {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  background-color: var(--bg-secondary);
+  margin-bottom: 0;
+  padding-right: 40px; /* Make space for the clear button */
+  /* padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-family: "IBM Plex Sans", sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: #ff4500; 
+    box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2);
+  } */
+}
+
+.clearButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(
+    -50%
+  ); /* Rotate the Down icon to make it look more like an X */
+
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+  /* padding: 5px; */
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.sortBy {
+  position: relative;
+
+  .sortSelect {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 0.5rem 1rem;
+    padding-right: 2.5rem; /* Extra space for the chevron */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background-color: var(--bg-secondary);
+    color: var(--color-primary);
+    cursor: pointer;
+    outline: unset;
+    position: relative; /* For positioning the custom chevron */
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem top 50%;
+    background-size: 0.65rem auto;
+
+    &:focus {
+      outline: 2px solid var(--btn-hover-color);
+    }
+
+    &::placeholder {
+      color: var(--color-secondary);
+    }
+    &:hover {
+      background-color: var(--bg-primary);
+    }
+
+    option {
+      background-color: var(--bg-secondary);
+      color: var(--color-secondary);
+      padding: 0.5rem;
+    }
+
+    /* Not supported by all browsers */
+    option:hover,
+    option:focus,
+    option:active {
+      background-color: var(--btn-hover-color) !important;
+      color: white !important;
+    }
+  }
+}

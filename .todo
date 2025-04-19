@@ -1,7 +1,10 @@
 Next up:
-  ☐ not selectable text on NSFW badge
-  ☐ filter on posts to filter the filtered posts (https://www.fusejs.io/examples.html#extended-search)
-  ☐ order by most recent saved, most upvotes, most comments
+  ✔ not selectable text on NSFW badge @done(25-04-19 01:52)
+  ✔ text filter on posts to filter the filtered posts (https://www.fusejs.io/examples.html#extended-search) @done(25-04-19 22:58)
+    ✔ add input to filter the posts (title, description, subreddit, author) @done(25-04-19 22:58)
+    ✔ add a button to clear the filter (X on the input) @done(25-04-20 00:15)
+    ✔ implement functionality @done(25-04-19 22:58)
+  ✔ order by most recent saved, most upvotes, most comments @done(25-04-20 00:15)
   ☐ add a button to share the link (inspiration: other website)
   ☐ add a button to unsave the post 
     ☐ add unsave functionality
@@ -33,10 +36,12 @@ Next up:
   ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
   ☐ Create a saved filters feature that stores filter preferences locally
   ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users
+  ☐ dockerize the app 
+  ☐ deploy the app on vercel
 
 
 
-  
+
 
 Local Caching
 
