@@ -48,6 +48,8 @@
   width: fit-content;
   border-radius: var(--border-radius);
   margin-bottom: 0.5rem;
+  //dont allow to select text
+  user-select: none;
 
   .warningIcon {
     width: 12px;
