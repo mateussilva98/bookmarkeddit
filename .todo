@@ -1,0 +1,80 @@
+Next up:
+  ☐ not selectable text on NSFW badge
+  ☐ filter on posts to filter the filtered posts (https://www.fusejs.io/examples.html#extended-search)
+  ☐ order by most recent saved, most upvotes, most comments
+  ☐ add a button to share the link (inspiration: other website)
+  ☐ add a button to unsave the post 
+    ☐ add unsave functionality
+      ☐ add toast on unsave and update posts without new fetch
+  ☐ tooltip on unsave, share and open in new tab
+  ☐ add loader
+  ☐ add a button to go back to the top of the page
+  ☐ order by most recent saved, most upvotes, most comments
+  ☐ settings button that opens modal
+    ☐ show only after logged in 
+    ☐ compact or no compact in settings (elipsis on title and description) 
+      ☐ implement that logic on the posts page
+    ☐ blur images on nsfw posts 
+      ☐ implement that logic 
+  ☐ add "no saved posts" 
+  ☐ improve post card design 
+    ☐ add thumbnail image 
+  ☐ find a way to identify that they are comments 
+  ☐ fix on url on comments
+  ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.)
+  ☐ create a api.ts file to handle all the api calls
+  ☐ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
+  ☐ add locale
+  ☐ export to csv file
+  ☐ responsive for mobile
+  ☐ add setting for layout? not sure about it yet
+  ☐ Add text customization (font size, line spacing)
+  ☐ Implement full-text search within post content (not just titles)
+  ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
+  ☐ Create a saved filters feature that stores filter preferences locally
+  ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users
+
+
+
+  
+
+Local Caching
+
+Improve caching of API responses for faster loading and reduced API usage
+Add an explicit "refresh" button to fetch new saved posts
+
+
+
+View Customization
+
+Create multiple view options: list view, card view, compact view
+Allow users to customize what information is shown for each post
+
+
+Post Interaction Enhancements
+
+Add quick actions when hovering over posts
+Implement keyboard shortcuts for navigation and actions
+
+
+Export Features
+
+Allow exporting saved posts to various formats (JSON, CSV, HTML)
+Add print-friendly view for posts
+
+
+
+https://www.reddit.com/prefs/apps
+
+https://www.reddit.com/user/mateus_silva_98/saved/
+
+
+
+
+
+
+
+
+
+- Themes
+- Layout: default (3 columns), 1 column, 2 columns and dynamic (depends on window size)

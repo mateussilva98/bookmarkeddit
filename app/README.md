@@ -41,35 +41,3 @@ https://www.reddit.com/prefs/apps
 https://updoot.app/#_
 https://redditmanager.com/app#_
 https://github.com/sergeystoma/updoot
-
-## Notes
-
-Each saved post should show subreddit, user, date, title, description and image. Option to blur image is NSFW
-
-"""Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch."""
-
-https://www.reddit.com/prefs/apps
-
-https://www.reddit.com/user/mateus_silva_98/saved/
-
-search box: https://www.fusejs.io/examples.html#extended-search
-
-compact or no compact in settings (elipsis on title and description)
-
-if going to /posts not logged in it should go back to login
-
-fix on url on comments
-
-identify somehow that they are comments
-
-settings button that opens modal
-
-add "no saved posts"
-
-feature to share link
-
-order by most recent saved, most upvotes, most comments
-
-filter on posts to filter the filtered posts
-
-add loader
