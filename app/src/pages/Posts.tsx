@@ -4,6 +4,7 @@ import { Header } from "../components/Header";
 import { Post } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
+import { Loader } from "../components/ui/Loader";
 import styles from "./Posts.module.scss";
 
 export const Posts: FC = () => {
@@ -166,19 +167,22 @@ export const Posts: FC = () => {
   return (
     <>
       <Header />
-      <main className={styles.root}>
-        <div className={styles.filters}>
-          <Filters
-            subredditCounts={subredditCounts}
-            typeCounts={typeCounts}
-            nsfwCounts={nsfwCounts}
-            onFilterChange={handleFilterChange}
-          />
-        </div>
-        <div className={styles.postsList}>
-          <PostsList posts={filteredPosts} />
-        </div>
-      </main>
+      <Loader isVisible={loading} />
+      {!loading && (
+        <main className={styles.root}>
+          <div className={styles.filters}>
+            <Filters
+              subredditCounts={subredditCounts}
+              typeCounts={typeCounts}
+              nsfwCounts={nsfwCounts}
+              onFilterChange={handleFilterChange}
+            />
+          </div>
+          <div className={styles.postsList}>
+            <PostsList posts={filteredPosts} />
+          </div>
+        </main>
+      )}
     </>
   );
 };
