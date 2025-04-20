@@ -93,17 +93,28 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
           </div>
         </div>
         <div className={styles.options}>
-          <button className={`${styles.unsave} btn-icon`}>
-            <Bookmark />
-          </button>
-          <button className="btn-icon">
-            <Share />
-          </button>
-          <a href={post.url} target="_blank" rel="noopener noreferrer">
-            <button className="btn-icon">
-              <Open />
+          <div className={styles.tooltipWrapper}>
+            <button className={`${styles.unsave} btn-icon`}>
+              <Bookmark />
             </button>
-          </a>
+            <span className={styles.tooltip}>Unsave post</span>
+          </div>
+
+          <div className={styles.tooltipWrapper}>
+            <button className="btn-icon">
+              <Share />
+            </button>
+            <span className={styles.tooltip}>Share post</span>
+          </div>
+
+          <div className={styles.tooltipWrapper}>
+            <a href={post.url} target="_blank" rel="noopener noreferrer">
+              <button className="btn-icon">
+                <Open />
+              </button>
+            </a>
+            <span className={styles.tooltip}>Open in new tab</span>
+          </div>
         </div>
       </div>
       {/* <a href={post.url} target="_blank" rel="noopener noreferrer">
