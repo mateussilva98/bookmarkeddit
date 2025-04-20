@@ -41,6 +41,7 @@
   padding: 0.5rem;
   gap: 0.5rem;
   transition: background-color 0.2s ease;
+  margin: 5px 0px;
   &:hover {
     cursor: pointer;
     background-color: var(--bg-primary);

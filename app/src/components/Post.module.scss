@@ -118,3 +118,17 @@
     }
   }
 }
+
+.options {
+  display: flex;
+  gap: 1rem;
+
+  .unsave {
+    svg {
+      fill: var(--color-primary);
+      &:hover {
+        fill: none;
+      }
+    }
+  }
+}

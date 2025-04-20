@@ -5,6 +5,8 @@ import { Warning } from "./icons/Warning";
 import { Ups } from "./icons/Ups";
 import { Comment } from "./icons/Comment";
 import { Open } from "./icons/Open";
+import { Bookmark } from "./icons/Bookmark";
+import { Share } from "./icons/Share";
 
 interface PostProps {
   post: Post;
@@ -90,7 +92,13 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
             <span>{post.commentCount}</span>
           </div>
         </div>
-        <div className={styles.open}>
+        <div className={styles.options}>
+          <button className={`${styles.unsave} btn-icon`}>
+            <Bookmark />
+          </button>
+          <button className="btn-icon">
+            <Share />
+          </button>
           <a href={post.url} target="_blank" rel="noopener noreferrer">
             <button className="btn-icon">
               <Open />
