@@ -12,10 +12,11 @@ Next up:
       ☐ add toast on unsave and update posts without new fetch
   ✔ tooltip on unsave, share and open in new tab @done(25-04-20 22:22)
   ✔ add loader @done(25-04-20 23:19)
-  ☐ add a button to go back to the top of the page
-  ☐ order by most recent saved, most upvotes, most comments
+  ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
+  ✔ order by most recent saved, most upvotes, most comments @done(25-04-21 17:13)
   ☐ settings button that opens modal
-    ☐ show only after logged in 
+    ✔ show only after logged in @done(25-04-21 19:48)
+    ☐ dark mode
     ☐ compact or no compact in settings (elipsis on title and description) 
       ☐ implement that logic on the posts page
     ☐ blur images on nsfw posts 
@@ -40,6 +41,7 @@ Next up:
   ☐ dockerize the app 
   ☐ deploy the app on vercel
   ☐ redo front page with a better design
+  ☐ highlight the seached text on the posts
 
 
 

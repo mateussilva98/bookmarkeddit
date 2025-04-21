@@ -5,19 +5,30 @@ import { Post } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
 import { Loader } from "../components/ui/Loader";
+import { SettingsModal } from "../components/SettingsModal";
 import styles from "./Posts.module.scss";
 
 export const Posts: FC = () => {
   const { store } = useStore(); // Access token from the store
 
-  // TODO : add loading state to show a spinner or loading message
   const [loading, setLoading] = useState<boolean>(true); // Loading state to manage UI during fetch
   const [posts, setPosts] = useState<Post[]>([]); // State to hold fetched posts
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false); // State to control settings modal visibility
   const [activeFilters, setActiveFilters] = useState<SelectedFilters>({
     communities: [],
     type: null,
     nsfw: null,
   });
+
+  // Handle settings button click
+  const handleSettingsClick = () => {
+    setIsSettingsOpen(true);
+  };
+
+  // Handle closing the settings modal
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
+  };
 
   useEffect(() => {
     const accessToken = store.access_token;
@@ -166,7 +177,7 @@ export const Posts: FC = () => {
 
   return (
     <>
-      <Header />
+      <Header onSettingsClick={handleSettingsClick} />
       <Loader isVisible={loading} />
       {!loading && (
         <main className={styles.root}>
@@ -183,6 +194,7 @@ export const Posts: FC = () => {
           </div>
         </main>
       )}
+      <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
     </>
   );
 };
