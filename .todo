@@ -24,7 +24,7 @@ Next up:
   ☐ add "no saved posts" 
   ☐ improve post card design 
     ☐ add thumbnail image 
-  ☐ find a way to identify that they are comments 
+  ✔ find a way to identify that they are comments @done(25-04-21 21:16)
   ☐ fix on url on comments
   ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.)
   ☐ create a api.ts file to handle all the api calls
@@ -42,6 +42,8 @@ Next up:
   ☐ deploy the app on vercel
   ☐ redo front page with a better design
   ☐ highlight the seached text on the posts
+  ☐ post content in markdown 
+  ☐ get loggedin user after token
 
 
 

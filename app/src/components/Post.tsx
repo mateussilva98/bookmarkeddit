@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useRef } from "react";
 import { Post } from "../types/Post";
 import styles from "./Post.module.scss"; // Assuming a CSS module file exists
 import { Warning } from "./icons/Warning";
@@ -39,6 +39,9 @@ const calculateTimeAgo = (timestamp: number): string => {
 };
 
 export const PostComponent: FC<PostProps> = ({ post }) => {
+  // create a ref
+  const commentRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -54,7 +57,7 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </h5>
         <h6>
           <a
-            href={"https://www.reddit.com/r/" + post.subreddit}
+            href={"https://www.reddit.com/u/" + post.subreddit}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -73,7 +76,17 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
       )}
 
       <h3>{post.title}</h3>
-      <p className={styles.description}>{post.description}</p>
+      <div className={styles.descriptionContainer}>
+        {post.type == "Comment" && (
+          <div className={styles.commentLine}>
+            <div /* className={styles.commentLineTopLeft} */></div>
+            <div className={styles.commentLineTopRight}></div>
+            <div /* className={styles.commentLineBottomLeft} */></div>
+            <div /* className={styles.commentLineBottomRight} */></div>
+          </div>
+        )}
+        <p className={styles.description}>{post.description}</p>
+      </div>
 
       {/* TODO add images in case you have. check thumbnail dimentions */}
 
