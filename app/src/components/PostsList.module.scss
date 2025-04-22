@@ -104,6 +104,33 @@
   }
 }
 
+.layoutSelect {
+  display: flex;
+  gap: 0.5rem;
+
+  .active {
+    color: var(--btn-hover-color);
+  }
+}
+
+.postsContainer {
+  display: flex;
+  flex-direction: column;
+  /* gap: 2rem; */
+
+  &.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    /* gap: 1.5rem; */
+  }
+
+  &.list {
+    display: flex;
+    flex-direction: column;
+    /* gap: 2rem; */
+  }
+}
+
 .scrollToTopButton {
   position: fixed;
   bottom: 30px;

@@ -39,9 +39,6 @@ const calculateTimeAgo = (timestamp: number): string => {
 };
 
 export const PostComponent: FC<PostProps> = ({ post }) => {
-  // create a ref
-  const commentRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -130,9 +127,6 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
           </div>
         </div>
       </div>
-      {/* <a href={post.url} target="_blank" rel="noopener noreferrer">
-        Read more
-      </a> */}
     </div>
   );
 };

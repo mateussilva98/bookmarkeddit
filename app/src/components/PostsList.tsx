@@ -4,6 +4,9 @@ import { PostComponent } from "./Post";
 import styles from "./PostsList.module.scss";
 import { X } from "./icons/X";
 import { Up } from "./icons/Up";
+import { List } from "./icons/List";
+import { Grid } from "./icons/Grid";
+import { useStore } from "../hooks/use-store";
 
 interface PostsListProps {
   posts: Post[];
@@ -13,9 +16,9 @@ type SortOption = "recent" | "upvotes" | "comments";
 
 export const PostsList: FC<PostsListProps> = ({ posts }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [sortBy, setSortBy] = useState<SortOption>("recent");
-  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const postsListRef = useRef<HTMLDivElement>(null);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const { store, changeLayout, changeSortBy } = useStore();
 
   // Filter posts based on search term
   const filteredPosts = useMemo(() => {
@@ -32,7 +35,7 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
   // Sort the filtered posts
   const sortedPosts = useMemo(() => {
     return [...filteredPosts].sort((a, b) => {
-      switch (sortBy) {
+      switch (store.sortBy) {
         case "upvotes":
           return b.score - a.score;
         case "comments":
@@ -42,7 +45,7 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
           return b.createdAt - a.createdAt;
       }
     });
-  }, [filteredPosts, sortBy]);
+  }, [filteredPosts, store.sortBy]);
 
   // Handle scroll events to show/hide the scroll to top button
   useEffect(() => {
@@ -78,6 +81,7 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
   return (
     <div className={styles.root} ref={postsListRef}>
       <div className={styles.controlsContainer}>
+        {/* <div className={styles.label}>Search:</div> */}
         <div className={styles.searchInputContainer}>
           <input
             type="text"
@@ -96,10 +100,11 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
             </button>
           )}
         </div>
+        {/* <div className={styles.label}>Sort by:</div> */}
         <div className={styles.sortBy}>
           <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            value={store.sortBy}
+            onChange={(e) => changeSortBy(e.target.value as SortOption)}
             className={styles.sortSelect}
           >
             <option value="recent">Most recent saved</option>
@@ -107,13 +112,36 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
             <option value="comments">Most Comments</option>
           </select>
         </div>
+        {/* <div className={styles.label}>Layout:</div> */}
+        <div className={styles.layoutSelect}>
+          <button
+            className={`btn-icon ${
+              store.layout === "list" ? styles.active : ""
+            }`}
+            onClick={() => changeLayout("list")}
+            aria-label="List view"
+          >
+            <List />
+          </button>
+          <button
+            className={`btn-icon ${
+              store.layout === "grid" ? styles.active : ""
+            }`}
+            onClick={() => changeLayout("grid")}
+            aria-label="Grid view"
+          >
+            <Grid />
+          </button>
+        </div>
       </div>
-      {sortedPosts.map((post) => (
-        <>
-          <hr />
-          <PostComponent key={post.id} post={post} />
-        </>
-      ))}
+      <div className={`${styles.postsContainer} ${styles[store.layout]}`}>
+        {sortedPosts.map((post, idx) => (
+          <div key={post.id}>
+            <hr />
+            <PostComponent post={post} />
+          </div>
+        ))}
+      </div>
 
       {showScrollToTop && (
         <button
