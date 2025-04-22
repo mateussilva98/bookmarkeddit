@@ -119,12 +119,11 @@
   /* gap: 2rem; */
 
   &.grid {
+    /* True masonry with items placed horizontally first */
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    grid-auto-rows: min-content;
-    grid-auto-flow: dense;
-    align-items: start;
-    /* gap: 1.5rem; */
+    grid-auto-rows: 1px; /* This is a placeholder that will be overridden by JavaScript */
+    gap: 1.5rem; /* Space between grid items */
   }
 
   &.list {

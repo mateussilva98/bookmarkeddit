@@ -1,4 +1,4 @@
-import { FC, useState, useMemo, useEffect, useRef } from "react";
+import { FC, useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { Post } from "../types/Post";
 import { PostComponent } from "./Post";
 import styles from "./PostsList.module.scss";
@@ -17,8 +17,34 @@ type SortOption = "recent" | "upvotes" | "comments";
 export const PostsList: FC<PostsListProps> = ({ posts }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const postsListRef = useRef<HTMLDivElement>(null);
+  const postsContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const { store, changeLayout, changeSortBy } = useStore();
+
+  // Resize grid items for masonry layout
+  const resizeGridItems = useCallback(() => {
+    if (store.layout !== "grid" || !postsContainerRef.current) return;
+
+    const grid = postsContainerRef.current;
+    const rowHeight = parseInt(
+      window.getComputedStyle(grid).getPropertyValue("grid-auto-rows")
+    );
+    const rowGap = parseInt(
+      window.getComputedStyle(grid).getPropertyValue("grid-row-gap") || "0"
+    );
+
+    const items = grid.querySelectorAll<HTMLElement>(":scope > div");
+
+    items.forEach((item) => {
+      const content = item.querySelector<HTMLElement>(":scope > .post-content");
+      if (!content) return;
+
+      const rowSpan = Math.ceil(
+        (content.getBoundingClientRect().height + rowGap) / (rowHeight + rowGap)
+      );
+      item.style.gridRowEnd = `span ${rowSpan}`;
+    });
+  }, [store.layout]);
 
   // Filter posts based on search term
   const filteredPosts = useMemo(() => {
@@ -68,6 +94,32 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
     };
   }, []);
 
+  // Effect for resizing grid items on posts change or layout change
+  useEffect(() => {
+    resizeGridItems();
+
+    // Use ResizeObserver to monitor changes in post sizes
+    const resizeObserver = new ResizeObserver(() => {
+      if (store.layout === "grid") {
+        resizeGridItems();
+      }
+    });
+
+    if (postsContainerRef.current) {
+      const postElements =
+        postsContainerRef.current.querySelectorAll<HTMLElement>(":scope > div");
+      postElements.forEach((el) => resizeObserver.observe(el));
+    }
+
+    // Add window resize listener
+    window.addEventListener("resize", resizeGridItems);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", resizeGridItems);
+    };
+  }, [sortedPosts, store.layout, resizeGridItems]);
+
   // Function to scroll back to top
   const scrollToTop = () => {
     if (postsListRef.current) {
@@ -81,7 +133,6 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
   return (
     <div className={styles.root} ref={postsListRef}>
       <div className={styles.controlsContainer}>
-        {/* <div className={styles.label}>Search:</div> */}
         <div className={styles.searchInputContainer}>
           <input
             type="text"
@@ -100,7 +151,6 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
             </button>
           )}
         </div>
-        {/* <div className={styles.label}>Sort by:</div> */}
         <div className={styles.sortBy}>
           <select
             value={store.sortBy}
@@ -112,7 +162,6 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
             <option value="comments">Most Comments</option>
           </select>
         </div>
-        {/* <div className={styles.label}>Layout:</div> */}
         <div className={styles.layoutSelect}>
           <button
             className={`btn-icon ${
@@ -134,11 +183,16 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
           </button>
         </div>
       </div>
-      <div className={`${styles.postsContainer} ${styles[store.layout]}`}>
+      <div
+        className={`${styles.postsContainer} ${styles[store.layout]}`}
+        ref={postsContainerRef}
+      >
         {sortedPosts.map((post) => (
           <div key={post.id}>
+            <div className="post-content">
+              <PostComponent post={post} />
+            </div>
             <hr />
-            <PostComponent post={post} />
           </div>
         ))}
       </div>
