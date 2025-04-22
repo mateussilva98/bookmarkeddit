@@ -14,19 +14,21 @@ Next up:
   ✔ add loader @done(25-04-20 23:19)
   ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
   ✔ order by most recent saved, most upvotes, most comments @done(25-04-21 17:13)
+  ☐ improve post card design 
+    ☐ add thumbnail image 
   ☐ settings button that opens modal
     ✔ show only after logged in @done(25-04-21 19:48)
     ☐ dark mode
-    ☐ compact or no compact in settings (elipsis on title and description) 
+    ☐ compact or no compact in settings (elipsis on title and description) - make it compact by default
       ☐ implement that logic on the posts page
-    ☐ blur images on nsfw posts 
+    ☐ blur images on nsfw posts
       ☐ implement that logic 
+    ☐ show or hide images 
+      ☐ implement that logic
   ☐ add "no saved posts" 
-  ☐ improve post card design 
-    ☐ add thumbnail image 
   ✔ find a way to identify that they are comments @done(25-04-21 21:16)
   ☐ fix on url on comments
-  ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.)
+  ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.) - make it keep going, meaning, fetch first 100 posts, then 100 more, and so on until there are no more posts to fetch. (https://www.reddit.com/prefs/apps)
   ☐ create a api.ts file to handle all the api calls
   ☐ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
   ☐ add locale
@@ -45,6 +47,7 @@ Next up:
   ☐ post content in markdown 
   ☐ get loggedin user after token
   ☐ comment code
+  ☐ show total saved posts
 
 
 
