@@ -135,7 +135,7 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
         </div>
       </div>
       <div className={`${styles.postsContainer} ${styles[store.layout]}`}>
-        {sortedPosts.map((post, idx) => (
+        {sortedPosts.map((post) => (
           <div key={post.id}>
             <hr />
             <PostComponent post={post} />

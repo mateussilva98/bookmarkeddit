@@ -6,7 +6,7 @@ Next up:
     ✔ implement functionality @done(25-04-19 22:58)
   ✔ order by most recent saved, most upvotes, most comments @done(25-04-20 00:15)
   ✔ add a button to share the link @done(25-04-20 01:10)
-    ☐ add share functionality (inspiration: other website)
+    ✔ add share functionality @done(25-04-22 21:09)
   ✔ add a button to unsave the post @done(25-04-20 01:10)
     ☐ add unsave functionality
       ☐ add toast on unsave and update posts without new fetch

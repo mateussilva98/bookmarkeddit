@@ -70,7 +70,7 @@ export const Posts: FC = () => {
               : post.data.body
               ? post.data.body
               : "",
-            url: post.data.url,
+            url: post.data.url ? post.data.url : post.data.link_url,
             score: post.data.score,
             mediaMetadata: post.data.media_metadata
               ? post.data.media_metadata

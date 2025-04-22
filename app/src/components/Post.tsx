@@ -39,6 +39,26 @@ const calculateTimeAgo = (timestamp: number): string => {
 };
 
 export const PostComponent: FC<PostProps> = ({ post }) => {
+  const share = (url: string) => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: post.title,
+          text: post.description,
+          url: url,
+        })
+        .then(() => console.log("Post shared successfully"))
+        .catch((error) => console.error("Error sharing post:", error));
+    } else {
+      // Fallback for browsers that don't support the Web Share API - copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        console.log("Post URL copied to clipboard:", url);
+        // todo a custom toast message
+        alert("Post URL copied to clipboard: " + url);
+      });
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -111,7 +131,7 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
           </div>
 
           <div className={styles.tooltipWrapper}>
-            <button className="btn-icon">
+            <button className="btn-icon" onClick={() => share(post.url)}>
               <Share />
             </button>
             <span className={styles.tooltip}>Share post</span>
