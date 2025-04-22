@@ -36,7 +36,7 @@ const initialStore: StoreProps = {
   theme: "dark",
   access_token: "",
   refresh_token: "",
-  layout: "list",
+  layout: "grid",
   sortBy: "recent",
   compactness: "normal",
 };

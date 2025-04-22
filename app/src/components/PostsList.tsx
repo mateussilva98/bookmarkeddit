@@ -165,21 +165,21 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
         <div className={styles.layoutSelect}>
           <button
             className={`btn-icon ${
-              store.layout === "list" ? styles.active : ""
-            }`}
-            onClick={() => changeLayout("list")}
-            aria-label="List view"
-          >
-            <List />
-          </button>
-          <button
-            className={`btn-icon ${
               store.layout === "grid" ? styles.active : ""
             }`}
             onClick={() => changeLayout("grid")}
             aria-label="Grid view"
           >
             <Grid />
+          </button>
+          <button
+            className={`btn-icon ${
+              store.layout === "list" ? styles.active : ""
+            }`}
+            onClick={() => changeLayout("list")}
+            aria-label="List view"
+          >
+            <List />
           </button>
         </div>
       </div>
