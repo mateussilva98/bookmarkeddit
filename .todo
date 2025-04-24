@@ -27,7 +27,7 @@ Next up:
       ☐ implement that logic
   ☐ add "no saved posts" 
   ✔ find a way to identify that they are comments @done(25-04-21 21:16)
-  ☐ fix on url on comments
+  ✔ fix on url on comments @done(25-04-23 14:57)
   ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.) - make it keep going, meaning, fetch first 100 posts, then 100 more, and so on until there are no more posts to fetch. (https://www.reddit.com/prefs/apps)
   ☐ create a api.ts file to handle all the api calls
   ☐ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
@@ -41,7 +41,7 @@ Next up:
   ☐ Create a saved filters feature that stores filter preferences locally
   ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users
   ☐ dockerize the app 
-  ☐ deploy the app on vercel
+  ☐ deploy the app on vercel / get a vps and configure from scratch
   ☐ redo front page with a better design
   ☐ highlight the seached text on the posts
   ☐ post content in markdown 
