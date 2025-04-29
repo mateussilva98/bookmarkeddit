@@ -65,11 +65,16 @@ export const Posts: FC = () => {
             const doc = new DOMParser().parseFromString(url, "text/html");
             return doc.documentElement.textContent || url;
           };
-          
+
           // Extract images from media_metadata if available
           const images: string[] = [];
-          if (post.data.media_metadata && typeof post.data.media_metadata === "object") {
-            Object.values(post.data.media_metadata as Record<string, MediaMetadata>).forEach(media => {
+          if (
+            post.data.media_metadata &&
+            typeof post.data.media_metadata === "object"
+          ) {
+            Object.values(
+              post.data.media_metadata as Record<string, MediaMetadata>
+            ).forEach((media) => {
               // Try to get the best quality image
               if (media.s && media.s.u) {
                 images.push(decodeHtmlEntities(media.s.u));
@@ -82,15 +87,17 @@ export const Posts: FC = () => {
               }
             });
           }
-          
+
           // If no images were found but there's a thumbnail, add it
-          if (images.length === 0 && 
-              post.data.thumbnail && 
-              post.data.thumbnail !== "self" && 
-              post.data.thumbnail !== "default") {
+          if (
+            images.length === 0 &&
+            post.data.thumbnail &&
+            post.data.thumbnail !== "self" &&
+            post.data.thumbnail !== "default"
+          ) {
             images.push(post.data.thumbnail);
           }
-          
+
           const postP: Post = {
             id: post.data.id,
             subreddit: post.data.subreddit,
@@ -102,9 +109,9 @@ export const Posts: FC = () => {
             score: post.data.score,
             media_metadata: post.data.media_metadata,
             thumbnail:
-              post.data.thumbnail && 
-              post.data.thumbnail !== "self" && 
-              post.data.thumbnail !== "default" 
+              post.data.thumbnail &&
+              post.data.thumbnail !== "self" &&
+              post.data.thumbnail !== "default"
                 ? post.data.thumbnail
                 : "",
             images: images.length > 0 ? images : undefined,
