@@ -93,10 +93,18 @@ export const Filters: FC<FiltersProps> = ({
     setCommunitySearch(e.target.value);
   };
 
-  // Filter communities based on search term
-  const filteredSubreddits = subredditCounts.filter(({ subreddit }) =>
-    subreddit.toLowerCase().includes(communitySearch.toLowerCase())
-  );
+  // Filter communities based on search term and sort by count in descending order
+  const filteredSubreddits = subredditCounts
+    .filter(({ subreddit }) =>
+      subreddit.toLowerCase().includes(communitySearch.toLowerCase())
+    )
+    .sort((a, b) => b.count - a.count);
+
+  // Sort type counts by count in descending order
+  const sortedTypeCounts = [...typeCounts].sort((a, b) => b.count - a.count);
+
+  // Sort NSFW counts by count in descending order
+  const sortedNSFWCounts = [...nsfwCounts].sort((a, b) => b.count - a.count);
 
   // Clear all filters
   const handleClearFilters = () => {
@@ -175,7 +183,7 @@ export const Filters: FC<FiltersProps> = ({
               showTypes ? styles.fadeIn : styles.fadeOut
             }`}
           >
-            {typeCounts.map(({ type, count }) => (
+            {sortedTypeCounts.map(({ type, count }) => (
               <div
                 className={styles.item}
                 key={type}
@@ -214,7 +222,7 @@ export const Filters: FC<FiltersProps> = ({
               showNSFW ? styles.fadeIn : styles.fadeOut
             }`}
           >
-            {nsfwCounts.map(({ nsfw, count }) => (
+            {sortedNSFWCounts.map(({ nsfw, count }) => (
               <div
                 className={styles.item}
                 key={nsfw}

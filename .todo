@@ -14,8 +14,8 @@ Next up:
   ✔ add loader @done(25-04-20 23:19)
   ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
   ✔ order by most recent saved, most upvotes, most comments @done(25-04-21 17:13)
-  ☐ improve post card design 
-    ☐ add thumbnail image 
+  ✔ improve post card design @done(25-04-29 23:08)
+    ✔ add thumbnail image @done(25-04-29 23:08)
   ☐ settings button that opens modal
     ✔ show only after logged in @done(25-04-21 19:48)
     ☐ dark mode
@@ -49,6 +49,7 @@ Next up:
   ☐ comment code
   ☐ show total saved posts
   ☐ show logged in user on top of the page (left side of settings button)
+  ☐ general mobile styling imporvements
 
 
 
