@@ -39,10 +39,30 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
       const content = item.querySelector<HTMLElement>(":scope > .post-content");
       if (!content) return;
 
-      const rowSpan = Math.ceil(
-        (content.getBoundingClientRect().height + rowGap) / (rowHeight + rowGap)
-      );
-      item.style.gridRowEnd = `span ${rowSpan}`;
+      // Wait for any images to load so we get accurate height calculations
+      const thumbnail = content.querySelector<HTMLImageElement>(".thumbnail");
+
+      const calculateRowSpan = () => {
+        const contentHeight = content.getBoundingClientRect().height;
+        const rowSpan = Math.ceil(
+          (contentHeight + rowGap) / (rowHeight + rowGap)
+        );
+        item.style.gridRowEnd = `span ${rowSpan}`;
+      };
+
+      if (thumbnail && !thumbnail.complete) {
+        // If thumbnail exists and is not loaded yet, wait for it to load
+        thumbnail.onload = () => {
+          calculateRowSpan();
+        };
+        // Also set a fallback in case the image fails to load
+        thumbnail.onerror = () => {
+          calculateRowSpan();
+        };
+      } else {
+        // No thumbnail or thumbnail already loaded
+        calculateRowSpan();
+      }
     });
   }, [store.layout]);
 

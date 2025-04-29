@@ -1,7 +1,7 @@
-import { FC, useEffect, useState, useMemo } from "react";
+import { FC, useEffect, useState, useMemo, useCallback } from "react";
 import { useStore } from "../hooks/use-store";
 import { Header } from "../components/Header";
-import { Post } from "../types/Post";
+import { Post, MediaMetadata } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
 import { Loader } from "../components/ui/Loader";
@@ -29,6 +29,11 @@ export const Posts: FC = () => {
   const handleCloseSettings = () => {
     setIsSettingsOpen(false);
   };
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((newFilters: SelectedFilters) => {
+    setActiveFilters(newFilters);
+  }, []);
 
   useEffect(() => {
     const accessToken = store.access_token;
@@ -60,23 +65,19 @@ export const Posts: FC = () => {
             subreddit: post.data.subreddit,
             author: post.data.author,
             createdAt: post.data.created,
-            title: post.data.title
-              ? post.data.title
-              : post.data.link_title
-              ? post.data.link_title
-              : "",
-            description: post.data.selftext
-              ? post.data.selftext
-              : post.data.body
-              ? post.data.body
-              : "",
-            url: post.data.url ? post.data.url : post.data.link_url,
+            title: post.data.title || post.data.link_title || "",
+            description: post.data.selftext || post.data.body || "",
+            url: post.data.url || post.data.link_url || "",
             score: post.data.score,
-            mediaMetadata: post.data.media_metadata
-              ? post.data.media_metadata
-              : [],
-            thumbnail: post.data.thumbnail ? post.data.thumbnail : "",
-            type: post.kind == "t3" ? "Post" : "Comment",
+            /* mediaMetadata: post.data.media_metadata || [], */
+            thumbnail:
+              post.data.media_metadata &&
+              typeof post.data.media_metadata === "object"
+                ? Object.values(
+                    post.data.media_metadata as Record<string, MediaMetadata>
+                  )[0]?.p?.at(-1)?.u || ""
+                : "",
+            type: post.kind === "t3" ? "Post" : "Comment",
             nsfw: post.data.over_18,
             commentCount: post.data.num_comments,
           };
@@ -92,59 +93,50 @@ export const Posts: FC = () => {
     fetchSavedPosts();
   }, [store.access_token]); // Re-run effect if token changes
 
-  // Calculate distinct subreddits and their counts, ordered by count descending
+  // Generate filter data from posts
   const subredditCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    posts.forEach((post) => {
-      counts[post.subreddit] = (counts[post.subreddit] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([subreddit, count]) => ({
-        subreddit,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count); // Sort by count descending
+    const counts = posts.reduce((acc, post) => {
+      const subreddit = post.subreddit;
+      acc[subreddit] = (acc[subreddit] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(counts).map(([subreddit, count]) => ({
+      subreddit,
+      count,
+    }));
   }, [posts]);
 
-  // Calculate distinct types and their counts, ordered by count descending
   const typeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    posts.forEach((post) => {
-      counts[post.type] = (counts[post.type] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([type, count]) => ({
-        type,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count); // Sort by count descending
+    const counts = posts.reduce((acc, post) => {
+      const type = post.type;
+      acc[type] = (acc[type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(counts).map(([type, count]) => ({
+      type,
+      count,
+    }));
   }, [posts]);
 
-  // Calculate distinct NSFW counts, categorized as "Only NSFW posts" or "Only non-NSFW posts", ordered by count descending. Send empty array if no posts are found.
   const nsfwCounts = useMemo(() => {
-    if (posts.length === 0) {
-      return [];
-    }
-    const counts: Record<string, number> = {
-      "Only NSFW posts": 0,
-      "Only non-NSFW posts": 0,
-    };
-    posts.forEach((post) => {
-      const key = post.nsfw ? "Only NSFW posts" : "Only non-NSFW posts";
-      counts[key] = (counts[key] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([nsfw, count]) => ({
-        nsfw,
-        count,
-      }))
-      .sort((a, b) => b.count - a.count); // Sort by count descending
-  }, [posts]);
+    let nsfwCount = 0;
+    let nonNsfwCount = 0;
 
-  // Handle filter change from Filters component
-  const handleFilterChange = (filters: SelectedFilters) => {
-    setActiveFilters(filters);
-  };
+    posts.forEach((post) => {
+      if (post.nsfw) {
+        nsfwCount++;
+      } else {
+        nonNsfwCount++;
+      }
+    });
+
+    return [
+      { nsfw: "Only NSFW posts", count: nsfwCount },
+      { nsfw: "Only non-NSFW posts", count: nonNsfwCount },
+    ];
+  }, [posts]);
 
   // Apply filters to posts
   const filteredPosts = useMemo(() => {

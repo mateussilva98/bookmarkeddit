@@ -41,7 +41,7 @@ Next up:
   ☐ Create a saved filters feature that stores filter preferences locally
   ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users
   ☐ dockerize the app 
-  ☐ deploy the app on vercel / get a vps and configure from scratch
+  ☐ deploy the app on vercel / get a vps and configure from scratch (caddy, nginx, etc.)
   ☐ redo front page with a better design
   ☐ highlight the seached text on the posts
   ☐ post content in markdown 

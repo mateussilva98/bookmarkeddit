@@ -1,3 +1,19 @@
+export type MediaMetadata = {
+  status: string;
+  e: string;
+  m: string;
+  p: Array<{
+    y: number;
+    x: number;
+    u?: string;
+  }>;
+  s?: {
+    y: number;
+    x: number;
+    u?: string;
+  };
+};
+
 export type Post = {
   id: string;
   subreddit: string;
@@ -7,7 +23,7 @@ export type Post = {
   description?: string;
   url: string;
   score: number;
-  mediaMetadata?: Array<{ [key: string]: any }>;
+  media_metadata?: { [key: string]: MediaMetadata };
   thumbnail?: string;
   type: string;
   nsfw: boolean;

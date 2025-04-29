@@ -111,6 +111,15 @@
   }
 }
 
+.thumbnail {
+  width: 100%;
+  max-height: 500px; /* Limit maximum height */
+  object-fit: contain; /* Change from cover to contain to preserve aspect ratio */
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
 .bottom {
   display: flex;
   justify-content: space-between;
