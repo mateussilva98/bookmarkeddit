@@ -8,13 +8,45 @@ interface ImageSliderProps {
 export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
+  const [isVisible, setIsVisible] = useState(false);
+
   const firstImageRef = useRef<HTMLImageElement | null>(null);
+  const sliderRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
-    // Reset container height when images change
+    // Reset when images change
     setContainerHeight(null);
     setCurrentImageIndex(0);
+    setLoadedImages(new Set([0]));
   }, [images]);
+
+  useEffect(() => {
+    // Initialize Intersection Observer
+    if (sliderRef.current && !observerRef.current) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setIsVisible(true);
+          } else {
+            setIsVisible(false);
+          }
+        },
+        {
+          threshold: 0.1, // Trigger when at least 10% of the slider is visible
+        }
+      );
+
+      observerRef.current.observe(sliderRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // When first image loads, set its height as the container height
@@ -26,6 +58,33 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
       setContainerHeight(firstImageRef.current.offsetHeight);
     }
   }, [currentImageIndex, firstImageRef.current?.complete]);
+
+  useEffect(() => {
+    // Preload current image and adjacent images when slider is visible
+    if (isVisible && images.length > 0) {
+      const imagesToLoad = new Set<number>([currentImageIndex]);
+
+      // Preload previous image if available
+      if (currentImageIndex > 0) {
+        imagesToLoad.add(currentImageIndex - 1);
+      } else if (images.length > 1) {
+        imagesToLoad.add(images.length - 1);
+      }
+
+      // Preload next image if available
+      if (currentImageIndex < images.length - 1) {
+        imagesToLoad.add(currentImageIndex + 1);
+      } else if (images.length > 1) {
+        imagesToLoad.add(0);
+      }
+
+      setLoadedImages((prev) => {
+        const newSet = new Set(prev);
+        imagesToLoad.forEach((idx) => newSet.add(idx));
+        return newSet;
+      });
+    }
+  }, [currentImageIndex, isVisible, images.length]);
 
   if (!images || images.length === 0) {
     return null;
@@ -60,18 +119,31 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
   };
 
   return (
-    <div className={styles.slider}>
+    <div className={styles.slider} ref={sliderRef}>
       <div
         className={styles.sliderContent}
         style={containerHeight ? { height: `${containerHeight}px` } : undefined}
       >
-        <img
-          ref={currentImageIndex === 0 ? firstImageRef : null}
-          src={images[currentImageIndex]}
-          alt={`Image ${currentImageIndex + 1} of ${images.length}`}
-          loading="lazy"
-          onLoad={handleImageLoad}
-        />
+        {/* Only render image elements for images that should be loaded */}
+        {images.map(
+          (src, index) =>
+            loadedImages.has(index) && (
+              <img
+                key={index}
+                ref={index === 0 ? firstImageRef : null}
+                src={src}
+                alt={`Image ${index + 1} of ${images.length}`}
+                loading="lazy"
+                onLoad={handleImageLoad}
+                style={{
+                  display: index === currentImageIndex ? "block" : "none",
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                }}
+              />
+            )
+        )}
 
         <button
           className={`${styles.navigationButton} ${styles.prevButton}`}

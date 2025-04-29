@@ -43,13 +43,20 @@ Next up:
   ☐ dockerize the app 
   ☐ deploy the app on vercel / get a vps and configure from scratch (caddy, nginx, etc.)
   ☐ redo front page with a better design
-  ☐ highlight the seached text on the posts
+  ☐ highlight the seached text on the posts (and show how many posts matched)
   ☐ post content in markdown 
   ☐ get loggedin user after token
   ☐ comment code
   ☐ show total saved posts
   ☐ show logged in user on top of the page (left side of settings button)
   ☐ general mobile styling imporvements
+  ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
+  ☐ support for videos (example: Girl has amazing... 6th sense?)
+
+
+
+
+  ☐ when finalized, create reddit posts to show off the app
 
 
 
