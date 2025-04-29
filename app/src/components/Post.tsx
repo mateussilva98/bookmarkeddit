@@ -7,6 +7,7 @@ import { Comment } from "./icons/Comment";
 import { Open } from "./icons/Open";
 import { Bookmark } from "./icons/Bookmark";
 import { Share } from "./icons/Share";
+import { ImageSlider } from "./ImageSlider";
 
 interface PostProps {
   post: Post;
@@ -66,44 +67,6 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
     return doc.documentElement.textContent || url;
   };
 
-  // Function to extract image URL from media_metadata
-  const getImageUrl = () => {
-    if (post.media_metadata) {
-      // Get first image in the media_metadata object
-      const firstKey = Object.keys(post.media_metadata)[0];
-      if (firstKey) {
-        const media = post.media_metadata[firstKey];
-
-        // Try to get the best quality image
-        // First check if 's' property exists (highest quality usually)
-        if (media.s && media.s.u) {
-          return decodeHtmlEntities(media.s.u);
-        }
-
-        // If no 's', try the largest in the 'p' array
-        if (media.p && media.p.length > 0) {
-          const largestPreview = media.p[media.p.length - 1];
-          if (largestPreview.u) {
-            return decodeHtmlEntities(largestPreview.u);
-          }
-        }
-      }
-    }
-
-    // Fallback to thumbnail if media_metadata doesn't have usable images
-    if (
-      post.thumbnail &&
-      post.thumbnail !== "self" &&
-      post.thumbnail !== "default"
-    ) {
-      return decodeHtmlEntities(post.thumbnail);
-    }
-
-    return null;
-  };
-
-  const imageUrl = getImageUrl();
-
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -150,14 +113,9 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         <p className={styles.description}>{post.description}</p>
       </div>
 
-      {/* Display image if available from media_metadata or thumbnail */}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt="Post image"
-          className={styles.thumbnail}
-          loading="lazy"
-        />
+      {/* Display image slider if we have multiple images, or a single image if we just have one */}
+      {post.images && post.images.length > 0 && (
+        <ImageSlider images={post.images} />
       )}
 
       <div className={styles.bottom}>

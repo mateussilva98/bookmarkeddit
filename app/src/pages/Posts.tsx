@@ -60,6 +60,37 @@ export const Posts: FC = () => {
         console.log("Fetched saved posts:", data);
 
         for (const post of data.data.children) {
+          // Function to decode HTML entities in URLs
+          const decodeHtmlEntities = (url: string): string => {
+            const doc = new DOMParser().parseFromString(url, "text/html");
+            return doc.documentElement.textContent || url;
+          };
+          
+          // Extract images from media_metadata if available
+          const images: string[] = [];
+          if (post.data.media_metadata && typeof post.data.media_metadata === "object") {
+            Object.values(post.data.media_metadata as Record<string, MediaMetadata>).forEach(media => {
+              // Try to get the best quality image
+              if (media.s && media.s.u) {
+                images.push(decodeHtmlEntities(media.s.u));
+              } else if (media.p && media.p.length > 0) {
+                // Get the largest preview if s.u is not available
+                const largestPreview = media.p[media.p.length - 1];
+                if (largestPreview.u) {
+                  images.push(decodeHtmlEntities(largestPreview.u));
+                }
+              }
+            });
+          }
+          
+          // If no images were found but there's a thumbnail, add it
+          if (images.length === 0 && 
+              post.data.thumbnail && 
+              post.data.thumbnail !== "self" && 
+              post.data.thumbnail !== "default") {
+            images.push(post.data.thumbnail);
+          }
+          
           const postP: Post = {
             id: post.data.id,
             subreddit: post.data.subreddit,
@@ -69,14 +100,14 @@ export const Posts: FC = () => {
             description: post.data.selftext || post.data.body || "",
             url: post.data.url || post.data.link_url || "",
             score: post.data.score,
-            /* mediaMetadata: post.data.media_metadata || [], */
+            media_metadata: post.data.media_metadata,
             thumbnail:
-              post.data.media_metadata &&
-              typeof post.data.media_metadata === "object"
-                ? Object.values(
-                    post.data.media_metadata as Record<string, MediaMetadata>
-                  )[0]?.p?.at(-1)?.u || ""
+              post.data.thumbnail && 
+              post.data.thumbnail !== "self" && 
+              post.data.thumbnail !== "default" 
+                ? post.data.thumbnail
                 : "",
+            images: images.length > 0 ? images : undefined,
             type: post.kind === "t3" ? "Post" : "Comment",
             nsfw: post.data.over_18,
             commentCount: post.data.num_comments,

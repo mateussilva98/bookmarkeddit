@@ -25,6 +25,7 @@ export type Post = {
   score: number;
   media_metadata?: { [key: string]: MediaMetadata };
   thumbnail?: string;
+  images?: string[]; // Add array to store multiple image URLs
   type: string;
   nsfw: boolean;
   commentCount: number;
