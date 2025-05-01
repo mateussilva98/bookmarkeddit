@@ -28,6 +28,10 @@ interface StoreProps {
   layout: Layout;
   sortBy: SortOption;
   compactness: Compactness;
+  // New settings
+  showImages: boolean;
+  compactText: boolean;
+  blurNSFW: boolean;
   //sortOrder: SortOrder;
   //language: Language;
 }
@@ -39,6 +43,10 @@ const initialStore: StoreProps = {
   layout: "grid",
   sortBy: "recent",
   compactness: "normal",
+  // Initialize new settings with default values (all enabled)
+  showImages: true,
+  compactText: true,
+  blurNSFW: true,
 };
 
 export const StoreContext = createContext<{
@@ -95,6 +103,24 @@ export const useStore = () => {
     setStore((currentStore) => ({ ...currentStore, compactness }));
   }
 
+  function toggleShowImages() {
+    const newValue = !store.showImages;
+    localStorage.setItem("showImages", newValue.toString());
+    setStore((currentStore) => ({ ...currentStore, showImages: newValue }));
+  }
+
+  function toggleCompactText() {
+    const newValue = !store.compactText;
+    localStorage.setItem("compactText", newValue.toString());
+    setStore((currentStore) => ({ ...currentStore, compactText: newValue }));
+  }
+
+  function toggleBlurNSFW() {
+    const newValue = !store.blurNSFW;
+    localStorage.setItem("blurNSFW", newValue.toString());
+    setStore((currentStore) => ({ ...currentStore, blurNSFW: newValue }));
+  }
+
   function setAccessToken(token: string) {
     localStorage.setItem("access_token", token);
     setStore((currentStore) => ({ ...currentStore, access_token: token }));
@@ -116,6 +142,9 @@ export const useStore = () => {
     changeLayout,
     changeSortBy,
     changeCompactness,
+    toggleShowImages,
+    toggleCompactText,
+    toggleBlurNSFW,
     setAccessToken,
     setRefreshToken,
     getAccessToken,
@@ -133,6 +162,16 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const layout = localStorage.getItem("layout");
     const sortBy = localStorage.getItem("sortBy");
     const compactness = localStorage.getItem("compactness");
+
+    // Load new settings
+    const showImagesStr = localStorage.getItem("showImages");
+    const compactTextStr = localStorage.getItem("compactText");
+    const blurNSFWStr = localStorage.getItem("blurNSFW");
+
+    const showImages = showImagesStr !== null ? showImagesStr === "true" : true;
+    const compactText =
+      compactTextStr !== null ? compactTextStr === "true" : true;
+    const blurNSFW = blurNSFWStr !== null ? blurNSFWStr === "true" : true;
 
     if (theme) {
       document.body.classList.add(theme);
@@ -167,6 +206,14 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
         compactness: compactness as Compactness,
       }));
     }
+
+    // Update store with settings
+    setStore((currentStore) => ({
+      ...currentStore,
+      showImages,
+      compactText,
+      blurNSFW,
+    }));
   }, []);
 
   return (

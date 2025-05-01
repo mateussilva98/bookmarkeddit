@@ -1,6 +1,9 @@
 import { FC } from "react";
 import { X } from "./icons/X";
+import { Sun } from "./icons/Sun";
+import { Moon } from "./icons/Moon";
 import styles from "./SettingsModal.module.scss";
+import { useStore } from "../hooks/use-store";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -8,6 +11,14 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal: FC<SettingsModalProps> = ({ isOpen, onClose }) => {
+  const {
+    store,
+    changeTheme,
+    toggleCompactText,
+    toggleShowImages,
+    toggleBlurNSFW,
+  } = useStore();
+
   if (!isOpen) return null;
 
   return (
@@ -20,8 +31,75 @@ export const SettingsModal: FC<SettingsModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div className={styles.content}>
-          {/* Add your settings options here */}
-          <p>Settings options coming soon...</p>
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.settingTitle}>Enable Dark Mode</div>
+              <div className={styles.settingDescription}>
+                Change the appearance of the app
+              </div>
+            </div>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={store.theme === "dark"}
+                onChange={changeTheme}
+              />
+              <span className={styles.slider}>
+                {store.theme === "dark" ? <Moon /> : <Sun />}
+              </span>
+            </label>
+          </div>
+
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.settingTitle}>Compact Text</div>
+              <div className={styles.settingDescription}>
+                Display text in a more compact format
+              </div>
+            </div>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={store.compactText}
+                onChange={toggleCompactText}
+              />
+              <span className={styles.slider}></span>
+            </label>
+          </div>
+
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.settingTitle}>Show Images</div>
+              <div className={styles.settingDescription}>
+                Display images in posts
+              </div>
+            </div>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={store.showImages}
+                onChange={toggleShowImages}
+              />
+              <span className={styles.slider}></span>
+            </label>
+          </div>
+
+          <div className={styles.settingItem}>
+            <div className={styles.settingInfo}>
+              <div className={styles.settingTitle}>Blur NSFW Images</div>
+              <div className={styles.settingDescription}>
+                Blur images marked as not safe for work
+              </div>
+            </div>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={store.blurNSFW}
+                onChange={toggleBlurNSFW}
+              />
+              <span className={styles.slider}></span>
+            </label>
+          </div>
         </div>
       </div>
     </div>
