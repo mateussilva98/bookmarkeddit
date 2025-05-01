@@ -20,7 +20,7 @@ Next up:
     ✔ show only after logged in @done(25-04-21 19:48)
     ✔ dark mode @done(25-05-01 01:36)
     ✔ compact or no compact in settings @done(25-05-01 01:36)
-      ☐ implement that logic on the posts page - (elipsis on title and description) - make it compact by default
+      ✔ implement that logic on the posts page - (elipsis on title and description) - make it compact by default @done(25-05-01 21:30)
     ✔ blur images on nsfw posts @done(25-05-01 01:36)
       ☐ implement that logic 
     ✔ show or hide images @done(25-05-01 01:36)
@@ -34,15 +34,12 @@ Next up:
   ☐ add locale
   ☐ export to csv file
   ☐ responsive for mobile
-  ☐ add setting for layout? not sure about it yet
-  ☐ Add text customization (font size, line spacing)
-  ☐ Implement full-text search within post content (not just titles)
-  ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
-  ☐ Create a saved filters feature that stores filter preferences locally
+  ✔ Implement full-text search within post content (not just titles) @done(25-05-01 21:38)
+  ✔ Create a saved filters feature that stores filter preferences locally @done(25-05-01 21:31)
   ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users
   ☐ dockerize the app 
   ☐ deploy the app on vercel / get a vps and configure from scratch (caddy, nginx, etc.)
-  ☐ redo front page with a better design
+  ☐ redo front page with a better design and features description
   ☐ highlight the seached text on the posts (and show how many posts matched)
   ☐ post content in markdown 
   ☐ get loggedin user after token
@@ -51,12 +48,21 @@ Next up:
   ☐ show logged in user on top of the page (left side of settings button)
   ☐ general mobile styling imporvements
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
-  ☐ support for videos (example: Girl has amazing... 6th sense?)
+  ☐ support for videos (example: Girl has amazing... 6th sense? or Still kinda cool ngl)
+  ☐ esc or click outside to close modal
 
 
 
 
   ☐ when finalized, create reddit posts to show off the app
+
+
+
+  Backlog (features to consider for future updates):
+  ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
+  ☐ Add text customization (font size, line spacing)
+
+
 
 
 

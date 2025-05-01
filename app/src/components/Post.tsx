@@ -8,6 +8,7 @@ import { Open } from "./icons/Open";
 import { Bookmark } from "./icons/Bookmark";
 import { Share } from "./icons/Share";
 import { ImageSlider } from "./ImageSlider";
+import { useStore } from "../hooks/use-store";
 
 interface PostProps {
   post: Post;
@@ -40,6 +41,8 @@ const calculateTimeAgo = (timestamp: number): string => {
 };
 
 export const PostComponent: FC<PostProps> = ({ post }) => {
+  const { store } = useStore();
+
   const share = (url: string) => {
     if (navigator.share) {
       navigator
@@ -100,7 +103,9 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </div>
       )}
 
-      <h3>{post.title}</h3>
+      <h3 className={store.compactText ? styles.compactTitle : ""}>
+        {post.title}
+      </h3>
       <div className={styles.descriptionContainer}>
         {post.type == "Comment" && (
           <div className={styles.commentLine}>
@@ -110,7 +115,13 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
             <div /* className={styles.commentLineBottomRight} */></div>
           </div>
         )}
-        <p className={styles.description}>{post.description}</p>
+        <p
+          className={`${styles.description} ${
+            store.compactText ? styles.compactDescription : ""
+          }`}
+        >
+          {post.description}
+        </p>
       </div>
 
       {/* Display image slider if we have multiple images, or a single image if we just have one */}

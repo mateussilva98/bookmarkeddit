@@ -37,6 +37,15 @@
   }
 }
 
+// Compact title styles
+.compactTitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .nsfw {
   color: red;
   border: 1px solid red;
@@ -108,6 +117,15 @@
   .description {
     flex: 1;
     color: var(--color-secondary) !important;
+  }
+
+  // Compact description styles
+  .compactDescription {
+    display: -webkit-box;
+    -webkit-line-clamp: 15;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
