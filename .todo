@@ -24,7 +24,7 @@ Next up:
     ✔ blur images on nsfw posts @done(25-05-01 01:36)
       ☐ implement that logic 
     ✔ show or hide images @done(25-05-01 01:36)
-      ☐ implement that logic
+      ✔ implement that logic @done(25-05-01 21:49)
   ☐ add "no saved posts" 
   ✔ find a way to identify that they are comments @done(25-04-21 21:16)
   ✔ fix on url on comments @done(25-04-23 14:57)
@@ -50,6 +50,7 @@ Next up:
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
   ☐ support for videos (example: Girl has amazing... 6th sense? or Still kinda cool ngl)
   ☐ esc or click outside to close modal
+  ☐ button to force refresh the posts (fetch new posts from reddit)
 
 
 

@@ -124,8 +124,8 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </p>
       </div>
 
-      {/* Display image slider if we have multiple images, or a single image if we just have one */}
-      {post.images && post.images.length > 0 && (
+      {/* Display image slider if showImages is enabled and we have images */}
+      {store.showImages && post.images && post.images.length > 0 && (
         <ImageSlider images={post.images} />
       )}
 

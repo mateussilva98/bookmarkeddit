@@ -114,7 +114,7 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
     };
   }, []);
 
-  // Effect for resizing grid items on posts change, layout change, or compactText setting change
+  // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
   useEffect(() => {
     resizeGridItems();
 
@@ -138,7 +138,13 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", resizeGridItems);
     };
-  }, [sortedPosts, store.layout, store.compactText, resizeGridItems]);
+  }, [
+    sortedPosts,
+    store.layout,
+    store.compactText,
+    store.showImages,
+    resizeGridItems,
+  ]);
 
   // Function to scroll back to top
   const scrollToTop = () => {
