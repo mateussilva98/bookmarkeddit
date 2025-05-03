@@ -117,6 +117,7 @@
   display: flex;
   flex-direction: column;
   /* gap: 2rem; */
+  position: relative; /* Added for overlay positioning */
 
   &.grid {
     /* True masonry with items placed horizontally first */
@@ -130,6 +131,57 @@
     display: flex;
     flex-direction: column;
     /* gap: 2rem; */
+  }
+
+  &.calculating {
+    min-height: 200px; /* Ensure there's enough space for the loading indicator */
+  }
+}
+
+/* Hidden content while grid calculates */
+.hiddenContent {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+
+  /* When not in hidden state, fade in smoothly */
+  &:not(.hiddenContent) {
+    opacity: 1;
+  }
+}
+
+/* Loading indicator styles */
+.calculatingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary);
+  z-index: 5;
+
+  p {
+    margin-top: 1rem;
+    color: var(--color-primary);
+    font-size: 1rem;
+  }
+}
+
+.calculatingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 69, 0, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--orange);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

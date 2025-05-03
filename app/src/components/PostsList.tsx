@@ -19,11 +19,18 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
   const postsListRef = useRef<HTMLDivElement>(null);
   const postsContainerRef = useRef<HTMLDivElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [isGridCalculating, setIsGridCalculating] = useState(true);
   const { store, changeLayout, changeSortBy } = useStore();
 
   // Resize grid items for masonry layout
   const resizeGridItems = useCallback(() => {
-    if (store.layout !== "grid" || !postsContainerRef.current) return;
+    if (store.layout !== "grid" || !postsContainerRef.current) {
+      setIsGridCalculating(false);
+      return;
+    }
+
+    // Set grid calculating to true whenever we start calculating positions
+    setIsGridCalculating(true);
 
     const grid = postsContainerRef.current;
     const rowHeight = parseInt(
@@ -34,10 +41,22 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
     );
 
     const items = grid.querySelectorAll<HTMLElement>(":scope > div");
+    let pendingCalculations = items.length;
+
+    if (pendingCalculations === 0) {
+      setIsGridCalculating(false);
+      return;
+    }
 
     items.forEach((item) => {
       const content = item.querySelector<HTMLElement>(":scope > .post-content");
-      if (!content) return;
+      if (!content) {
+        pendingCalculations--;
+        if (pendingCalculations === 0) {
+          setIsGridCalculating(false);
+        }
+        return;
+      }
 
       // Wait for any images to load so we get accurate height calculations
       const thumbnail = content.querySelector<HTMLImageElement>(".thumbnail");
@@ -48,6 +67,13 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
           (contentHeight + rowGap) / (rowHeight + rowGap)
         );
         item.style.gridRowEnd = `span ${rowSpan}`;
+
+        // Decrement pending calculations counter
+        pendingCalculations--;
+        if (pendingCalculations === 0) {
+          // All calculations are done, update state
+          setIsGridCalculating(false);
+        }
       };
 
       if (thumbnail && !thumbnail.complete) {
@@ -116,6 +142,13 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
 
   // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
   useEffect(() => {
+    // Start a new grid calculation process
+    if (store.layout === "grid") {
+      setIsGridCalculating(true);
+    } else {
+      setIsGridCalculating(false);
+    }
+
     resizeGridItems();
 
     // Use ResizeObserver to monitor changes in post sizes
@@ -210,11 +243,20 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
         </div>
       </div>
       <div
-        className={`${styles.postsContainer} ${styles[store.layout]}`}
+        className={`${styles.postsContainer} ${styles[store.layout]} ${
+          isGridCalculating && store.layout === "grid" ? styles.calculating : ""
+        }`}
         ref={postsContainerRef}
       >
         {sortedPosts.map((post) => (
-          <div key={post.id}>
+          <div
+            key={post.id}
+            className={
+              isGridCalculating && store.layout === "grid"
+                ? styles.hiddenContent
+                : ""
+            }
+          >
             <div className="post-content">
               <PostComponent post={post} />
             </div>
@@ -231,6 +273,13 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
         >
           <Up />
         </button>
+      )}
+
+      {isGridCalculating && store.layout === "grid" && (
+        <div className={styles.calculatingOverlay}>
+          <div className={styles.calculatingSpinner}></div>
+          <p>Arranging posts...</p>
+        </div>
       )}
     </div>
   );
