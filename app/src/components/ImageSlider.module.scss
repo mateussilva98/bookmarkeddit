@@ -29,6 +29,7 @@
 .singleImage {
   width: 100%;
   margin: 1rem 0;
+  position: relative;
 
   img {
     width: 100%;
@@ -81,4 +82,74 @@
   padding: 0.25rem 0.5rem;
   border-radius: 1rem;
   font-size: 0.75rem;
+}
+
+// Blur effect for NSFW content
+.blurContainer {
+  position: relative;
+}
+
+.blurredImage {
+  filter: blur(15px);
+  -webkit-filter: blur(15px);
+  transition: filter 0.3s ease;
+}
+
+.revealOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 3;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Tooltip wrapper and tooltip styles - similar to Post.module.scss */
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+
+  &:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 4;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-primary);
+  color: var(--color-primary);
+  text-align: center;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  /* Add a small triangle pointer */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--bg-primary) transparent transparent transparent;
+  }
 }

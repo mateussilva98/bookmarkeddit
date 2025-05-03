@@ -1,15 +1,21 @@
 import { FC, useState, useEffect, useRef } from "react";
 import styles from "./ImageSlider.module.scss";
+import { Reveal } from "./icons/Reveal";
 
 interface ImageSliderProps {
   images: string[];
+  shouldBlur?: boolean;
 }
 
-export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
+export const ImageSlider: FC<ImageSliderProps> = ({
+  images,
+  shouldBlur = false,
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [containerHeight, setContainerHeight] = useState<number | null>(null);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
   const [isVisible, setIsVisible] = useState(false);
+  const [isBlurred, setIsBlurred] = useState(shouldBlur);
 
   const firstImageRef = useRef<HTMLImageElement | null>(null);
   const sliderRef = useRef<HTMLDivElement | null>(null);
@@ -21,6 +27,11 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
     setCurrentImageIndex(0);
     setLoadedImages(new Set([0]));
   }, [images]);
+
+  // Reset blur state when shouldBlur prop changes
+  useEffect(() => {
+    setIsBlurred(shouldBlur);
+  }, [shouldBlur]);
 
   useEffect(() => {
     // Initialize Intersection Observer
@@ -90,11 +101,40 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
     return null;
   }
 
+  const handleRevealClick = () => {
+    setIsBlurred(false);
+  };
+
   // Show just the image if there's only one
   if (images.length === 1) {
     return (
-      <div className={styles.singleImage}>
-        <img src={images[0]} alt="Post content" loading="lazy" />
+      <div
+        className={`${styles.singleImage} ${
+          isBlurred ? styles.blurContainer : ""
+        }`}
+      >
+        <img
+          src={images[0]}
+          alt="Post content"
+          loading="lazy"
+          className={isBlurred ? styles.blurredImage : ""}
+        />
+        {isBlurred && (
+          <div className={styles.revealOverlay}>
+            <div className={styles.tooltipWrapper}>
+              <button
+                className="btn-icon"
+                onClick={handleRevealClick}
+                aria-label="Reveal NSFW content"
+              >
+                <Reveal />
+              </button>
+              <span className={styles.tooltip}>
+                Click to reveal NSFW content
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -119,7 +159,10 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
   };
 
   return (
-    <div className={styles.slider} ref={sliderRef}>
+    <div
+      className={`${styles.slider} ${isBlurred ? styles.blurContainer : ""}`}
+      ref={sliderRef}
+    >
       <div
         className={styles.sliderContent}
         style={containerHeight ? { height: `${containerHeight}px` } : undefined}
@@ -135,6 +178,7 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
                 alt={`Image ${index + 1} of ${images.length}`}
                 loading="lazy"
                 onLoad={handleImageLoad}
+                className={isBlurred ? styles.blurredImage : ""}
                 style={{
                   display: index === currentImageIndex ? "block" : "none",
                   width: "100%",
@@ -164,6 +208,23 @@ export const ImageSlider: FC<ImageSliderProps> = ({ images }) => {
         <div className={styles.paginationIndicator}>
           {currentImageIndex + 1} / {images.length}
         </div>
+
+        {isBlurred && (
+          <div className={styles.revealOverlay}>
+            <div className={styles.tooltipWrapper}>
+              <button
+                className="btn-icon"
+                onClick={handleRevealClick}
+                aria-label="Reveal NSFW content"
+              >
+                <Reveal />
+              </button>
+              <span className={styles.tooltip}>
+                Click to reveal NSFW content
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -126,7 +126,10 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
 
       {/* Display image slider if showImages is enabled and we have images */}
       {store.showImages && post.images && post.images.length > 0 && (
-        <ImageSlider images={post.images} />
+        <ImageSlider
+          images={post.images}
+          shouldBlur={store.blurNSFW && post.nsfw}
+        />
       )}
 
       <div className={styles.bottom}>
