@@ -4,6 +4,7 @@ import { Up } from "./icons/Up";
 import { Down } from "./icons/Down";
 import { Refresh } from "./icons/Refresh";
 import { Tooltip } from "./ui/Tooltip";
+import { useStore } from "../hooks/use-store";
 
 type SubredditCount = {
   subreddit: string;
@@ -24,6 +25,7 @@ type FiltersProps = {
   onFilterChange: (filters: SelectedFilters) => void; // Callback for when filters change
   totalPosts: number; // Total number of saved posts
   onRefresh: () => void; // Callback to refresh posts
+  onToggleVisibility?: () => void; // Optional for backward compatibility
 };
 
 export const Filters: FC<FiltersProps> = ({
@@ -33,7 +35,10 @@ export const Filters: FC<FiltersProps> = ({
   onFilterChange,
   totalPosts,
   onRefresh,
+  onToggleVisibility,
 }) => {
+  const { toggleFiltersVisibility } = useStore();
+
   const [showCommunities, setShowCommunities] = useState(true);
   const [showTypes, setShowTypes] = useState(true);
   const [showNSFW, setShowNSFW] = useState(true);
@@ -127,6 +132,15 @@ export const Filters: FC<FiltersProps> = ({
     });
   };
 
+  // Use the callback from props if provided, otherwise use the one from the store
+  const handleToggleVisibility = () => {
+    if (onToggleVisibility) {
+      onToggleVisibility();
+    } else {
+      toggleFiltersVisibility();
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div className={styles.totalPosts}>
@@ -140,7 +154,9 @@ export const Filters: FC<FiltersProps> = ({
             onClick={onRefresh}
             aria-label="Refresh saved posts"
           >
-            <Refresh />
+            <div className={styles.refreshIcon}>
+              <Refresh />
+            </div>
           </button>
         </Tooltip>
       </div>
@@ -263,9 +279,14 @@ export const Filters: FC<FiltersProps> = ({
           </div>
         )}
       </div>
-      <button className={styles.clearFilters} onClick={handleClearFilters}>
-        Clear filters
-      </button>
+      <div className={styles.actionButtons}>
+        <button className={styles.clearFilters} onClick={handleClearFilters}>
+          Clear filters
+        </button>
+        <button className={styles.hideButton} onClick={handleToggleVisibility}>
+          Hide filters
+        </button>
+      </div>
     </div>
   );
 };

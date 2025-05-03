@@ -12,9 +12,35 @@
   height: 100%; /* Ensure full height */
 }
 
+/* Filter toggle button when filters are hidden */
+.filtersToggle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  background-color: var(--bg-secondary);
+  border-right: var(--border);
+  height: 100%;
+
+  .toggleIcon {
+    font-size: 16px;
+    //color: var(--color-secondary);
+  }
+
+  /*  button {
+    padding: 6px;
+    &:hover {
+      background-color: var(--bg-primary);
+    }
+  } */
+}
+
 .postsList {
   flex: 1; /* Take the remaining space */
   height: 100%; /* Ensure full height */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Error state styling */

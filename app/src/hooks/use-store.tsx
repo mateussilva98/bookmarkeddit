@@ -45,6 +45,7 @@ interface StoreProps {
   showImages: boolean;
   compactText: boolean;
   blurNSFW: boolean;
+  showFilters: boolean; // New property for filters visibility
   auth: AuthState;
 }
 
@@ -56,6 +57,7 @@ const initialStore: StoreProps = {
   showImages: true,
   compactText: true,
   blurNSFW: true,
+  showFilters: true, // Default to showing filters
   auth: initialAuthState,
 };
 
@@ -112,6 +114,12 @@ export const useStore = () => {
     const newValue = !store.blurNSFW;
     localStorage.setItem("blurNSFW", newValue.toString());
     setStore((currentStore) => ({ ...currentStore, blurNSFW: newValue }));
+  };
+
+  const toggleFiltersVisibility = () => {
+    const newValue = !store.showFilters;
+    localStorage.setItem("showFilters", newValue.toString());
+    setStore((currentStore) => ({ ...currentStore, showFilters: newValue }));
   };
 
   // Authentication functions
@@ -336,6 +344,7 @@ export const useStore = () => {
     toggleShowImages,
     toggleCompactText,
     toggleBlurNSFW,
+    toggleFiltersVisibility,
     // Auth methods
     setAuthTokens,
     setUserProfile,
@@ -362,11 +371,14 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const showImagesStr = localStorage.getItem("showImages");
     const compactTextStr = localStorage.getItem("compactText");
     const blurNSFWStr = localStorage.getItem("blurNSFW");
+    const showFiltersStr = localStorage.getItem("showFilters");
 
     const showImages = showImagesStr !== null ? showImagesStr === "true" : true;
     const compactText =
       compactTextStr !== null ? compactTextStr === "true" : true;
     const blurNSFW = blurNSFWStr !== null ? blurNSFWStr === "true" : true;
+    const showFilters =
+      showFiltersStr !== null ? showFiltersStr === "true" : true;
 
     // Apply theme to body
     if (theme) {
@@ -388,6 +400,7 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
       showImages,
       compactText,
       blurNSFW,
+      showFilters,
     }));
   }, []);
 

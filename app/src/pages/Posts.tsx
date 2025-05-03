@@ -11,7 +11,7 @@ import { redditApi, ApiError } from "../api";
 import styles from "./Posts.module.scss";
 
 export const Posts: FC = () => {
-  const { store, checkTokenExpiration } = useStore();
+  const { store, checkTokenExpiration, toggleFiltersVisibility } = useStore();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -23,6 +23,7 @@ export const Posts: FC = () => {
     type: null,
     nsfw: null,
   });
+  // Using store.showFilters instead of local state
 
   // Rate limiting state
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
@@ -458,16 +459,29 @@ export const Posts: FC = () => {
 
       {!loading && !error && !isWaitingToRetry && posts.length > 0 && (
         <main className={styles.root}>
-          <div className={styles.filters}>
-            <Filters
-              subredditCounts={subredditCounts}
-              typeCounts={typeCounts}
-              nsfwCounts={nsfwCounts}
-              onFilterChange={handleFilterChange}
-              totalPosts={posts.length}
-              onRefresh={handleRetry}
-            />
-          </div>
+          {store.showFilters ? (
+            <div className={styles.filters}>
+              <Filters
+                subredditCounts={subredditCounts}
+                typeCounts={typeCounts}
+                nsfwCounts={nsfwCounts}
+                onFilterChange={handleFilterChange}
+                totalPosts={posts.length}
+                onRefresh={handleRetry}
+                onToggleVisibility={toggleFiltersVisibility}
+              />
+            </div>
+          ) : (
+            <div className={styles.filtersToggle}>
+              <button
+                className="btn-icon"
+                onClick={toggleFiltersVisibility}
+                aria-label="Show filters"
+              >
+                <span className={styles.toggleIcon}>⟩</span>
+              </button>
+            </div>
+          )}
           <div className={styles.postsList}>
             <PostsList posts={filteredPosts} />
           </div>

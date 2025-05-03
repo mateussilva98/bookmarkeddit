@@ -53,7 +53,8 @@ Next up:
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
   ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
   ☐ better scatfolding for the proxy server
-
+  ☐ show/hide filters
+    ☐ use filter icon on the right side of the input text filter to toggle the filters
 
 
 
