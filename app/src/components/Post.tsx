@@ -1,4 +1,4 @@
-import { FC, useRef } from "react";
+import { FC } from "react";
 import { Post } from "../types/Post";
 import styles from "./Post.module.scss"; // Assuming a CSS module file exists
 import { Warning } from "./icons/Warning";
@@ -10,6 +10,7 @@ import { Share } from "./icons/Share";
 import { ImageSlider } from "./ImageSlider";
 import { VideoPlayer } from "./VideoPlayer";
 import { useStore } from "../hooks/use-store";
+import { Tooltip } from "./ui/Tooltip";
 
 interface PostProps {
   post: Post;
@@ -62,13 +63,6 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         alert("Post URL copied to clipboard: " + url);
       });
     }
-  };
-
-  // Function to properly decode HTML entities in URLs
-  const decodeHtmlEntities = (url: string): string => {
-    // Create a temporary element to use the browser's built-in HTML entity decoding
-    const doc = new DOMParser().parseFromString(url, "text/html");
-    return doc.documentElement.textContent || url;
   };
 
   return (
@@ -158,28 +152,25 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
           </div>
         </div>
         <div className={styles.options}>
-          <div className={styles.tooltipWrapper}>
+          <Tooltip text="Unsave post">
             <button className={`${styles.unsave} btn-icon`}>
               <Bookmark />
             </button>
-            <span className={styles.tooltip}>Unsave post</span>
-          </div>
+          </Tooltip>
 
-          <div className={styles.tooltipWrapper}>
+          <Tooltip text="Share post">
             <button className="btn-icon" onClick={() => share(post.url)}>
               <Share />
             </button>
-            <span className={styles.tooltip}>Share post</span>
-          </div>
+          </Tooltip>
 
-          <div className={styles.tooltipWrapper}>
+          <Tooltip text="Open in new tab">
             <a href={post.url} target="_blank" rel="noopener noreferrer">
               <button className="btn-icon">
                 <Open />
               </button>
             </a>
-            <span className={styles.tooltip}>Open in new tab</span>
-          </div>
+          </Tooltip>
         </div>
       </div>
     </div>

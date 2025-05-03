@@ -3,6 +3,7 @@ import styles from "./Filters.module.scss"; // Assuming a CSS module file exists
 import { Up } from "./icons/Up";
 import { Down } from "./icons/Down";
 import { Refresh } from "./icons/Refresh";
+import { Tooltip } from "./ui/Tooltip";
 
 type SubredditCount = {
   subreddit: string;
@@ -133,7 +134,7 @@ export const Filters: FC<FiltersProps> = ({
           <span className={styles.totalPostsCount}>{totalPosts}</span>
           <span className={styles.totalPostsLabel}>saved posts</span>
         </div>
-        <div className={styles.tooltipWrapper}>
+        <Tooltip text="Refresh saved posts" position="left">
           <button
             className="btn-icon"
             onClick={onRefresh}
@@ -141,8 +142,7 @@ export const Filters: FC<FiltersProps> = ({
           >
             <Refresh />
           </button>
-          <span className={styles.tooltip}>Refresh saved posts</span>
-        </div>
+        </Tooltip>
       </div>
 
       <div>
