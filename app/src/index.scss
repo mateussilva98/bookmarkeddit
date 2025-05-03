@@ -198,6 +198,10 @@ button {
     background-color: transparent;
     box-shadow: unset;
   }
+  &:focus {
+    // added to prevent outline on focus after press esc to close modal
+    outline: unset;
+  }
 }
 
 /* .btn-secondary {

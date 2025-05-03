@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { X } from "./icons/X";
 import { Sun } from "./icons/Sun";
 import { Moon } from "./icons/Moon";
@@ -18,12 +18,35 @@ export const SettingsModal: FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     toggleShowImages,
     toggleBlurNSFW,
   } = useStore();
+  
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Handle ESC key press
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  // Handle click outside modal
+  const handleOverlayClick = (event: React.MouseEvent) => {
+    if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
+    <div className={styles.overlay} onClick={handleOverlayClick}>
+      <div className={styles.modal} ref={modalRef}>
         <div className={styles.header}>
           <h2>Settings</h2>
           <button className="btn-icon" onClick={onClose}>
