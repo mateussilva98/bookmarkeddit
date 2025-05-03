@@ -2,7 +2,7 @@ import { FC, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../hooks/use-store";
 import { Header } from "../components/Header";
-import { Post, MediaMetadata } from "../types/Post";
+import { Post, MediaMetadata, VideoInfo } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
 import { Loader } from "../components/ui/Loader";
@@ -125,7 +125,6 @@ export const Posts: FC = () => {
       console.log("Starting to fetch saved posts");
       const data = await redditApi.getSavedPosts(validToken);
       console.log("Successfully fetched saved posts");
-
       // Process the posts
       const processedPosts: Post[] = [];
 
@@ -168,6 +167,63 @@ export const Posts: FC = () => {
           images.push(post.data.thumbnail);
         }
 
+        // Extract video information if available
+        let videoInfo: VideoInfo | undefined = undefined;
+
+        // Check for Reddit hosted videos
+        if (post.data.media && post.data.media.reddit_video) {
+          const redditVideo = post.data.media.reddit_video;
+          videoInfo = {
+            url: decodeHtmlEntities(redditVideo.fallback_url),
+            width: redditVideo.width,
+            height: redditVideo.height,
+            duration: redditVideo.duration,
+            isGif: redditVideo.is_gif || false,
+            dashUrl: redditVideo.dash_url
+              ? decodeHtmlEntities(redditVideo.dash_url)
+              : undefined,
+            hlsUrl: redditVideo.hls_url
+              ? decodeHtmlEntities(redditVideo.hls_url)
+              : undefined,
+            fallbackUrl: redditVideo.fallback_url
+              ? decodeHtmlEntities(redditVideo.fallback_url)
+              : undefined,
+          };
+        }
+        // Check for external videos from trusted sources like YouTube, Vimeo, etc.
+        else if (post.data.media && post.data.media.oembed) {
+          const oembed = post.data.media.oembed;
+          if (oembed.type === "video" && oembed.html) {
+            // Extract the iframe src URL from the HTML embed code if possible
+            const srcMatch = oembed.html.match(/src="([^"]+)"/);
+            if (srcMatch && srcMatch[1]) {
+              videoInfo = {
+                url: decodeHtmlEntities(srcMatch[1]),
+                width: oembed.width,
+                height: oembed.height,
+              };
+            }
+          }
+        }
+        // Check for gfycat and gifv links
+        else if (
+          post.data.url &&
+          (post.data.url.includes("gfycat.com") ||
+            post.data.url.includes(".gifv") ||
+            post.data.url.includes(".mp4"))
+        ) {
+          let videoUrl = post.data.url;
+          // Convert Imgur .gifv to .mp4
+          if (videoUrl.endsWith(".gifv")) {
+            videoUrl = videoUrl.replace(".gifv", ".mp4");
+          }
+
+          videoInfo = {
+            url: decodeHtmlEntities(videoUrl),
+            isGif: videoUrl.includes(".gif") || videoUrl.includes("gfycat"),
+          };
+        }
+
         const postP: Post = {
           id: post.data.id,
           subreddit: post.data.subreddit,
@@ -185,6 +241,7 @@ export const Posts: FC = () => {
               ? post.data.thumbnail
               : "",
           images: images.length > 0 ? images : undefined,
+          video: videoInfo,
           type: post.kind === "t3" ? "Post" : "Comment",
           nsfw: post.data.over_18,
           commentCount: post.data.num_comments,

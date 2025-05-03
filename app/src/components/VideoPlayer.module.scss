@@ -1,0 +1,69 @@
+// VideoPlayer styles
+.container {
+  width: 100%;
+  position: relative;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background-color: var(--bg-secondary);
+}
+
+.blurContainer {
+  position: relative;
+}
+
+.blurredVideo {
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+.revealOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 5;
+}
+
+.tooltipWrapper {
+  position: relative;
+
+  &:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .tooltip {
+    visibility: hidden;
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-primary);
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border: var(--border);
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px;
+      border-style: solid;
+      border-color: transparent transparent var(--bg-primary) transparent;
+    }
+  }
+}

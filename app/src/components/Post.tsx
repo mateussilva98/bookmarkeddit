@@ -8,6 +8,7 @@ import { Open } from "./icons/Open";
 import { Bookmark } from "./icons/Bookmark";
 import { Share } from "./icons/Share";
 import { ImageSlider } from "./ImageSlider";
+import { VideoPlayer } from "./VideoPlayer";
 import { useStore } from "../hooks/use-store";
 
 interface PostProps {
@@ -124,12 +125,21 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </p>
       </div>
 
-      {/* Display image slider if showImages is enabled and we have images */}
-      {store.showImages && post.images && post.images.length > 0 && (
-        <ImageSlider
-          images={post.images}
-          shouldBlur={store.blurNSFW && post.nsfw}
-        />
+      {/* Display media content with video taking priority over images */}
+      {store.showImages && (
+        <>
+          {post.video ? (
+            <VideoPlayer
+              video={post.video}
+              shouldBlur={store.blurNSFW && post.nsfw}
+            />
+          ) : post.images && post.images.length > 0 ? (
+            <ImageSlider
+              images={post.images}
+              shouldBlur={store.blurNSFW && post.nsfw}
+            />
+          ) : null}
+        </>
       )}
 
       <div className={styles.bottom}>

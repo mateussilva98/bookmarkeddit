@@ -14,6 +14,18 @@ export type MediaMetadata = {
   };
 };
 
+export type VideoInfo = {
+  url: string;
+  width?: number;
+  height?: number;
+  fallbackUrl?: string;
+  dashUrl?: string;
+  hlsUrl?: string;
+  isGif?: boolean;
+  duration?: number;
+  thumbnail?: string;
+};
+
 export type Post = {
   id: string;
   subreddit: string;
@@ -26,6 +38,7 @@ export type Post = {
   media_metadata?: { [key: string]: MediaMetadata };
   thumbnail?: string;
   images?: string[]; // Add array to store multiple image URLs
+  video?: VideoInfo; // Add information for video content
   type: string;
   nsfw: boolean;
   commentCount: number;
