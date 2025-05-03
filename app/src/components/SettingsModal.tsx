@@ -18,20 +18,20 @@ export const SettingsModal: FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     toggleShowImages,
     toggleBlurNSFW,
   } = useStore();
-  
+
   const modalRef = useRef<HTMLDivElement>(null);
 
   // Handle ESC key press
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+      if (event.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
