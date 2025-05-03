@@ -3,16 +3,75 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.25rem;
   position: sticky;
   top: 0;
   width: 100%;
   padding: 0.5rem 1rem;
   border-bottom: var(--border);
+  z-index: 10;
+}
+
+.logoContainer {
+  display: flex;
+  align-items: center;
+
+  .logo {
+    max-height: 32px;
+    width: auto;
+  }
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: "pointer";
+
+  &:hover {
+    background-color: var(--bg-primary);
+  }
+
+  .userAvatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .username {
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
 }
 
 .buttons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.logoutBtn {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: var(--border);
+  border-radius: var(--btn-border-radius);
+  padding: 0.4rem 1rem;
+  height: auto;
+  font-size: 0.9rem;
+  font-weight: normal;
+
+  &:hover {
+    background-color: rgba(255, 69, 0, 0.1);
+    color: var(--btn-hover-color);
+    border-color: var(--btn-hover-color);
+  }
 }

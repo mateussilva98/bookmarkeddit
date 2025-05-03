@@ -1,84 +1,140 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import styles from "./LoginCallback.module.scss";
-import { Buffer } from "buffer";
 import { useStore } from "../hooks/use-store";
 import { Loader } from "./ui/Loader";
+import { AuthenticationError, authService } from "../api";
 
 export const LoginCallback: FC = () => {
-  const { setAccessToken, setRefreshToken } = useStore();
+  const { handleCodeExchange, store } = useStore();
   const navigate = useNavigate();
   const { search } = useLocation();
+  const [error, setError] = useState<string | null>(null);
+  const [isRetrying, setIsRetrying] = useState<boolean>(false);
+  const [attempts, setAttempts] = useState<number>(0);
+  const MAX_RETRY_ATTEMPTS = 3;
 
-  useEffect(
-    () => {
-      const getAccessToken = async () => {
-        const query = new URLSearchParams(search);
-        const code = query.get("code");
+  const processLoginCallback = async (code: string) => {
+    try {
+      setIsRetrying(true);
+      // Exchange the code for tokens
+      const success = await handleCodeExchange(code);
+      if (success) {
+        navigate("/posts");
+      } else {
+        setError(store.auth.error || "Failed to authenticate with Reddit");
+        setIsRetrying(false);
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof AuthenticationError
+          ? err.message
+          : "An unexpected error occurred";
+      console.error("Authentication error:", err);
+      setError(errorMessage);
+      setIsRetrying(false);
+    }
+  };
 
-        if (!code) {
-          console.error("Authorization code is missing.");
-          navigate("/");
-          return;
-        }
+  // Handler for retry button
+  const handleRetry = () => {
+    const query = new URLSearchParams(search);
+    const code = query.get("code");
 
-        try {
-          const clientId = import.meta.env.VITE_CLIENT_ID;
-          const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
-          const redirectURI = window.location.origin + "/login/callback";
+    if (code && attempts < MAX_RETRY_ATTEMPTS) {
+      setAttempts((prev) => prev + 1);
+      setError(null);
+      processLoginCallback(code);
+    } else if (attempts >= MAX_RETRY_ATTEMPTS) {
+      setError("Maximum retry attempts reached. Please try logging in again.");
+    }
+  };
 
-          const encodedHeader = Buffer.from(
-            `${clientId}:${clientSecret}`
-          ).toString("base64");
+  // Handler for login again button
+  const handleLoginAgain = () => {
+    const loginUrl = authService.getLoginUrl();
+    window.location.href = loginUrl;
+  };
 
-          const response = await fetch(
-            "https://www.reddit.com/api/v1/access_token",
-            {
-              method: "POST",
-              body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectURI}`,
-              headers: {
-                authorization: `Basic ${encodedHeader}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-            }
-          );
+  useEffect(() => {
+    const initAuthentication = async () => {
+      const query = new URLSearchParams(search);
+      const code = query.get("code");
+      const error = query.get("error");
 
-          if (!response.ok) {
-            console.error("Failed to fetch access token:", response.statusText);
-            navigate("/");
-            return;
-          }
+      // Handle error from Reddit OAuth
+      if (error) {
+        setError(`Authentication error from Reddit: ${error}`);
+        return;
+      }
 
-          const body = await response.json();
-          console.log("Access Token Response:", body);
+      // No code found in URL
+      if (!code) {
+        setError(
+          "Authorization code is missing from the URL. Please try logging in again."
+        );
+        return;
+      }
 
-          const accessToken = body["access_token"];
-          const refreshToken = body["refresh_token"];
+      // Process the authorization code
+      await processLoginCallback(code);
+    };
 
-          if (accessToken && refreshToken) {
-            setAccessToken(accessToken);
-            setRefreshToken(refreshToken);
-            navigate("/posts");
-          } else {
-            console.error("Invalid token response:", body);
-            navigate("/");
-          }
-        } catch (error) {
-          console.error("Error during token fetch:", error);
-          navigate("/");
-        }
-      };
+    if (!isRetrying) {
+      initAuthentication();
+    }
+  }, [search, handleCodeExchange, navigate, store.auth.error, isRetrying]);
 
-      getAccessToken();
-    },
-    [
-      /* search, setAccessToken, setRefreshToken, navigate */
-    ]
-  );
+  // If we're still loading or retrying, show the loader
+  if ((store.auth.isLoading || isRetrying) && !error) {
+    return (
+      <div className={styles.container}>
+        <Loader isVisible={true} />
+        <p className={styles.loadingMessage}>
+          {isRetrying
+            ? `Authenticating attempt ${
+                attempts + 1
+              } of ${MAX_RETRY_ATTEMPTS}...`
+            : "Authenticating with Reddit..."}
+        </p>
+      </div>
+    );
+  }
 
+  // If there's an error, show an error message with retry option
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <h2>Authentication Failed</h2>
+          <p className={styles.errorMessage}>{error}</p>
+
+          <div className={styles.buttonContainer}>
+            {attempts < MAX_RETRY_ATTEMPTS &&
+              error.includes("Failed to fetch") && (
+                <button onClick={handleRetry} className={styles.retryButton}>
+                  Retry Authentication
+                </button>
+              )}
+
+            <button onClick={handleLoginAgain} className={styles.loginButton}>
+              Log In Again
+            </button>
+
+            <button onClick={() => navigate("/")} className={styles.homeButton}>
+              Return to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback while redirecting
   return (
-    <div className={styles.root}>
+    <div className={styles.container}>
       <Loader isVisible={true} />
+      <p className={styles.loadingMessage}>Redirecting to saved posts...</p>
     </div>
   );
 };

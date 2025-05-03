@@ -29,14 +29,14 @@ Next up:
   ✔ find a way to identify that they are comments @done(25-04-21 21:16)
   ✔ fix on url on comments @done(25-04-23 14:57)
   ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.) - make it keep going, meaning, fetch first 100 posts, then 100 more, and so on until there are no more posts to fetch. (https://www.reddit.com/prefs/apps)
-  ☐ create a api.ts file to handle all the api calls
-  ☐ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
+  ✔ create a api.ts file to handle all the api calls @done(25-05-03 16:14)
+  ✔ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page @done(25-05-03 16:14)
   ☐ add locale
   ☐ export to csv file
   ☐ responsive for mobile
   ✔ Implement full-text search within post content (not just titles) @done(25-05-01 21:38)
   ✔ Create a saved filters feature that stores filter preferences locally @done(25-05-01 21:31)
-  ✔ Use browser APIs to offer "Add to home screen" functionality for mobile users @done(25-05-03 14:12)
+  ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users -> search for "PWA" (Progressive Web App) and implement it. (https://web.dev/add-to-homescreen/) - it was broking the app, so I removed it for now. (
     ☐ test on mobile
   ☐ dockerize the app 
   ☐ deploy the app on vercel / get a vps and configure from scratch (caddy, nginx, etc.)

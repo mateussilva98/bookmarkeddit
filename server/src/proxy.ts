@@ -2,47 +2,430 @@ import express, { Request, Response } from "express";
 import fetch from "node-fetch";
 import cors from "cors";
 
+// Define interface for Reddit user response
+interface RedditUserResponse {
+  name: string;
+  id: string;
+  icon_img?: string;
+  [key: string]: any; // Allow for other properties
+}
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.get("/reddit/saved", async (req: Request, res: Response) => {
-  const accessToken = req.headers.authorization?.split(" ")[1]; // Extract token from Authorization header
+// Rate limiting management
+const rateLimitReset: { [key: string]: number } = {}; // Store reset times for rate limits
+const RATE_LIMIT_BUFFER = 5000; // 5 seconds buffer
+
+// Helper function to check for access token
+const checkAuth = (req: Request, res: Response, next: Function) => {
+  const accessToken = req.headers.authorization?.split(" ")[1];
 
   if (!accessToken) {
-    return res.status(400).json({ error: "Access token is missing" });
+    return res.status(401).json({ error: "Authentication required" });
   }
 
-  console.log("Access Token:", accessToken); // Log the access token for debugging
+  req.headers.accessToken = accessToken;
+  next();
+};
+
+// Format error response
+const formatErrorResponse = (
+  status: number,
+  message: string,
+  retryAfter?: number
+) => {
+  const response: any = { error: message, status };
+
+  if (retryAfter) {
+    response.retryAfter = retryAfter;
+  }
+
+  return response;
+};
+
+// Validate token with Reddit
+app.get(
+  "/reddit/validate-token",
+  checkAuth,
+  async (req: Request, res: Response) => {
+    const accessToken = req.headers.accessToken as string;
+
+    try {
+      const response = await fetch("https://oauth.reddit.com/api/v1/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "User-Agent": "bookmarkeddit/1.0",
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Token validation failed:", response.status, errorText);
+        return res
+          .status(response.status)
+          .json(
+            formatErrorResponse(
+              response.status,
+              `Token validation failed: ${errorText}`
+            )
+          );
+      }
+
+      const data = await response.json();
+      return res.json({ valid: true, user: data });
+    } catch (error) {
+      console.error("Error validating token:", error);
+      return res
+        .status(500)
+        .json(
+          formatErrorResponse(
+            500,
+            `Error validating token: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          )
+        );
+    }
+  }
+);
+
+// Fetch saved posts
+app.get("/reddit/saved", checkAuth, async (req: Request, res: Response) => {
+  const accessToken = req.headers.accessToken as string;
+  const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+  const after = (req.query.after as string) || null;
+
+  // Check if we're in a rate limit cooldown period
+  const now = Date.now();
+  if (rateLimitReset[accessToken] && now < rateLimitReset[accessToken]) {
+    const retryAfter = Math.ceil((rateLimitReset[accessToken] - now) / 1000);
+    return res
+      .status(429)
+      .json(
+        formatErrorResponse(
+          429,
+          "Rate limit in effect, please try again later",
+          retryAfter
+        )
+      );
+  }
 
   try {
-    const response = await fetch("https://oauth.reddit.com/user/mateus_silva_98/saved?limit=100", {
+    // First, get the username of the authenticated user
+    const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "YourAppName/1.0",
+        "User-Agent": "bookmarkeddit/1.0",
       },
     });
 
-    console.log("Reddit API Response Status:", response.status); // Log the response status
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("Token validation failed:", userResponse.status, errorText);
+
+      // If token is invalid, return appropriate error
+      if (userResponse.status === 401) {
+        return res
+          .status(401)
+          .json(
+            formatErrorResponse(
+              401,
+              "Your session has expired. Please log in again."
+            )
+          );
+      }
+
+      return res
+        .status(userResponse.status)
+        .json(
+          formatErrorResponse(
+            userResponse.status,
+            `Token validation failed: ${errorText}`
+          )
+        );
+    }
+
+    // Parse the user data to get the username
+    const userData = (await userResponse.json()) as RedditUserResponse;
+    const username = userData.name;
+
+    if (!username) {
+      console.error("Failed to get username from Reddit API");
+      return res
+        .status(500)
+        .json(formatErrorResponse(500, "Failed to get your Reddit username"));
+    }
+
+    console.log(`Fetching saved posts for user: ${username}`);
+
+    // Build the URL with the username instead of "me"
+    let url = `https://oauth.reddit.com/user/${username}/saved?limit=${limit}&raw_json=1`;
+    if (after) {
+      url += `&after=${after}`;
+    }
+
+    console.log(`Fetching saved posts with URL: ${url}`);
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "User-Agent": "bookmarkeddit/1.0",
+      },
+    });
+
+    console.log("Reddit API Response Status:", response.status);
+
+    // Handle rate limiting
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const retrySeconds = retryAfter ? parseInt(retryAfter) : 60; // Default to 60 seconds if not specified
+
+      // Set the rate limit reset time with a buffer
+      rateLimitReset[accessToken] =
+        now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
+
+      console.error(
+        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
+      );
+      return res
+        .status(429)
+        .json(
+          formatErrorResponse(
+            429,
+            "Too many requests to Reddit API",
+            retrySeconds
+          )
+        );
+    }
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Reddit API Error:", errorText); // Log the error response from Reddit
-      return res.status(response.status).json({ error: errorText });
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = JSON.stringify(errorData);
+      } catch (e) {
+        errorText = await response.text();
+      }
+
+      console.error("Reddit API Error:", errorText);
+
+      // Handle specific error codes
+      if (response.status === 400) {
+        return res
+          .status(400)
+          .json(
+            formatErrorResponse(
+              400,
+              "Bad request to Reddit API. Your session might be invalid or you may have insufficient permissions."
+            )
+          );
+      }
+
+      return res
+        .status(response.status)
+        .json(formatErrorResponse(response.status, errorText));
     }
 
     const data = await response.json();
-
-    // todo: filter and send only the data we need
-
-    // get all posts using /saved?after=...
-
-
     res.json(data);
   } catch (error) {
     console.error("Error fetching saved posts:", error);
-    res.status(500).json({ error: "Failed to fetch saved posts" });
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          500,
+          `Failed to fetch saved posts: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        )
+      );
+  }
+});
+
+// Unsave a post or comment
+app.post("/reddit/unsave", checkAuth, async (req: Request, res: Response) => {
+  const accessToken = req.headers.accessToken as string;
+  const { id } = req.body;
+
+  if (!id) {
+    return res
+      .status(400)
+      .json(formatErrorResponse(400, "Post ID is required"));
+  }
+
+  // Check if we're in a rate limit cooldown period
+  const now = Date.now();
+  if (rateLimitReset[accessToken] && now < rateLimitReset[accessToken]) {
+    const retryAfter = Math.ceil((rateLimitReset[accessToken] - now) / 1000);
+    return res
+      .status(429)
+      .json(
+        formatErrorResponse(
+          429,
+          "Rate limit in effect, please try again later",
+          retryAfter
+        )
+      );
+  }
+
+  try {
+    const response = await fetch(`https://oauth.reddit.com/api/unsave`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "bookmarkeddit/1.0",
+      },
+      body: `id=${id}`,
+    });
+
+    // Handle rate limiting
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const retrySeconds = retryAfter ? parseInt(retryAfter) : 60;
+
+      rateLimitReset[accessToken] =
+        now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
+
+      console.error(
+        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
+      );
+      return res
+        .status(429)
+        .json(
+          formatErrorResponse(
+            429,
+            "Too many requests to Reddit API",
+            retrySeconds
+          )
+        );
+    }
+
+    if (!response.ok) {
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = JSON.stringify(errorData);
+      } catch (e) {
+        errorText = await response.text();
+      }
+
+      console.error("Reddit API Error when unsaving:", errorText);
+      return res
+        .status(response.status)
+        .json(formatErrorResponse(response.status, errorText));
+    }
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error unsaving post:", error);
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          500,
+          `Failed to unsave post: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        )
+      );
+  }
+});
+
+// Get user profile info
+app.get("/reddit/me", checkAuth, async (req: Request, res: Response) => {
+  const accessToken = req.headers.accessToken as string;
+
+  // Check if we're in a rate limit cooldown period
+  const now = Date.now();
+  if (rateLimitReset[accessToken] && now < rateLimitReset[accessToken]) {
+    const retryAfter = Math.ceil((rateLimitReset[accessToken] - now) / 1000);
+    return res
+      .status(429)
+      .json(
+        formatErrorResponse(
+          429,
+          "Rate limit in effect, please try again later",
+          retryAfter
+        )
+      );
+  }
+
+  try {
+    const response = await fetch("https://oauth.reddit.com/api/v1/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "User-Agent": "bookmarkeddit/1.0",
+      },
+    });
+
+    // Handle rate limiting
+    if (response.status === 429) {
+      const retryAfter = response.headers.get("retry-after");
+      const retrySeconds = retryAfter ? parseInt(retryAfter) : 60;
+
+      rateLimitReset[accessToken] =
+        now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
+
+      console.error(
+        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
+      );
+      return res
+        .status(429)
+        .json(
+          formatErrorResponse(
+            429,
+            "Too many requests to Reddit API",
+            retrySeconds
+          )
+        );
+    }
+
+    if (!response.ok) {
+      let errorText;
+      try {
+        const errorData = await response.json();
+        errorText = JSON.stringify(errorData);
+      } catch (e) {
+        errorText = await response.text();
+      }
+
+      console.error("Reddit API Error fetching user profile:", errorText);
+      return res
+        .status(response.status)
+        .json(formatErrorResponse(response.status, errorText));
+    }
+
+    const data = (await response.json()) as RedditUserResponse;
+    res.json(data);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          500,
+          `Failed to fetch user profile: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        )
+      );
+  }
+});
+
+// Clear rate limit for debugging
+app.post("/debug/clear-rate-limit", (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  if (token && rateLimitReset[token]) {
+    delete rateLimitReset[token];
+    res.json({ success: true, message: "Rate limit cleared" });
+  } else {
+    res.status(400).json({ error: "Invalid token or no rate limit set" });
   }
 });
 

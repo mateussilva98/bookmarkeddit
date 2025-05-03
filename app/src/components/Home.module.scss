@@ -9,9 +9,164 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 3rem;
+  gap: 1.5rem;
   height: 100vh;
+  padding: 1.5rem;
+  text-align: center;
+  overflow-y: auto;
+
   img {
     scale: 2;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    max-width: 800px;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.features {
+  background-color: var(--bg-secondary);
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border: var(--border);
+  margin: 0.5rem 0;
+  max-width: 600px;
+
+  ul {
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: left;
+
+    li {
+      position: relative;
+      padding-left: 1.5rem;
+      color: var(--color-primary);
+
+      &::before {
+        content: "•";
+        color: var(--orange);
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+    }
+  }
+}
+
+.loginButton {
+  background-color: var(--orange);
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+
+  &:hover {
+    background-color: var(--btn-hover-color);
+  }
+}
+
+.permissions {
+  max-width: 600px;
+  background-color: var(--bg-secondary);
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border: var(--border);
+  margin-bottom: 2rem;
+
+  h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+  }
+}
+
+.permissionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.permissionItem {
+  display: flex;
+  text-align: left;
+
+  .permissionName {
+    background-color: rgba(255, 69, 0, 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    color: var(--orange);
+    font-family: monospace;
+    min-width: 90px;
+    margin-right: 1rem;
+    font-weight: 600;
+  }
+
+  .permissionDesc {
+    color: var(--color-secondary);
+  }
+}
+
+.privacyNote {
+  font-size: 0.9rem;
+  color: var(--color-secondary);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.loader {
+  border: 4px solid rgba(255, 69, 0, 0.1);
+  border-left-color: var(--orange);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Mobile responsive adjustments
+@media (max-width: 768px) {
+  .main {
+    padding: 1rem;
+    height: auto;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding-top: 4rem;
+
+    img {
+      scale: 1.5;
+      margin-top: 2rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .features,
+  .permissions {
+    padding: 1rem 1.5rem;
+    width: 100%;
+  }
+
+  .permissionItem {
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .permissionName {
+      margin-right: 0;
+    }
   }
 }
