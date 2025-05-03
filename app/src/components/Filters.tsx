@@ -2,6 +2,7 @@ import React, { FC, useState } from "react";
 import styles from "./Filters.module.scss"; // Assuming a CSS module file exists
 import { Up } from "./icons/Up";
 import { Down } from "./icons/Down";
+import { Refresh } from "./icons/Refresh";
 
 type SubredditCount = {
   subreddit: string;
@@ -20,6 +21,8 @@ type FiltersProps = {
   typeCounts: { type: string; count: number }[];
   nsfwCounts: { nsfw: string; count: number }[];
   onFilterChange: (filters: SelectedFilters) => void; // Callback for when filters change
+  totalPosts: number; // Total number of saved posts
+  onRefresh: () => void; // Callback to refresh posts
 };
 
 export const Filters: FC<FiltersProps> = ({
@@ -27,6 +30,8 @@ export const Filters: FC<FiltersProps> = ({
   typeCounts,
   nsfwCounts,
   onFilterChange,
+  totalPosts,
+  onRefresh,
 }) => {
   const [showCommunities, setShowCommunities] = useState(true);
   const [showTypes, setShowTypes] = useState(true);
@@ -123,6 +128,23 @@ export const Filters: FC<FiltersProps> = ({
 
   return (
     <div className={styles.root}>
+      <div className={styles.totalPosts}>
+        <div className={styles.totalPostsInfo}>
+          <span className={styles.totalPostsCount}>{totalPosts}</span>
+          <span className={styles.totalPostsLabel}>saved posts</span>
+        </div>
+        <div className={styles.tooltipWrapper}>
+          <button
+            className="btn-icon"
+            onClick={onRefresh}
+            aria-label="Refresh saved posts"
+          >
+            <Refresh />
+          </button>
+          <span className={styles.tooltip}>Refresh saved posts</span>
+        </div>
+      </div>
+
       <div>
         <div
           className={styles.header}

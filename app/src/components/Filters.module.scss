@@ -5,7 +5,7 @@
   //align-items: center;
   gap: 0.25rem;
   border-right: var(--border);
-  padding: 2rem 0.5rem;
+  padding: 1rem 0.5rem;
   width: 100%;
   height: 100%; /* Full height */
   overflow-y: auto; /* Allow scrolling if content overflows */
@@ -105,4 +105,101 @@
     background-color: var(--btn-hover-color);
   }
   align-self: flex-end;
+}
+
+.totalPosts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: center;
+  opacity: 0.85;
+
+  .tooltipWrapper {
+    position: relative;
+
+    .tooltip {
+      top: 50%; /* Center vertically */
+      bottom: auto; /* Reset bottom property */
+      right: 100%; /* Position to the left of the button */
+      left: auto; /* Reset left property */
+      margin-right: 10px; /* Add some space between button and tooltip */
+      transform: translateY(-50%); /* Center vertically */
+
+      /* Adjust the arrow to point to the right */
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%; /* Center arrow vertically */
+        bottom: auto;
+        left: 100%; /* Position at the right of the tooltip */
+        right: auto;
+        margin-top: -5px; /* Center arrow vertically */
+        margin-left: 0;
+        border-width: 5px;
+        border-style: solid;
+        border-color: transparent transparent transparent var(--bg-primary); /* Point to the right */
+      }
+    }
+  }
+}
+
+.totalPostsInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.totalPostsCount {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+
+.totalPostsLabel {
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+}
+
+/* Tooltip styles */
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+
+  &:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
+}
+
+.tooltip {
+  visibility: hidden;
+  position: absolute;
+  z-index: 500; /* Increased z-index to ensure it appears on top */
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-primary);
+  color: var(--color-primary);
+  text-align: center;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
+
+  /* Add a small triangle pointer */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--bg-primary) transparent transparent transparent;
+  }
 }

@@ -45,13 +45,13 @@ Next up:
   ☐ post content in markdown 
   ☐ get loggedin user after token
   ☐ comment code, remove unused code and files, and make sure everything is working as expected
-  ☐ show total saved posts
-  ☐ show logged in user on top of the page (left side of settings button)
+  ✔ show total saved posts @done(25-05-03 16:58)
+  ✔ show logged in user on top of the page (left side of settings button) @done(25-05-03 17:11)
   ☐ general mobile styling imporvements
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
   ✔ support for videos (example: Girl has amazing... 6th sense? or Still kinda cool ngl) @done(25-05-03 16:40)
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
-  ☐ button to force refresh the posts (fetch new posts from reddit)
+  ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
   ☐ better scatfolding for the proxy server
 
 

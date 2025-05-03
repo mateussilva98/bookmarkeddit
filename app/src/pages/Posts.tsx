@@ -464,6 +464,8 @@ export const Posts: FC = () => {
               typeCounts={typeCounts}
               nsfwCounts={nsfwCounts}
               onFilterChange={handleFilterChange}
+              totalPosts={posts.length}
+              onRefresh={handleRetry}
             />
           </div>
           <div className={styles.postsList}>
