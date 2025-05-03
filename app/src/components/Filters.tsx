@@ -56,47 +56,56 @@ export const Filters: FC<FiltersProps> = ({
         ? prev.filter((item) => item !== subreddit) // Remove if already selected
         : [...prev, subreddit]; // Add if not selected
 
-      // Update parent component with new filters
+      return newSelection;
+    });
+
+    // Move the onFilterChange call outside of the state setter function
+    // Use setTimeout to ensure this happens after the state update is completed
+    setTimeout(() => {
       onFilterChange({
-        communities: newSelection,
+        communities: selectedCommunities.includes(subreddit)
+          ? selectedCommunities.filter((item) => item !== subreddit)
+          : [...selectedCommunities, subreddit],
         type: selectedType,
         nsfw: selectedNSFW,
       });
-
-      return newSelection;
-    });
+    }, 0);
   };
 
   // Handle type selection (only one can be selected)
   const handleTypeClick = (type: string) => {
     setSelectedType((prev) => {
       const newSelection = prev === type ? null : type; // Toggle selection
-
-      // Update parent component with new filters
-      onFilterChange({
-        communities: selectedCommunities,
-        type: newSelection,
-        nsfw: selectedNSFW,
-      });
-
       return newSelection;
     });
+
+    // Move the onFilterChange call outside of the state setter function
+    // Use setTimeout to ensure this happens after the state update is completed
+    setTimeout(() => {
+      onFilterChange({
+        communities: selectedCommunities,
+        type: selectedType === type ? null : type,
+        nsfw: selectedNSFW,
+      });
+    }, 0);
   };
 
   // Handle NSFW selection (only one can be selected)
   const handleNSFWClick = (nsfw: string) => {
     setSelectedNSFW((prev) => {
       const newSelection = prev === nsfw ? null : nsfw; // Toggle selection
+      return newSelection;
+    });
 
-      // Update parent component with new filters
+    // Move the onFilterChange call outside of the state setter function
+    // Use setTimeout to ensure this happens after the state update is completed
+    setTimeout(() => {
       onFilterChange({
         communities: selectedCommunities,
         type: selectedType,
-        nsfw: newSelection,
+        nsfw: selectedNSFW === nsfw ? null : nsfw,
       });
-
-      return newSelection;
-    });
+    }, 0);
   };
 
   // Handle search input change
