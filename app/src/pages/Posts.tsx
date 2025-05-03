@@ -483,7 +483,7 @@ export const Posts: FC = () => {
             </div>
           )}
           <div className={styles.postsList}>
-            <PostsList posts={filteredPosts} />
+            <PostsList posts={filteredPosts} onRefresh={handleRetry} />
           </div>
         </main>
       )}

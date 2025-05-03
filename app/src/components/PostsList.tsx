@@ -10,14 +10,16 @@ import { useStore } from "../hooks/use-store";
 
 interface PostsListProps {
   posts: Post[];
+  onRefresh?: () => void; // Add callback for refresh
 }
 
 type SortOption = "recent" | "upvotes" | "comments";
 
-export const PostsList: FC<PostsListProps> = ({ posts }) => {
+export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const postsListRef = useRef<HTMLDivElement>(null);
   const postsContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isGridCalculating, setIsGridCalculating] = useState(true);
   const { store, changeLayout, changeSortBy } = useStore();
@@ -179,21 +181,59 @@ export const PostsList: FC<PostsListProps> = ({ posts }) => {
     resizeGridItems,
   ]);
 
-  // Function to scroll back to top
-  const scrollToTop = () => {
+  // Function to scroll back to top and focus search input
+  const scrollToTopAndFocusSearch = useCallback(() => {
+    if (postsListRef.current) {
+      postsListRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+
+      if (searchInputRef.current) {
+        searchInputRef.current.focus();
+      }
+    }
+  }, []);
+
+  // Function to scroll back to top only
+  const scrollToTop = useCallback(() => {
     if (postsListRef.current) {
       postsListRef.current.scrollTo({
         top: 0,
         behavior: "smooth",
       });
     }
-  };
+  }, []);
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+F: Scroll to top and focus search input
+      if (e.ctrlKey && e.key === "f") {
+        e.preventDefault(); // Prevent browser's default find behavior
+        scrollToTopAndFocusSearch();
+      }
+
+      // Ctrl+R: Refresh posts
+      if (e.ctrlKey && e.key === "r" && onRefresh) {
+        e.preventDefault(); // Prevent browser's default refresh behavior
+        onRefresh();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [scrollToTopAndFocusSearch, onRefresh]);
 
   return (
     <div className={styles.root} ref={postsListRef}>
       <div className={styles.controlsContainer}>
         <div className={styles.searchInputContainer}>
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Filter by title or description..."
             value={searchTerm}
