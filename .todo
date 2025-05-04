@@ -9,7 +9,9 @@ Next up:
     ✔ add share functionality @done(25-04-22 21:09)
   ✔ add a button to unsave the post @done(25-04-20 01:10)
     ☐ add unsave functionality
+      ☐ show a modal to confirm the unsave action
       ☐ add toast on unsave and update posts without new fetch
+      ☐ remove community if there are no more posts in the community
   ✔ tooltip on unsave, share and open in new tab @done(25-04-20 22:22)
   ✔ add loader @done(25-04-20 23:19)
   ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
@@ -30,17 +32,15 @@ Next up:
   ☐ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.) - make it keep going, meaning, fetch first 100 posts, then 100 more, and so on until there are no more posts to fetch. (https://www.reddit.com/prefs/apps)
   ✔ create a api.ts file to handle all the api calls @done(25-05-03 16:14)
   ✔ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page @done(25-05-03 16:14)
-  ☐ responsive for mobile
   ✔ Implement full-text search within post content (not just titles) @done(25-05-01 21:38)
   ✔ Create a saved filters feature that stores filter preferences locally @done(25-05-01 21:31)
-  ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users -> search for "PWA" (Progressive Web App) and implement it. (https://web.dev/add-to-homescreen/) - it was broking the app, so I removed it for now. (
+  ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users -> search for "PWA" (Progressive Web App) and implement it. (https://web.dev/add-to-homescreen/)
     ☐ test on mobile
   ☐ redo front page with a better design and features description
   ✔ get loggedin user after token @done(25-05-03 17:57)
-  ☐ comment code, remove unused code and files, and make sure everything is working as expected
   ✔ show total saved posts @done(25-05-03 16:58)
   ✔ show logged in user on top of the page (left side of settings button) @done(25-05-03 17:11)
-  ☐ general mobile styling imporvements
+  ☐ general mobile styling improvments
   ✔ support for videos (example: Girl has amazing... 6th sense? or Still kinda cool ngl) @done(25-05-03 16:40)
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
   ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
@@ -48,48 +48,42 @@ Next up:
   ☐ show/hide filters
     ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
+  ☐ send only required information to the frontend (remove unnecessary data from the response)
+  ☐ comment code, remove unused code and files, and make sure everything is working as expected
 
 
-  Deployment:
-    ☐ dockerize the app (docker-compose) and make sure everything is working as expected
-    ☐ get a vps and configure from scratch (caddy, nginx, etc.) and make sure everything is working as expected
-    ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
-    ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it
-    ☐ add a license file to the repo (maybe MIT or something like that)
-    ☐ add a .env file to the repo with instructions on how to create it and what to put in it
-    ☐ create a github actions file to automate the deployment process (build and push the docker image to docker hub, and deploy it to the vps)
-    
+Deployment:
+  ☐ dockerize the app (docker-compose) and make sure everything is working as expected
+  ☐ get a vps and configure from scratch (caddy, nginx, etc.) and make sure everything is working as expected - mabe get vps from https://www.hetzner.com/
+  ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
+  ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it
+  ☐ add a license file to the repo (maybe MIT or something like that)
+  ☐ add a .env file to the repo with instructions on how to create it and what to put in it
+  ☐ create a github actions file to automate the deployment process (build and push the docker image to docker hub, and deploy it to the vps)
+  ☐ add a way to track the app usage (maybe using google analytics or something like that)
+  
 
-  ☐ when finalized, create reddit posts to show off the app
+☐ when finalized, create reddit posts to show off the app
 
-  Backlog - to implement:
-    ☐ post content in markdown 
-    ☐ add locale to settings
-    ☐ export to csv file
-    ☐ performance improvements (maybe related to images)
-    ☐ highlight the seached text on the posts (and show how many posts matched) 
-    ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
+Backlog - to implement:
+  ☐ post content in markdown 
+  ☐ add locale to settings
+  ☐ export to csv file
+  ☐ performance improvements (maybe related to images)
+  ☐ highlight the seached text on the posts (and show how many posts matched) 
+  ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
 
-  Backlog - (features to consider for future updates):
-    ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
-    ☐ Add text customization (font size, line spacing)
-    ☐ Improve caching of API responses for faster loading and reduced API usage
-
-
-  Bug Fixes and Improvements:
-    ☐ Video sound not working. not really important, but would be nice to have
-    ☐ add "no saved posts" message when there are no saved posts
+Backlog - (features to consider for future updates):
+  ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
+  ☐ Add text customization (font size, line spacing)
+  ☐ Improve caching of API responses for faster loading and reduced API usage
+  ☐ Pin posts (Allow users to pin certain posts to the top of their saved list for easy access)
 
 
+Bug Fixes and Improvements:
+  ☐ Video sound not working. not really important, but would be nice to have
+  ☐ add "no saved posts" message when there are no saved posts
 
-Implement keyboard shortcuts for navigation and actions
-
-- Keyboard Shortcuts
-  - Ctrl + S: Save the current post
-  - Ctrl + U: Unsave the current post
-  - Ctrl + F: Open the filter input
-  - Ctrl + R: Refresh the posts
-  - Ctrl + H: Open the help modal with keyboard shortcuts
 
 
 
