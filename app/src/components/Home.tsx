@@ -34,33 +34,66 @@ export const Home: FC = () => {
   }
 
   return (
-    <>
+    <div className={styles.container}>
       <div className={styles.icon}>
         <button id="theme" className="btn-icon" onClick={changeTheme}>
           {store.theme == "dark" ? <Sun /> : <Moon />}
         </button>
       </div>
-      <div className={styles.main}>
-        <img
-          src={store.theme == "dark" ? LOGO_WHITE : LOGO}
-          alt="Bookmarkeddit logo"
-        />
-        <h1>
-          Reddit's missing save manager: Finally organize what matters to you
-        </h1>
 
-        <div className={styles.features}>
-          <ul>
-            <li>Safely connect to your Reddit account</li>
-            <li>Search for anything using our smart search</li>
-            <li>Filter by subreddit, post type, or content</li>
-            <li>Unsave no longer necessary posts</li>
-          </ul>
+      <div className={styles.main}>
+        <div className={styles.heroSection}>
+          <img
+            src={store.theme == "dark" ? LOGO_WHITE : LOGO}
+            alt="Bookmarkeddit logo"
+            className={styles.logo}
+          />
+          <h1 className={styles.title}>
+            Reddit's missing save manager: Finally organize what matters to you
+          </h1>
+          <p className={styles.subtitle}>
+            Organize, filter, and rediscover your saved Reddit content with ease
+          </p>
+
+          <button onClick={handleLogin} className={styles.loginButton}>
+            LOGIN WITH REDDIT
+          </button>
         </div>
 
-        <button onClick={handleLogin} className={styles.loginButton}>
-          LOGIN WITH REDDIT
-        </button>
+        <div className={styles.featuresSection}>
+          <h2>Key Features</h2>
+          <div className={styles.featuresGrid}>
+            <div className={styles.featureCard}>
+              <span className={styles.featureIcon}>🔍</span>
+              <h3>Smart Search</h3>
+              <p>
+                Find anything in your saved content with powerful search
+                capabilities
+              </p>
+            </div>
+            <div className={styles.featureCard}>
+              <span className={styles.featureIcon}>🔄</span>
+              <h3>Sync & Organize</h3>
+              <p>Keep your Reddit saves organized and easily accessible</p>
+            </div>
+            <div className={styles.featureCard}>
+              <span className={styles.featureIcon}>📊</span>
+              <h3>Smart Filters</h3>
+              <p>
+                Filter by subreddit, post type, or content to find exactly what
+                you need
+              </p>
+            </div>
+            <div className={styles.featureCard}>
+              <span className={styles.featureIcon}>🔒</span>
+              <h3>Privacy First</h3>
+              <p>
+                Your data never leaves your browser - complete privacy
+                guaranteed
+              </p>
+            </div>
+          </div>
+        </div>
 
         <div className={styles.permissions}>
           <h3>Required Permissions</h3>
@@ -90,6 +123,6 @@ export const Home: FC = () => {
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 };
