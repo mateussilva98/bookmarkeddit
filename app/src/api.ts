@@ -321,6 +321,94 @@ export const redditApi = {
     }
   },
 
+  // Fetch all saved posts incrementally
+  getAllSavedPosts: async (
+    accessToken: string,
+    limit = 100,
+    onBatchProgress?: (batchData: any, totalSoFar: number) => void
+  ): Promise<any> => {
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (limit) params.append("limit", limit.toString());
+
+      const query = params.toString() ? `?${params.toString()}` : "";
+
+      // Only log on development
+      if (import.meta.env.DEV) {
+        console.log(`Making request to /reddit/saved-all${query}`);
+      }
+
+      const response = await fetch(
+        `${PROXY_BASE_URL}/reddit/saved-all${query}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Handle specific error responses
+      if (response.status === 400) {
+        const data = await response.json();
+        console.error("400 Bad Request from Reddit API", data);
+
+        // This could be a permissions issue
+        throw new ApiError(
+          "Failed to access saved posts. This could be due to insufficient permissions. Please ensure you've granted the 'history' and 'save' scopes during login.",
+          400
+        );
+      }
+
+      if (response.status === 401) {
+        throw new ApiError(
+          "Your session has expired. Please log in again.",
+          401
+        );
+      }
+
+      if (response.status === 429) {
+        // Handle rate limiting
+        const data = await response.json();
+        const retryAfter = data.retryAfter || 60; // Default to 60 seconds if not specified
+
+        console.warn(
+          `Rate limited by Reddit API. Retry after ${retryAfter} seconds.`
+        );
+
+        throw new ApiError(
+          `Rate limit exceeded. Please try again in ${retryAfter} seconds.`,
+          429,
+          retryAfter
+        );
+      }
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: response.statusText }));
+        throw new ApiError(
+          `Failed to fetch all saved posts: ${
+            errorData.error || response.statusText
+          }`,
+          response.status
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      throw new ApiError(
+        `Error fetching all saved posts: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  },
+
   // Unsave a post or comment with rate limit handling
   unsaveItem: async (accessToken: string, id: string): Promise<void> => {
     try {

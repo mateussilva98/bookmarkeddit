@@ -10,6 +10,18 @@ interface RedditUserResponse {
   [key: string]: any; // Allow for other properties
 }
 
+// Interface for Reddit API response
+interface RedditApiResponse {
+  kind: string;
+  data: {
+    after: string | null;
+    before: string | null;
+    children: any[];
+    dist: number;
+    modhash: string;
+  };
+}
+
 const app = express();
 
 app.use(cors());
@@ -239,6 +251,206 @@ app.get("/reddit/saved", checkAuth, async (req: Request, res: Response) => {
         formatErrorResponse(
           500,
           `Failed to fetch saved posts: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        )
+      );
+  }
+});
+
+// Fetch all saved posts incrementally
+app.get("/reddit/saved-all", checkAuth, async (req: Request, res: Response) => {
+  const accessToken = req.headers.accessToken as string;
+  const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+
+  // Check if we're in a rate limit cooldown period
+  const now = Date.now();
+  if (rateLimitReset[accessToken] && now < rateLimitReset[accessToken]) {
+    const retryAfter = Math.ceil((rateLimitReset[accessToken] - now) / 1000);
+    return res
+      .status(429)
+      .json(
+        formatErrorResponse(
+          429,
+          "Rate limit in effect, please try again later",
+          retryAfter
+        )
+      );
+  }
+
+  try {
+    // First, get the username of the authenticated user
+    const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "User-Agent": "bookmarkeddit/1.0",
+      },
+    });
+
+    if (!userResponse.ok) {
+      const errorText = await userResponse.text();
+      console.error("Token validation failed:", userResponse.status, errorText);
+
+      // If token is invalid, return appropriate error
+      if (userResponse.status === 401) {
+        return res
+          .status(401)
+          .json(
+            formatErrorResponse(
+              401,
+              "Your session has expired. Please log in again."
+            )
+          );
+      }
+
+      return res
+        .status(userResponse.status)
+        .json(
+          formatErrorResponse(
+            userResponse.status,
+            `Token validation failed: ${errorText}`
+          )
+        );
+    }
+
+    // Parse the user data to get the username
+    const userData = (await userResponse.json()) as RedditUserResponse;
+    const username = userData.name;
+
+    if (!username) {
+      console.error("Failed to get username from Reddit API");
+      return res
+        .status(500)
+        .json(formatErrorResponse(500, "Failed to get your Reddit username"));
+    }
+
+    console.log(`Fetching all saved posts for user: ${username}`);
+
+    // Initialize variables for the incremental fetching
+    let allPosts: any[] = [];
+    let afterToken: string | null = null;
+    let hasMore = true;
+    let batchNumber = 1;
+
+    // Fetch posts in batches until we've got them all
+    while (hasMore) {
+      // Build the URL with the username
+      let url = `https://oauth.reddit.com/user/${username}/saved?limit=${limit}&raw_json=1`;
+      if (afterToken) {
+        url += `&after=${afterToken}`;
+      }
+
+      console.log(`Fetching batch #${batchNumber} with URL: ${url}`);
+
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "User-Agent": "bookmarkeddit/1.0",
+        },
+      });
+
+      console.log(`Batch #${batchNumber} response status:`, response.status);
+
+      // Handle rate limiting
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("retry-after");
+        const retrySeconds = retryAfter ? parseInt(retryAfter) : 60;
+
+        rateLimitReset[accessToken] =
+          now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
+
+        console.error(
+          `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
+        );
+        return res
+          .status(429)
+          .json(
+            formatErrorResponse(
+              429,
+              "Too many requests to Reddit API",
+              retrySeconds
+            )
+          );
+      }
+
+      if (!response.ok) {
+        let errorText;
+        try {
+          const errorData = await response.json();
+          errorText = JSON.stringify(errorData);
+        } catch (e) {
+          errorText = await response.text();
+        }
+
+        console.error(`Reddit API Error in batch #${batchNumber}:`, errorText);
+
+        // Handle specific error codes
+        if (response.status === 400) {
+          return res
+            .status(400)
+            .json(
+              formatErrorResponse(
+                400,
+                "Bad request to Reddit API. Your session might be invalid or you may have insufficient permissions."
+              )
+            );
+        }
+
+        return res
+          .status(response.status)
+          .json(formatErrorResponse(response.status, errorText));
+      }
+
+      // Process the batch of data
+      const batchData = (await response.json()) as RedditApiResponse;
+
+      // Add the children to our collection
+      if (batchData.data.children && batchData.data.children.length > 0) {
+        allPosts = [...allPosts, ...batchData.data.children];
+        console.log(
+          `Added ${batchData.data.children.length} posts from batch #${batchNumber}. Total so far: ${allPosts.length}`
+        );
+      } else {
+        console.log(`Batch #${batchNumber} returned no posts.`);
+      }
+
+      // Check if there are more posts to fetch
+      if (batchData.data.after) {
+        afterToken = batchData.data.after;
+        batchNumber++;
+      } else {
+        hasMore = false;
+        console.log("No more posts to fetch.");
+      }
+
+      // Add a small delay to prevent overwhelming the Reddit API
+      if (hasMore) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    // Return all the fetched posts with the same structure as a single batch
+    const fullResponse: RedditApiResponse = {
+      kind: "Listing",
+      data: {
+        after: null,
+        before: null,
+        children: allPosts,
+        dist: allPosts.length,
+        modhash: "",
+      },
+    };
+
+    console.log(`Successfully fetched all ${allPosts.length} saved posts.`);
+    res.json(fullResponse);
+  } catch (error) {
+    console.error("Error fetching all saved posts:", error);
+    res
+      .status(500)
+      .json(
+        formatErrorResponse(
+          500,
+          `Failed to fetch all saved posts: ${
             error instanceof Error ? error.message : String(error)
           }`
         )

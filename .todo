@@ -55,7 +55,7 @@ Next up:
 
 Deployment:
   ☐ dockerize the app (docker-compose) and make sure everything is working as expected
-  ☐ get a vps and configure from scratch (caddy, nginx, etc.) and make sure everything is working as expected - mabe get vps from https://www.hetzner.com/
+  ☐ get a vps and configure from scratch (caddy, nginx, etc.) and make sure everything is working as expected - maybe get vps from https://www.hetzner.com/
   ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
   ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it
   ☐ add a license file to the repo (maybe MIT or something like that)

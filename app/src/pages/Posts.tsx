@@ -141,7 +141,7 @@ export const Posts: FC = () => {
     setRetryCountdown(null);
   }, [cleanUpTimers]);
 
-  // Fetch saved posts from Reddit - we're memoizing this function to prevent recreation
+  // Fetch saved posts from Reddit - using incremental fetching
   const fetchSavedPosts = useCallback(async () => {
     // Prevent multiple simultaneous requests
     if (isFetchingRef.current) {
@@ -161,9 +161,12 @@ export const Posts: FC = () => {
         return;
       }
 
-      console.log("Starting to fetch saved posts");
-      const data = await redditApi.getSavedPosts(validToken);
-      console.log("Successfully fetched saved posts");
+      console.log("Starting to fetch all saved posts incrementally");
+      const data = await redditApi.getAllSavedPosts(validToken);
+      console.log(
+        `Successfully fetched all ${data.data.children.length} saved posts`
+      );
+
       // Process the posts
       const processedPosts: Post[] = [];
 
@@ -291,7 +294,7 @@ export const Posts: FC = () => {
       }
 
       initialFetchDoneRef.current = true;
-      console.log(processedPosts);
+      console.log(`Processed ${processedPosts.length} posts`);
       setPosts(processedPosts);
     } catch (error) {
       console.error("Error fetching saved posts:", error);
