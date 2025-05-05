@@ -23,6 +23,7 @@ export const Home: FC = () => {
   // Handle the 3D tilt effect for feature cards
   useEffect(() => {
     const cards = featureCardsRef.current.filter((card) => card !== null);
+    const eventHandlers = new Map();
 
     const handleMouseMove = (e: MouseEvent, card: HTMLDivElement) => {
       const rect = card.getBoundingClientRect();
@@ -50,19 +51,26 @@ export const Home: FC = () => {
     // Add event listeners to each card
     cards.forEach((card) => {
       if (card) {
-        card.addEventListener("mousemove", (e) => handleMouseMove(e, card));
-        card.addEventListener("mouseleave", () => handleMouseLeave(card));
+        // Create unique handlers for this card and store references
+        const moveHandler = (e: Event) =>
+          handleMouseMove(e as MouseEvent, card);
+        const leaveHandler = () => handleMouseLeave(card);
+
+        // Store handlers in the Map so we can remove them later
+        eventHandlers.set(card, { moveHandler, leaveHandler });
+
+        card.addEventListener("mousemove", moveHandler);
+        card.addEventListener("mouseleave", leaveHandler);
       }
     });
 
     // Clean up event listeners
     return () => {
       cards.forEach((card) => {
-        if (card) {
-          card.removeEventListener("mousemove", (e) =>
-            handleMouseMove(e as MouseEvent, card)
-          );
-          card.removeEventListener("mouseleave", () => handleMouseLeave(card));
+        if (card && eventHandlers.has(card)) {
+          const { moveHandler, leaveHandler } = eventHandlers.get(card);
+          card.removeEventListener("mousemove", moveHandler);
+          card.removeEventListener("mouseleave", leaveHandler);
         }
       });
     };
