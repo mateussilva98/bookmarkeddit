@@ -442,6 +442,34 @@
   }
 }
 
+.footer {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  color: var(--color-secondary);
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  p {
+    text-align: center;
+  }
+
+  a {
+    color: var(--color-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--orange);
+      text-decoration: underline;
+    }
+  }
+}
+
 // Add CSS variable for background color RGB values to support the glass effect
 :global(:root) {
   --bg-secondary-rgb: 30, 30, 30;

@@ -207,6 +207,28 @@ export const Home: FC = () => {
             Reddit information on our servers.
           </p>
         </div>
+
+        <footer className={styles.footer}>
+          <p>
+            Created by{" "}
+            <a
+              href="https://github.com/mateussilva98/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mateus Silva
+            </a>{" "}
+            •
+            <a
+              href="https://github.com/mateussilva98/bookmarkeddit"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {" "}
+              Source Code
+            </a>
+          </p>
+        </footer>
       </div>
     </div>
   );
