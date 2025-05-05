@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.scss";
 import { Sun } from "./icons/Sun";
@@ -11,6 +11,7 @@ import { authService } from "../api";
 export const Home: FC = () => {
   const { store, changeTheme } = useStore();
   const navigate = useNavigate();
+  const featureCardsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   // Redirect to posts page if already authenticated
   useEffect(() => {
@@ -18,6 +19,54 @@ export const Home: FC = () => {
       navigate("/posts");
     }
   }, [store.auth.isAuthenticated, store.auth.isLoading, navigate]);
+
+  // Handle the 3D tilt effect for feature cards
+  useEffect(() => {
+    const cards = featureCardsRef.current.filter((card) => card !== null);
+
+    const handleMouseMove = (e: MouseEvent, card: HTMLDivElement) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left; // x position within the element
+      const y = e.clientY - rect.top; // y position within the element
+
+      // Calculate the position relative to the center of the card (in %)
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      // Reduced max tilt to 7 degrees for a more subtle effect
+      const percentX = ((x - centerX) / centerX) * 7;
+      const percentY = ((y - centerY) / centerY) * -7;
+
+      // Apply the transform
+      card.style.transform = `perspective(1000px) rotateX(${percentY}deg) rotateY(${percentX}deg) scale3d(1.01, 1.01, 1.01)`;
+    };
+
+    const handleMouseLeave = (card: HTMLDivElement) => {
+      // Reset the transform when mouse leaves
+      card.style.transform =
+        "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    };
+
+    // Add event listeners to each card
+    cards.forEach((card) => {
+      if (card) {
+        card.addEventListener("mousemove", (e) => handleMouseMove(e, card));
+        card.addEventListener("mouseleave", () => handleMouseLeave(card));
+      }
+    });
+
+    // Clean up event listeners
+    return () => {
+      cards.forEach((card) => {
+        if (card) {
+          card.removeEventListener("mousemove", (e) =>
+            handleMouseMove(e as MouseEvent, card)
+          );
+          card.removeEventListener("mouseleave", () => handleMouseLeave(card));
+        }
+      });
+    };
+  }, []);
 
   const handleLogin = () => {
     const loginUrl = authService.getLoginUrl();
@@ -63,7 +112,11 @@ export const Home: FC = () => {
         <div className={styles.featuresSection}>
           <h2>Key Features</h2>
           <div className={styles.featuresGrid}>
-            <div className={styles.featureCard}>
+            <div
+              className={styles.featureCard}
+              ref={(el) => (featureCardsRef.current[0] = el)}
+            >
+              <div className={styles.shine}></div>
               <span className={styles.featureIcon}>🔍</span>
               <h3>Smart Search</h3>
               <p>
@@ -71,12 +124,20 @@ export const Home: FC = () => {
                 capabilities
               </p>
             </div>
-            <div className={styles.featureCard}>
+            <div
+              className={styles.featureCard}
+              ref={(el) => (featureCardsRef.current[1] = el)}
+            >
+              <div className={styles.shine}></div>
               <span className={styles.featureIcon}>🔄</span>
               <h3>Sync & Organize</h3>
               <p>Keep your Reddit saves organized and easily accessible</p>
             </div>
-            <div className={styles.featureCard}>
+            <div
+              className={styles.featureCard}
+              ref={(el) => (featureCardsRef.current[2] = el)}
+            >
+              <div className={styles.shine}></div>
               <span className={styles.featureIcon}>📊</span>
               <h3>Smart Filters</h3>
               <p>
@@ -84,7 +145,11 @@ export const Home: FC = () => {
                 you need
               </p>
             </div>
-            <div className={styles.featureCard}>
+            <div
+              className={styles.featureCard}
+              ref={(el) => (featureCardsRef.current[3] = el)}
+            >
+              <div className={styles.shine}></div>
               <span className={styles.featureIcon}>🔒</span>
               <h3>Privacy First</h3>
               <p>
