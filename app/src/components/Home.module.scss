@@ -58,9 +58,9 @@
     content: "";
     position: absolute;
     top: -80px;
-    right: -150px;
-    width: 400px;
-    height: 400px;
+    right: 0; // Changed from -150px to 0
+    width: 300px; // Reduced from 400px
+    height: 300px; // Reduced from 400px
     background: radial-gradient(
       circle,
       rgba(255, 69, 0, 0.1) 0%,
@@ -69,15 +69,17 @@
     border-radius: 50%;
     z-index: -1;
     filter: blur(40px);
+    pointer-events: none; // Added to prevent interaction issues
+    max-width: 50vw; // Added to ensure it scales with viewport
   }
 
   &::after {
     content: "";
     position: absolute;
     bottom: -150px;
-    left: -100px;
-    width: 350px;
-    height: 350px;
+    left: 0; // Changed from -100px to 0
+    width: 250px; // Reduced from 350px
+    height: 250px; // Reduced from 350px
     background: radial-gradient(
       circle,
       rgba(0, 121, 211, 0.1) 0%,
@@ -86,6 +88,8 @@
     border-radius: 50%;
     z-index: -1;
     filter: blur(40px);
+    pointer-events: none; // Added to prevent interaction issues
+    max-width: 50vw; // Added to ensure it scales with viewport
   }
 
   .logo {
