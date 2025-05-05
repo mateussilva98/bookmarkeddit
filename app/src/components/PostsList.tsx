@@ -39,27 +39,30 @@ export const PostsList: FC<PostsListProps> = ({
   const { store, changeLayout, changeSortBy } = useStore();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const [visibleCount, setVisibleCount] = useState(20); // For infinite scroll
 
   // Update local posts when parent posts change
   useEffect(() => {
-    // Always update local posts when the filter criteria change
-    // We can detect filter changes when the array length changes in either direction
-    // or when incoming posts have different IDs than current localPosts
     const currentIds = new Set(localPosts.map((post) => post.id));
     const incomingIds = new Set(posts.map((post) => post.id));
 
-    // Check if any incoming post ID isn't in current posts
     const hasNewPosts = posts.some((post) => !currentIds.has(post.id));
-    // Check if any current post ID isn't in incoming posts (was filtered out)
     const hasRemovedPosts = localPosts.some(
       (post) => !incomingIds.has(post.id) && incomingIds.size > 0
     );
 
-    // If there's a difference in posts count or post IDs, update the local state
     if (posts.length !== localPosts.length || hasNewPosts || hasRemovedPosts) {
       setLocalPosts(posts);
     }
   }, [posts, localPosts]);
+
+  // Reset visibleCount and scroll to top when posts, search, or sort changes
+  useEffect(() => {
+    setVisibleCount(20);
+    if (postsListRef.current) {
+      postsListRef.current.scrollTo({ top: 0, behavior: "auto" });
+    }
+  }, [searchTerm, posts, store.sortBy, store.layout]);
 
   // Function to add a toast notification
   const addToast = useCallback((message: string, type: ToastType) => {
@@ -80,21 +83,17 @@ export const PostsList: FC<PostsListProps> = ({
   const handlePostUnsave = useCallback(
     (postId: string, succeeded: boolean, errorMessage?: string) => {
       if (succeeded) {
-        // Remove the post from local state
         setLocalPosts((prev) => {
           const newPosts = prev.filter((post) => post.id !== postId);
           return newPosts;
         });
 
-        // Notify parent component to update its state
         if (onPostUnsave) {
           onPostUnsave(postId);
         }
 
-        // Show success toast
         addToast("Post unsaved successfully", "success");
       } else {
-        // Show error toast
         addToast(errorMessage || "Failed to unsave post", "error");
       }
     },
@@ -108,7 +107,6 @@ export const PostsList: FC<PostsListProps> = ({
       return;
     }
 
-    // Set grid calculating to true whenever we start calculating positions
     setIsGridCalculating(true);
 
     const grid = postsContainerRef.current;
@@ -137,7 +135,6 @@ export const PostsList: FC<PostsListProps> = ({
         return;
       }
 
-      // Wait for any images to load so we get accurate height calculations
       const thumbnail = content.querySelector<HTMLImageElement>(".thumbnail");
 
       const calculateRowSpan = () => {
@@ -147,25 +144,20 @@ export const PostsList: FC<PostsListProps> = ({
         );
         item.style.gridRowEnd = `span ${rowSpan}`;
 
-        // Decrement pending calculations counter
         pendingCalculations--;
         if (pendingCalculations === 0) {
-          // All calculations are done, update state
           setIsGridCalculating(false);
         }
       };
 
       if (thumbnail && !thumbnail.complete) {
-        // If thumbnail exists and is not loaded yet, wait for it to load
         thumbnail.onload = () => {
           calculateRowSpan();
         };
-        // Also set a fallback in case the image fails to load
         thumbnail.onerror = () => {
           calculateRowSpan();
         };
       } else {
-        // No thumbnail or thumbnail already loaded
         calculateRowSpan();
       }
     });
@@ -203,7 +195,6 @@ export const PostsList: FC<PostsListProps> = ({
     const handleScroll = () => {
       if (!postsListRef.current) return;
 
-      // Show button when scrolled down 300px
       setShowScrollToTop(postsListRef.current.scrollTop > 300);
     };
 
@@ -219,9 +210,33 @@ export const PostsList: FC<PostsListProps> = ({
     };
   }, []);
 
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!postsListRef.current) return;
+      const el = postsListRef.current;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 200) {
+        setVisibleCount((prev) => {
+          if (prev < sortedPosts.length) {
+            return Math.min(prev + 20, sortedPosts.length);
+          }
+          return prev;
+        });
+      }
+    };
+    const listElement = postsListRef.current;
+    if (listElement) {
+      listElement.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (listElement) {
+        listElement.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [sortedPosts.length]);
+
   // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
   useEffect(() => {
-    // Start a new grid calculation process
     if (store.layout === "grid") {
       setIsGridCalculating(true);
     } else {
@@ -230,7 +245,6 @@ export const PostsList: FC<PostsListProps> = ({
 
     resizeGridItems();
 
-    // Use ResizeObserver to monitor changes in post sizes
     const resizeObserver = new ResizeObserver(() => {
       if (store.layout === "grid") {
         resizeGridItems();
@@ -243,7 +257,6 @@ export const PostsList: FC<PostsListProps> = ({
       postElements.forEach((el) => resizeObserver.observe(el));
     }
 
-    // Add window resize listener
     window.addEventListener("resize", resizeGridItems);
 
     return () => {
@@ -257,6 +270,13 @@ export const PostsList: FC<PostsListProps> = ({
     store.showImages,
     resizeGridItems,
   ]);
+
+  // Recalculate grid sizes when more posts are loaded (infinite scroll)
+  useEffect(() => {
+    if (store.layout === "grid") {
+      resizeGridItems();
+    }
+  }, [visibleCount, store.layout, resizeGridItems]);
 
   // Function to scroll back to top and focus search input
   const scrollToTopAndFocusSearch = useCallback(() => {
@@ -285,15 +305,13 @@ export const PostsList: FC<PostsListProps> = ({
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+F: Scroll to top and focus search input
       if (e.ctrlKey && e.key === "f") {
-        e.preventDefault(); // Prevent browser's default find behavior
+        e.preventDefault();
         scrollToTopAndFocusSearch();
       }
 
-      // Ctrl+R: Refresh posts
       if (e.ctrlKey && e.key === "r" && onRefresh) {
-        e.preventDefault(); // Prevent browser's default refresh behavior
+        e.preventDefault();
         onRefresh();
       }
     };
@@ -368,7 +386,7 @@ export const PostsList: FC<PostsListProps> = ({
           }`}
           ref={postsContainerRef}
         >
-          {sortedPosts.map((post) => (
+          {sortedPosts.slice(0, visibleCount).map((post) => (
             <div
               key={post.id}
               className={
@@ -383,6 +401,12 @@ export const PostsList: FC<PostsListProps> = ({
               <hr />
             </div>
           ))}
+          {/* Loader for infinite scroll */}
+          {visibleCount < sortedPosts.length && (
+            <div className={styles.infiniteScrollLoader}>
+              Loading more posts...
+            </div>
+          )}
         </div>
       ) : (
         <div className={styles.noResults}>
@@ -407,7 +431,6 @@ export const PostsList: FC<PostsListProps> = ({
         </div>
       )}
 
-      {/* Add Toast Container */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );

@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { Home } from "./components/Home";
 import { Posts } from "./pages/Posts";
 import { LoginCallback } from "./components/LoginCallback";
-import { InstallPrompt } from "./components/InstallPrompt";
 
 function App() {
   return (
@@ -15,7 +14,6 @@ function App() {
         <Route path="/posts" element={<Posts />} />
         <Route path="*" element={<Navigate to={"/"} />} />
       </Routes>
-      <InstallPrompt />
     </StoreProvider>
   );
 }

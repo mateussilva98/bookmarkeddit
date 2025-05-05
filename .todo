@@ -50,7 +50,7 @@ Next up:
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
   ✔ send only required information to the frontend (remove unnecessary data from the response) @done(25-05-05 22:19)
   ☐ comment code, remove unused code and files, and make sure everything is working as expected
-  ☐ algo está errado com os url
+  ☐ algo está errado com os url - talvez por causa dos thumbnails
   
 
 
@@ -75,7 +75,6 @@ Backlog - to implement:
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
   ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit.
-  ☐ Remove all PWA logic and files (service worker, manifest, install prompt, icons, etc.)
 
 
   1. Implement Virtual Scrolling (Windowing)
