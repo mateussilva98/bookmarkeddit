@@ -45,7 +45,9 @@ export const Home: FC = () => {
           src={store.theme == "dark" ? LOGO_WHITE : LOGO}
           alt="Bookmarkeddit logo"
         />
-        <h1>Modern tool to organize your Reddit saved posts and comments</h1>
+        <h1>
+          Reddit's missing save manager: Finally organize what matters to you
+        </h1>
 
         <div className={styles.features}>
           <ul>
