@@ -136,6 +136,7 @@ export const PostsList: FC<PostsListProps> = ({
       }
 
       const thumbnail = content.querySelector<HTMLImageElement>(".thumbnail");
+      const video = content.querySelector<HTMLVideoElement>("video");
 
       const calculateRowSpan = () => {
         const contentHeight = content.getBoundingClientRect().height;
@@ -157,6 +158,13 @@ export const PostsList: FC<PostsListProps> = ({
         thumbnail.onerror = () => {
           calculateRowSpan();
         };
+      } else if (video && video.readyState < 1) {
+        // Wait for video metadata to load
+        const onLoadedMetadata = () => {
+          calculateRowSpan();
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+        };
+        video.addEventListener("loadedmetadata", onLoadedMetadata);
       } else {
         calculateRowSpan();
       }
