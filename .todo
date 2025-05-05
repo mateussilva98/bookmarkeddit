@@ -34,7 +34,7 @@ Next up:
   ✔ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page @done(25-05-03 16:14)
   ✔ Implement full-text search within post content (not just titles) @done(25-05-01 21:38)
   ✔ Create a saved filters feature that stores filter preferences locally @done(25-05-01 21:31)
-  ☐ Use browser APIs to offer "Add to home screen" functionality for mobile users -> search for "PWA" (Progressive Web App) and implement it. (https://web.dev/add-to-homescreen/)
+  
     ☐ test on mobile
   ☐ redo front page with a better design and features description
   ✔ get loggedin user after token @done(25-05-03 17:57)
@@ -50,6 +50,7 @@ Next up:
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
   ✔ send only required information to the frontend (remove unnecessary data from the response) @done(25-05-05 22:19)
   ☐ comment code, remove unused code and files, and make sure everything is working as expected
+  ☐ algo está errado com os url
   
 
 
@@ -74,16 +75,35 @@ Backlog - to implement:
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
   ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit.
+  ☐ Remove all PWA logic and files (service worker, manifest, install prompt, icons, etc.)
 
 
   1. Implement Virtual Scrolling (Windowing)
 The most effective solution would be to implement virtual scrolling (windowing), which only renders the items currently visible in the viewport.
+
+
+Virtualization (Windowing):
+
+Use a library like react-window or react-virtualized to only render the visible posts in the viewport. This drastically reduces the number of DOM nodes and improves performance.
+Lazy Loading Images:
+
+Use the loading="lazy" attribute on images or a library like react-lazyload to defer loading images until they are about to enter the viewport.
+Debounce Search and Resize:
+
+Debounce the search input and grid resize calculations to avoid excessive re-renders and recalculations.
+Optimize Grid Calculations:
+
+Consider using CSS-only masonry layouts (e.g., grid-template-rows: masonry) if browser support is sufficient, or switch to a simpler layout for large lists.
+Pagination or Infinite Scroll:
+
+Instead of showing all posts, implement pagination or infinite scrolling to load posts in chunks.
 
 Backlog - (features to consider for future updates):
   ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
   ☐ Add text customization (font size, line spacing)
   ☐ Improve caching of API responses for faster loading and reduced API usage
   ☐ Pin posts (Allow users to pin certain posts to the top of their saved list for easy access)
+  ☐ Remove all PWA logic and files (service worker, manifest, install prompt, icons, etc.)
 
 
 Bug Fixes and Improvements:
