@@ -4,6 +4,10 @@ import styles from "./Home.module.scss";
 import { Sun } from "./icons/Sun";
 import { useStore } from "../hooks/use-store";
 import { Moon } from "./icons/Moon";
+import { Search } from "./icons/Search";
+import { Refresh } from "./icons/Refresh";
+import { Chart } from "./icons/Chart";
+import { Lock } from "./icons/Lock";
 import LOGO from "../assets/images/logo.svg";
 import LOGO_WHITE from "../assets/images/logo_white.svg";
 import { authService } from "../api";
@@ -125,7 +129,9 @@ export const Home: FC = () => {
               ref={(el) => (featureCardsRef.current[0] = el)}
             >
               <div className={styles.shine}></div>
-              <span className={styles.featureIcon}>🔍</span>
+              <span className={styles.featureIcon}>
+                <Search />
+              </span>
               <h3>Smart Search</h3>
               <p>
                 Find anything in your saved content with powerful search
@@ -137,7 +143,9 @@ export const Home: FC = () => {
               ref={(el) => (featureCardsRef.current[1] = el)}
             >
               <div className={styles.shine}></div>
-              <span className={styles.featureIcon}>🔄</span>
+              <span className={styles.featureIcon}>
+                <Refresh />
+              </span>
               <h3>Sync & Organize</h3>
               <p>Keep your Reddit saves organized and easily accessible</p>
             </div>
@@ -146,7 +154,9 @@ export const Home: FC = () => {
               ref={(el) => (featureCardsRef.current[2] = el)}
             >
               <div className={styles.shine}></div>
-              <span className={styles.featureIcon}>📊</span>
+              <span className={styles.featureIcon}>
+                <Chart />
+              </span>
               <h3>Smart Filters</h3>
               <p>
                 Filter by subreddit, post type, or content to find exactly what
@@ -158,7 +168,9 @@ export const Home: FC = () => {
               ref={(el) => (featureCardsRef.current[3] = el)}
             >
               <div className={styles.shine}></div>
-              <span className={styles.featureIcon}>🔒</span>
+              <span className={styles.featureIcon}>
+                <Lock />
+              </span>
               <h3>Privacy First</h3>
               <p>
                 Your data never leaves your browser - complete privacy
