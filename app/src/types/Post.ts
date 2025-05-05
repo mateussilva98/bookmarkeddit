@@ -42,4 +42,5 @@ export type Post = {
   type: string;
   nsfw: boolean;
   commentCount: number;
+  fullname: string;
 };

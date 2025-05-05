@@ -1,0 +1,75 @@
+.toastContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000; /* Ensure it's above other elements */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+  pointer-events: none; /* Allow clicking through the container but not the toasts */
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: auto; /* Make toast clickable */
+
+  .message {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-right: 10px;
+  }
+
+  .closeButton {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  &.hidden {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  &.success {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  &.error {
+    background-color: #f44336;
+    color: white;
+  }
+
+  &.info {
+    background-color: var(--orange);
+    color: white;
+  }
+}

@@ -7,15 +7,29 @@ import { Up } from "./icons/Up";
 import { List } from "./icons/List";
 import { Grid } from "./icons/Grid";
 import { useStore } from "../hooks/use-store";
+import { ToastContainer, ToastType } from "./ui/Toast";
+import { v4 as uuidv4 } from "uuid";
 
 interface PostsListProps {
   posts: Post[];
   onRefresh?: () => void; // Add callback for refresh
+  onPostUnsave?: (postId: string) => void; // Add prop for parent component notification
 }
 
 type SortOption = "recent" | "upvotes" | "comments";
 
-export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
+// Toast item interface
+interface ToastItem {
+  id: string;
+  message: string;
+  type: ToastType;
+}
+
+export const PostsList: FC<PostsListProps> = ({
+  posts,
+  onRefresh,
+  onPostUnsave,
+}) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const postsListRef = useRef<HTMLDivElement>(null);
   const postsContainerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +37,69 @@ export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isGridCalculating, setIsGridCalculating] = useState(true);
   const { store, changeLayout, changeSortBy } = useStore();
+  const [localPosts, setLocalPosts] = useState<Post[]>(posts);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  // Update local posts when parent posts change
+  useEffect(() => {
+    // Always update local posts when the filter criteria change
+    // We can detect filter changes when the array length changes in either direction
+    // or when incoming posts have different IDs than current localPosts
+    const currentIds = new Set(localPosts.map((post) => post.id));
+    const incomingIds = new Set(posts.map((post) => post.id));
+
+    // Check if any incoming post ID isn't in current posts
+    const hasNewPosts = posts.some((post) => !currentIds.has(post.id));
+    // Check if any current post ID isn't in incoming posts (was filtered out)
+    const hasRemovedPosts = localPosts.some(
+      (post) => !incomingIds.has(post.id) && incomingIds.size > 0
+    );
+
+    // If there's a difference in posts count or post IDs, update the local state
+    if (posts.length !== localPosts.length || hasNewPosts || hasRemovedPosts) {
+      setLocalPosts(posts);
+    }
+  }, [posts, localPosts]);
+
+  // Function to add a toast notification
+  const addToast = useCallback((message: string, type: ToastType) => {
+    const newToast = {
+      id: uuidv4(),
+      message,
+      type,
+    };
+    setToasts((prev) => [...prev, newToast]);
+  }, []);
+
+  // Function to remove a toast
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  // Function to handle post unsave
+  const handlePostUnsave = useCallback(
+    (postId: string, succeeded: boolean, errorMessage?: string) => {
+      if (succeeded) {
+        // Remove the post from local state
+        setLocalPosts((prev) => {
+          const newPosts = prev.filter((post) => post.id !== postId);
+          return newPosts;
+        });
+
+        // Notify parent component to update its state
+        if (onPostUnsave) {
+          onPostUnsave(postId);
+        }
+
+        // Show success toast
+        addToast("Post unsaved successfully", "success");
+      } else {
+        // Show error toast
+        addToast(errorMessage || "Failed to unsave post", "error");
+      }
+    },
+    [addToast, onPostUnsave]
+  );
 
   // Resize grid items for masonry layout
   const resizeGridItems = useCallback(() => {
@@ -96,15 +173,15 @@ export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
 
   // Filter posts based on search term
   const filteredPosts = useMemo(() => {
-    if (!searchTerm.trim()) return posts;
+    if (!searchTerm.trim()) return localPosts;
 
     const term = searchTerm.toLowerCase();
-    return posts.filter(
+    return localPosts.filter(
       (post) =>
         post.title.toLowerCase().includes(term) ||
         post.description?.toLowerCase().includes(term)
     );
-  }, [posts, searchTerm]);
+  }, [localPosts, searchTerm]);
 
   // Sort the filtered posts
   const sortedPosts = useMemo(() => {
@@ -298,7 +375,7 @@ export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
             }
           >
             <div className="post-content">
-              <PostComponent post={post} />
+              <PostComponent post={post} onUnsave={handlePostUnsave} />
             </div>
             <hr />
           </div>
@@ -321,6 +398,9 @@ export const PostsList: FC<PostsListProps> = ({ posts, onRefresh }) => {
           <p>Arranging posts...</p>
         </div>
       )}
+
+      {/* Add Toast Container */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

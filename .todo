@@ -8,10 +8,10 @@ Next up:
   ✔ add a button to share the link @done(25-04-20 01:10)
     ✔ add share functionality @done(25-04-22 21:09)
   ✔ add a button to unsave the post @done(25-04-20 01:10)
-    ☐ add unsave functionality
-      ☐ show a modal to confirm the unsave action
-      ☐ add toast on unsave and update posts without new fetch
-      ☐ remove community if there are no more posts in the community
+    ✔ add unsave functionality @done(25-05-05 19:38)
+      ✔ show a modal to confirm the unsave action @done(25-05-05 19:38)
+      ✔ add toast on unsave and update posts without new fetch @done(25-05-05 19:38)
+      ✔ remove community if there are no more posts in the community @done(25-05-05 19:38)
   ✔ tooltip on unsave, share and open in new tab @done(25-04-20 22:22)
   ✔ add loader @done(25-04-20 23:19)
   ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
@@ -50,6 +50,7 @@ Next up:
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
   ☐ send only required information to the frontend (remove unnecessary data from the response)
   ☐ comment code, remove unused code and files, and make sure everything is working as expected
+  
 
 
 Deployment:
@@ -72,6 +73,7 @@ Backlog - to implement:
   ☐ performance improvements (maybe related to images)
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
+  ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit.
 
 Backlog - (features to consider for future updates):
   ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)

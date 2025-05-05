@@ -1,6 +1,6 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import { Post } from "../types/Post";
-import styles from "./Post.module.scss"; // Assuming a CSS module file exists
+import styles from "./Post.module.scss";
 import { Warning } from "./icons/Warning";
 import { Ups } from "./icons/Ups";
 import { Comment } from "./icons/Comment";
@@ -11,9 +11,16 @@ import { ImageSlider } from "./ImageSlider";
 import { VideoPlayer } from "./VideoPlayer";
 import { useStore } from "../hooks/use-store";
 import { Tooltip } from "./ui/Tooltip";
+import { ConfirmModal } from "./ui/ConfirmModal";
+import { redditApi, ApiError } from "../api";
 
 interface PostProps {
   post: Post;
+  onUnsave?: (
+    postId: string,
+    succeeded: boolean,
+    errorMessage?: string
+  ) => void;
 }
 
 // Calculate data text - 1 day ago, 4 days ago, 1 motnh ago, etc.
@@ -42,8 +49,10 @@ const calculateTimeAgo = (timestamp: number): string => {
   return "just now";
 };
 
-export const PostComponent: FC<PostProps> = ({ post }) => {
+export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
   const { store } = useStore();
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isUnsaving, setIsUnsaving] = useState(false);
 
   const share = (url: string) => {
     if (navigator.share) {
@@ -59,10 +68,48 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
       // Fallback for browsers that don't support the Web Share API - copy to clipboard
       navigator.clipboard.writeText(url).then(() => {
         console.log("Post URL copied to clipboard:", url);
-        // todo a custom toast message
         alert("Post URL copied to clipboard: " + url);
       });
     }
+  };
+
+  const handleUnsaveClick = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmUnsave = async () => {
+    if (!store.auth.access_token || isUnsaving) return;
+
+    setIsUnsaving(true);
+
+    try {
+      // Call the API to unsave the post
+      await redditApi.unsaveItem(store.auth.access_token, post.fullname);
+
+      // Notify parent component of successful unsave
+      if (onUnsave) {
+        onUnsave(post.id, true);
+      }
+    } catch (error) {
+      console.error("Error unsaving post:", error);
+
+      const errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to unsave the post. Please try again.";
+
+      // Notify parent component of failed unsave
+      if (onUnsave) {
+        onUnsave(post.id, false, errorMessage);
+      }
+    } finally {
+      setIsUnsaving(false);
+      setIsConfirmModalOpen(false);
+    }
+  };
+
+  const handleCancelUnsave = () => {
+    setIsConfirmModalOpen(false);
   };
 
   return (
@@ -153,7 +200,11 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
         </div>
         <div className={styles.options}>
           <Tooltip text="Unsave post">
-            <button className={`${styles.unsave} btn-icon`}>
+            <button
+              className={`${styles.unsave} btn-icon`}
+              onClick={handleUnsaveClick}
+              disabled={isUnsaving}
+            >
               <Bookmark />
             </button>
           </Tooltip>
@@ -173,6 +224,16 @@ export const PostComponent: FC<PostProps> = ({ post }) => {
           </Tooltip>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Unsave Post"
+        message="Are you sure you want to unsave this post? This action cannot be undone."
+        confirmText="Unsave"
+        cancelText="Cancel"
+        onConfirm={handleConfirmUnsave}
+        onCancel={handleCancelUnsave}
+      />
     </div>
   );
 };

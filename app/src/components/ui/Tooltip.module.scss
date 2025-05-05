@@ -1,6 +1,13 @@
 .tooltipWrapper {
   position: relative;
   display: inline-block;
+  // Ensure clicks pass through to the child elements
+  pointer-events: none;
+
+  // But allow the children to receive pointer events
+  > * {
+    pointer-events: auto;
+  }
 
   &:hover .tooltip {
     visibility: visible;

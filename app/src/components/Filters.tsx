@@ -1,5 +1,5 @@
-import React, { FC, useState } from "react";
-import styles from "./Filters.module.scss"; // Assuming a CSS module file exists
+import React, { FC, useState, useEffect } from "react";
+import styles from "./Filters.module.scss";
 import { Up } from "./icons/Up";
 import { Down } from "./icons/Down";
 import { Refresh } from "./icons/Refresh";
@@ -22,10 +22,10 @@ type FiltersProps = {
   subredditCounts: SubredditCount[];
   typeCounts: { type: string; count: number }[];
   nsfwCounts: { nsfw: string; count: number }[];
-  onFilterChange: (filters: SelectedFilters) => void; // Callback for when filters change
-  totalPosts: number; // Total number of saved posts
-  onRefresh: () => void; // Callback to refresh posts
-  onToggleVisibility?: () => void; // Optional for backward compatibility
+  onFilterChange: (filters: SelectedFilters) => void;
+  totalPosts: number;
+  onRefresh: () => void;
+  onToggleVisibility?: () => void;
 };
 
 export const Filters: FC<FiltersProps> = ({
@@ -42,70 +42,41 @@ export const Filters: FC<FiltersProps> = ({
   const [showCommunities, setShowCommunities] = useState(true);
   const [showTypes, setShowTypes] = useState(true);
   const [showNSFW, setShowNSFW] = useState(true);
-  const [communitySearch, setCommunitySearch] = useState(""); // New state for search term
+  const [communitySearch, setCommunitySearch] = useState("");
 
   // State to track selected filters
   const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedNSFW, setSelectedNSFW] = useState<string | null>(null);
 
+  // Update parent component whenever filters change
+  useEffect(() => {
+    onFilterChange({
+      communities: selectedCommunities,
+      type: selectedType,
+      nsfw: selectedNSFW,
+    });
+  }, [selectedCommunities, selectedType, selectedNSFW, onFilterChange]);
+
   // Handle community selection (multiple can be selected)
   const handleCommunityClick = (subreddit: string) => {
     setSelectedCommunities((prev) => {
-      const newSelection = prev.includes(subreddit)
-        ? prev.filter((item) => item !== subreddit) // Remove if already selected
-        : [...prev, subreddit]; // Add if not selected
-
-      return newSelection;
+      if (prev.includes(subreddit)) {
+        return prev.filter((item) => item !== subreddit);
+      } else {
+        return [...prev, subreddit];
+      }
     });
-
-    // Move the onFilterChange call outside of the state setter function
-    // Use setTimeout to ensure this happens after the state update is completed
-    setTimeout(() => {
-      onFilterChange({
-        communities: selectedCommunities.includes(subreddit)
-          ? selectedCommunities.filter((item) => item !== subreddit)
-          : [...selectedCommunities, subreddit],
-        type: selectedType,
-        nsfw: selectedNSFW,
-      });
-    }, 0);
   };
 
   // Handle type selection (only one can be selected)
   const handleTypeClick = (type: string) => {
-    setSelectedType((prev) => {
-      const newSelection = prev === type ? null : type; // Toggle selection
-      return newSelection;
-    });
-
-    // Move the onFilterChange call outside of the state setter function
-    // Use setTimeout to ensure this happens after the state update is completed
-    setTimeout(() => {
-      onFilterChange({
-        communities: selectedCommunities,
-        type: selectedType === type ? null : type,
-        nsfw: selectedNSFW,
-      });
-    }, 0);
+    setSelectedType((prev) => (prev === type ? null : type));
   };
 
   // Handle NSFW selection (only one can be selected)
   const handleNSFWClick = (nsfw: string) => {
-    setSelectedNSFW((prev) => {
-      const newSelection = prev === nsfw ? null : nsfw; // Toggle selection
-      return newSelection;
-    });
-
-    // Move the onFilterChange call outside of the state setter function
-    // Use setTimeout to ensure this happens after the state update is completed
-    setTimeout(() => {
-      onFilterChange({
-        communities: selectedCommunities,
-        type: selectedType,
-        nsfw: selectedNSFW === nsfw ? null : nsfw,
-      });
-    }, 0);
+    setSelectedNSFW((prev) => (prev === nsfw ? null : nsfw));
   };
 
   // Handle search input change
@@ -131,14 +102,7 @@ export const Filters: FC<FiltersProps> = ({
     setSelectedCommunities([]);
     setSelectedType(null);
     setSelectedNSFW(null);
-    setCommunitySearch(""); // Reset community search input
-
-    // Update parent component that filters were cleared
-    onFilterChange({
-      communities: [],
-      type: null,
-      nsfw: null,
-    });
+    setCommunitySearch("");
   };
 
   // Use the callback from props if provided, otherwise use the one from the store

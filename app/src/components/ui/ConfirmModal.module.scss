@@ -1,0 +1,80 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100000; /* Increased to be very high */
+}
+
+.modal {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 420px;
+  animation: fadeIn 0.3s ease;
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: var(--color-primary);
+}
+
+.message {
+  font-size: 1rem;
+  margin-bottom: 24px;
+  color: var(--color-secondary);
+  line-height: 1.5;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--color-primary);
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: var(--bg-primary);
+  }
+}
+
+.confirmButton {
+  background-color: var(--orange);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: var(--btn-hover-color);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

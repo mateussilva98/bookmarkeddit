@@ -52,6 +52,44 @@ export const Posts: FC = () => {
     setActiveFilters(newFilters);
   }, []);
 
+  // Handle post unsave from PostsList
+  const handlePostUnsave = useCallback(
+    (postId: string) => {
+      setPosts((prevPosts) => {
+        // Find the post that was unsaved
+        const unsavedPost = prevPosts.find((post) => post.id === postId);
+        const newPosts = prevPosts.filter((post) => post.id !== postId);
+
+        // If we found the unsaved post and have active community filters
+        if (unsavedPost && activeFilters.communities.length > 0) {
+          const unsavedCommunity = unsavedPost.subreddit;
+
+          // Check if this was the last post from this community
+          const remainingPostsInCommunity = newPosts.filter(
+            (post) => post.subreddit === unsavedCommunity
+          ).length;
+
+          // If this was the last post from this community and it was in our active filters
+          if (
+            remainingPostsInCommunity === 0 &&
+            activeFilters.communities.includes(unsavedCommunity)
+          ) {
+            // Remove this community from active filters
+            setActiveFilters((prev) => ({
+              ...prev,
+              communities: prev.communities.filter(
+                (community) => community !== unsavedCommunity
+              ),
+            }));
+          }
+        }
+
+        return newPosts;
+      });
+    },
+    [activeFilters.communities]
+  );
+
   // Clean up timers when component unmounts or on retry
   const cleanUpTimers = useCallback(() => {
     if (retryTimeoutRef.current) {
@@ -246,12 +284,14 @@ export const Posts: FC = () => {
           type: post.kind === "t3" ? "Post" : "Comment",
           nsfw: post.data.over_18,
           commentCount: post.data.num_comments,
+          fullname: post.kind + "_" + post.data.id,
         };
 
         processedPosts.push(postP);
       }
 
       initialFetchDoneRef.current = true;
+      console.log(processedPosts);
       setPosts(processedPosts);
     } catch (error) {
       console.error("Error fetching saved posts:", error);
@@ -483,7 +523,11 @@ export const Posts: FC = () => {
             </div>
           )}
           <div className={styles.postsList}>
-            <PostsList posts={filteredPosts} onRefresh={handleRetry} />
+            <PostsList
+              posts={filteredPosts}
+              onRefresh={handleRetry}
+              onPostUnsave={handlePostUnsave}
+            />
           </div>
         </main>
       )}
