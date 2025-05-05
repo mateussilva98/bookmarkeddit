@@ -359,28 +359,36 @@ export const PostsList: FC<PostsListProps> = ({
           </button>
         </div>
       </div>
-      <div
-        className={`${styles.postsContainer} ${styles[store.layout]} ${
-          isGridCalculating && store.layout === "grid" ? styles.calculating : ""
-        }`}
-        ref={postsContainerRef}
-      >
-        {sortedPosts.map((post) => (
-          <div
-            key={post.id}
-            className={
-              isGridCalculating && store.layout === "grid"
-                ? styles.hiddenContent
-                : ""
-            }
-          >
-            <div className="post-content">
-              <PostComponent post={post} onUnsave={handlePostUnsave} />
+      {sortedPosts.length > 0 ? (
+        <div
+          className={`${styles.postsContainer} ${styles[store.layout]} ${
+            isGridCalculating && store.layout === "grid"
+              ? styles.calculating
+              : ""
+          }`}
+          ref={postsContainerRef}
+        >
+          {sortedPosts.map((post) => (
+            <div
+              key={post.id}
+              className={
+                isGridCalculating && store.layout === "grid"
+                  ? styles.hiddenContent
+                  : ""
+              }
+            >
+              <div className="post-content">
+                <PostComponent post={post} onUnsave={handlePostUnsave} />
+              </div>
+              <hr />
             </div>
-            <hr />
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className={styles.noResults}>
+          No posts match your search criteria
+        </div>
+      )}
 
       {showScrollToTop && (
         <button

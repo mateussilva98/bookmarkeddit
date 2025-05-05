@@ -6,6 +6,7 @@ import { Post, MediaMetadata, VideoInfo } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
 import { Loader } from "../components/ui/Loader";
+import { RateLimitCountdown } from "../components/ui/RateLimitCountdown";
 import { SettingsModal } from "../components/SettingsModal";
 import { redditApi, ApiError } from "../api";
 import styles from "./Posts.module.scss";
@@ -445,41 +446,27 @@ export const Posts: FC = () => {
 
       {loading && !isWaitingToRetry && <Loader isVisible={true} />}
 
-      {isWaitingToRetry && (
+      {isWaitingToRetry && retryAfter && (
         <div className={styles.retryContainer}>
-          <div className={styles.retryMessage}>
-            <h3>Reddit Rate Limit Reached</h3>
-            <p>
-              Reddit limits how frequently we can request data.
-              {retryCountdown !== null &&
-                retryCountdown > 0 &&
-                ` Retrying automatically in ${retryCountdown} second${
-                  retryCountdown !== 1 ? "s" : ""
-                }...`}
-            </p>
-            <div className={styles.retryProgress}>
-              <div
-                className={styles.retryProgressBar}
-                style={{
-                  width: `${
-                    retryCountdown !== null && retryAfter !== null
-                      ? ((retryAfter - retryCountdown) / retryAfter) * 100
-                      : 0
-                  }%`,
-                }}
-              ></div>
-            </div>
-            <div className={styles.retryButtons}>
-              <button onClick={handleRetry} className={styles.retryNowButton}>
-                Retry Now
-              </button>
-              <button
-                onClick={() => navigate("/")}
-                className={styles.cancelButton}
-              >
-                Return to Home
-              </button>
-            </div>
+          <RateLimitCountdown
+            retryAfter={retryAfter}
+            onComplete={() => {
+              setIsWaitingToRetry(false);
+              setRetryAfter(null);
+              setRetryCountdown(null);
+              fetchSavedPosts();
+            }}
+          />
+          <div className={styles.retryButtons}>
+            <button onClick={handleRetry} className={styles.retryNowButton}>
+              Retry Now
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              className={styles.cancelButton}
+            >
+              Return to Home
+            </button>
           </div>
         </div>
       )}

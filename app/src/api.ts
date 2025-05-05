@@ -55,25 +55,20 @@ export const authService = {
       );
     }
 
-    const encodedHeader = Buffer.from(`${clientId}:${clientSecret}`).toString(
-      "base64"
-    );
-
     try {
       console.log(`Attempting token exchange with redirectURI: ${redirectURI}`);
 
-      const response = await fetch(`${REDDIT_BASE_URL}/api/v1/access_token`, {
+      const response = await fetch(`${PROXY_BASE_URL}/reddit/auth/token`, {
         method: "POST",
-        body: `grant_type=authorization_code&code=${encodeURIComponent(
-          code
-        )}&redirect_uri=${encodeURIComponent(redirectURI)}`,
         headers: {
-          Authorization: `Basic ${encodedHeader}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": "bookmarkeddit/1.0",
+          "Content-Type": "application/json",
         },
-        // Add credentials to handle cookies properly
-        credentials: "same-origin",
+        body: JSON.stringify({
+          code,
+          redirectUri: redirectURI,
+          clientId,
+          clientSecret,
+        }),
       });
 
       if (!response.ok) {
@@ -130,24 +125,19 @@ export const authService = {
       );
     }
 
-    const encodedHeader = Buffer.from(`${clientId}:${clientSecret}`).toString(
-      "base64"
-    );
-
     try {
       console.log("Attempting to refresh token");
 
-      const response = await fetch(`${REDDIT_BASE_URL}/api/v1/access_token`, {
+      const response = await fetch(`${PROXY_BASE_URL}/reddit/auth/refresh`, {
         method: "POST",
-        body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(
-          refreshToken
-        )}`,
         headers: {
-          Authorization: `Basic ${encodedHeader}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": "bookmarkeddit/1.0",
+          "Content-Type": "application/json",
         },
-        credentials: "same-origin",
+        body: JSON.stringify({
+          refreshToken,
+          clientId,
+          clientSecret,
+        }),
       });
 
       if (!response.ok) {
@@ -169,10 +159,7 @@ export const authService = {
 
       const data = await response.json();
       console.log("Token refresh successful");
-      return {
-        ...data,
-        refresh_token: refreshToken, // Reddit doesn't return refresh_token on refresh requests
-      } as AuthTokenResponse;
+      return data as AuthTokenResponse;
     } catch (error) {
       // Detailed error logging
       console.error("Token refresh error:", error);
@@ -198,10 +185,10 @@ export const authService = {
   // Get user profile
   getUserProfile: async (accessToken: string): Promise<UserProfile> => {
     try {
-      const response = await fetch("https://oauth.reddit.com/api/v1/me", {
+      const response = await fetch(`${PROXY_BASE_URL}/reddit/me`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "User-Agent": "bookmarkeddit/1.0",
+          "Content-Type": "application/json",
         },
       });
 
