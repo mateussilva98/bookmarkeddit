@@ -45,6 +45,9 @@ Next up:
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
   ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
   ☐ better scatfolding for the proxy server
+    ☐ add a info logger for requests and responses 
+    ☐ add a error logger for requests and responses
+    ☐ add better error handling
   ☐ show/hide filters
     ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
