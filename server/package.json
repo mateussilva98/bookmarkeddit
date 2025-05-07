@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node dist/proxy.js",
+    "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npm run build && npm start\"",
     "build": "tsc"
   },
   "dependencies": {
@@ -17,6 +18,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^20.2.5",
+    "nodemon": "^3.1.10",
     "typescript": "^5.0.2"
   }
 }
