@@ -39,7 +39,7 @@ export const PostsList: FC<PostsListProps> = ({
   const { store, changeLayout, changeSortBy } = useStore();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const [visibleCount, setVisibleCount] = useState(20); // For infinite scroll
+  const [visibleCount, setVisibleCount] = useState(50); // For infinite scroll
 
   // Update local posts when parent posts change
   useEffect(() => {
@@ -58,7 +58,7 @@ export const PostsList: FC<PostsListProps> = ({
 
   // Reset visibleCount and scroll to top when posts, search, or sort changes
   useEffect(() => {
-    setVisibleCount(20);
+    setVisibleCount(50);
     if (postsListRef.current) {
       postsListRef.current.scrollTo({ top: 0, behavior: "auto" });
     }

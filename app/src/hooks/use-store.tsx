@@ -182,6 +182,9 @@ export const useStore = () => {
     }));
   };
 
+  // Track ongoing refresh promise to prevent multiple simultaneous refreshes
+  let refreshPromise: Promise<boolean> | null = null;
+
   // Handle OAuth code exchange and token refresh
   const handleCodeExchange = async (code: string): Promise<boolean> => {
     try {
@@ -215,30 +218,37 @@ export const useStore = () => {
   };
 
   const refreshAuth = async (): Promise<boolean> => {
+    if (refreshPromise) {
+      // If a refresh is already in progress, return the same promise
+      return refreshPromise;
+    }
     const refreshToken = store.auth.refresh_token;
     if (!refreshToken) {
       setAuthError("No refresh token available");
       return false;
     }
-
-    try {
-      setAuthLoading(true);
-      const tokenData = await authService.refreshToken(refreshToken);
-      setAuthTokens(
-        tokenData.access_token,
-        tokenData.refresh_token,
-        tokenData.expires_in
-      );
-      return true;
-    } catch (error) {
-      setAuthError(
-        error instanceof Error ? error.message : "Failed to refresh token"
-      );
-      logout(); // If refresh fails, log the user out
-      return false;
-    } finally {
-      setAuthLoading(false);
-    }
+    refreshPromise = (async () => {
+      try {
+        setAuthLoading(true);
+        const tokenData = await authService.refreshToken(refreshToken);
+        setAuthTokens(
+          tokenData.access_token,
+          tokenData.refresh_token,
+          tokenData.expires_in
+        );
+        return true;
+      } catch (error) {
+        setAuthError(
+          error instanceof Error ? error.message : "Failed to refresh token"
+        );
+        logout(); // If refresh fails, log the user out
+        return false;
+      } finally {
+        setAuthLoading(false);
+        refreshPromise = null; // Reset promise after completion
+      }
+    })();
+    return refreshPromise;
   };
 
   const checkTokenExpiration = async (): Promise<string | null> => {
