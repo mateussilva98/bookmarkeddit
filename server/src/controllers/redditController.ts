@@ -1,7 +1,14 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import fetch from "node-fetch";
 import { formatErrorResponse } from "../utils/responses.js";
 import { RedditApiResponse, RedditUserResponse } from "../types/index.js";
+import {
+  AppError,
+  RateLimitError,
+  ExternalApiError,
+  AuthenticationError,
+} from "../utils/errors.js";
+import { asyncHandler } from "../middleware/errorHandler.js";
 
 // Rate limiting management
 const rateLimitReset: { [key: string]: number } = {}; // Store reset times for rate limits
@@ -25,26 +32,21 @@ export function setRateLimit(
   rateLimitReset[token] = now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
 }
 
-// Fetch user profile
-export async function getUserProfile(req: Request, res: Response) {
-  const accessToken = req.headers.accessToken as string;
-  const now = Date.now();
+// Fetch user profile - example of using the new error handling system
+export const getUserProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const accessToken = req.headers.accessToken as string;
+    const now = Date.now();
 
-  // Check if we're in a rate limit cooldown period
-  const retryAfter = isRateLimited(accessToken, now);
-  if (retryAfter) {
-    return res
-      .status(429)
-      .json(
-        formatErrorResponse(
-          429,
-          "Rate limit in effect, please try again later",
-          retryAfter
-        )
+    // Check if we're in a rate limit cooldown period
+    const retryAfter = isRateLimited(accessToken, now);
+    if (retryAfter) {
+      throw new RateLimitError(
+        "Rate limit in effect, please try again later",
+        retryAfter
       );
-  }
+    }
 
-  try {
     const response = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -62,48 +64,41 @@ export async function getUserProfile(req: Request, res: Response) {
       console.error(
         `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
       );
-      return res
-        .status(429)
-        .json(
-          formatErrorResponse(
-            429,
-            "Too many requests to Reddit API",
-            retrySeconds
-          )
-        );
+      throw new RateLimitError("Too many requests to Reddit API", retrySeconds);
     }
 
     if (!response.ok) {
       let errorText;
+      let errorData;
+
       try {
-        const errorData = await response.json();
+        errorData = await response.json();
         errorText = JSON.stringify(errorData);
       } catch (e) {
         errorText = await response.text();
       }
 
       console.error("Reddit API Error fetching user profile:", errorText);
-      return res
-        .status(response.status)
-        .json(formatErrorResponse(response.status, errorText));
+
+      // Handle authentication errors specifically
+      if (response.status === 401) {
+        throw new AuthenticationError(
+          "Your session has expired. Please log in again.",
+          errorData
+        );
+      }
+
+      throw new ExternalApiError(
+        `Reddit API Error: ${errorText}`,
+        response.status,
+        errorData
+      );
     }
 
     const data = (await response.json()) as RedditUserResponse;
     res.json(data);
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    res
-      .status(500)
-      .json(
-        formatErrorResponse(
-          500,
-          `Failed to fetch user profile: ${
-            error instanceof Error ? error.message : String(error)
-          }`
-        )
-      );
   }
-}
+);
 
 // Validate token
 export async function validateToken(req: Request, res: Response) {
