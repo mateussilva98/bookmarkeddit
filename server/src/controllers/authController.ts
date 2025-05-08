@@ -5,12 +5,34 @@ import { formatErrorResponse } from "../utils/responses.js";
 // Handle token exchange from authorization code
 export async function exchangeToken(req: Request, res: Response) {
   try {
-    const { code, redirectUri, clientId, clientSecret } = req.body;
+    const { code, redirectUri } = req.body;
+    const clientId = process.env.CLIENT_ID;
+    const clientSecret = process.env.CLIENT_SECRET;
 
-    if (!code || !redirectUri || !clientId || !clientSecret) {
+    if (!code || !redirectUri) {
+      console.error("Missing parameters in request:", req.body);
       return res
         .status(400)
-        .json(formatErrorResponse(400, "Missing required parameters"));
+        .json(
+          formatErrorResponse(
+            400,
+            "Missing required parameters. Both code and redirectUri are required."
+          )
+        );
+    }
+
+    if (!clientId || !clientSecret) {
+      console.error(
+        "Missing server environment variables: CLIENT_ID or CLIENT_SECRET"
+      );
+      return res
+        .status(500)
+        .json(
+          formatErrorResponse(
+            500,
+            "Server configuration error: Missing API credentials"
+          )
+        );
     }
 
     console.log(
@@ -74,12 +96,25 @@ export async function exchangeToken(req: Request, res: Response) {
 // Handle token refresh
 export async function refreshToken(req: Request, res: Response) {
   try {
-    const { refreshToken, clientId, clientSecret } = req.body;
+    const { refreshToken } = req.body;
+    const clientId = process.env.CLIENT_ID;
+    const clientSecret = process.env.CLIENT_SECRET;
 
-    if (!refreshToken || !clientId || !clientSecret) {
+    if (!refreshToken) {
       return res
         .status(400)
-        .json(formatErrorResponse(400, "Missing required parameters"));
+        .json(formatErrorResponse(400, "Missing refresh token"));
+    }
+
+    if (!clientId || !clientSecret) {
+      return res
+        .status(500)
+        .json(
+          formatErrorResponse(
+            500,
+            "Server configuration error: Missing API credentials"
+          )
+        );
     }
 
     console.log("Proxy: Attempting to refresh token");

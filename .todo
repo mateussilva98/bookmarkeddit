@@ -48,8 +48,7 @@ Next up:
     ☐ add better error handling
     ☐ add .env file for the proxy server
     ☐ add a .env.example file for the proxy server
-    ☐ tentar tirar os .js
-    ☐ improve error handling
+    ✔ improve error handling @done(25-05-09 00:31)
   ☐ show/hide filters
     ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)

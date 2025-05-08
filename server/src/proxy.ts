@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import redditRoutes from "./routes/redditRoutes.js";

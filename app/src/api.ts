@@ -44,16 +44,7 @@ export class ApiError extends Error {
 export const authService = {
   // Exchange authorization code for tokens
   getTokens: async (code: string): Promise<AuthTokenResponse> => {
-    const clientId = import.meta.env.VITE_CLIENT_ID;
-    const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
     const redirectURI = window.location.origin + "/login/callback";
-
-    // Check if we have valid credentials
-    if (!clientId || !clientSecret) {
-      throw new AuthenticationError(
-        "Missing CLIENT_ID or CLIENT_SECRET environment variables"
-      );
-    }
 
     try {
       console.log(`Attempting token exchange with redirectURI: ${redirectURI}`);
@@ -66,8 +57,6 @@ export const authService = {
         body: JSON.stringify({
           code,
           redirectUri: redirectURI,
-          clientId,
-          clientSecret,
         }),
       });
 
@@ -115,16 +104,6 @@ export const authService = {
 
   // Refresh the access token
   refreshToken: async (refreshToken: string): Promise<AuthTokenResponse> => {
-    const clientId = import.meta.env.VITE_CLIENT_ID;
-    const clientSecret = import.meta.env.VITE_CLIENT_SECRET;
-
-    // Check if we have valid credentials
-    if (!clientId || !clientSecret) {
-      throw new AuthenticationError(
-        "Missing CLIENT_ID or CLIENT_SECRET environment variables"
-      );
-    }
-
     try {
       console.log("Attempting to refresh token");
 
@@ -135,8 +114,6 @@ export const authService = {
         },
         body: JSON.stringify({
           refreshToken,
-          clientId,
-          clientSecret,
         }),
       });
 
