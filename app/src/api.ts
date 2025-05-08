@@ -1,7 +1,7 @@
 // API service for handling authentication and Reddit requests
 import { Buffer } from "buffer";
 
-const PROXY_BASE_URL = "http://localhost:5000";
+const PROXY_BASE_URL = "http://localhost:3001";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
 // Type definitions for auth responses
