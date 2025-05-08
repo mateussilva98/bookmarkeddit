@@ -48,6 +48,8 @@ Next up:
     ☐ add better error handling
     ☐ add .env file for the proxy server
     ☐ add a .env.example file for the proxy server
+    ☐ tentar tirar os .js
+    ☐ improve error handling
   ☐ show/hide filters
     ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
   ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
@@ -148,3 +150,140 @@ mongo
 Optional: Nginx or Caddy for reverse proxy and SSL
 
 Set up a CI/CD pipeline to redeploy on code changes.
+
+
+
+
+
+
+If you want just one container (e.g., the Node.js server) to have multiple replicas for load balancing — even on a single VPS — here’s what you should consider:
+
+🛠 Best Solution: Docker Swarm
+Docker Compose does not support scaling with built-in load balancing across container replicas. But Docker Swarm does. With Swarm, you can:
+
+Scale a service (e.g., the server) using:
+
+bash
+Copiar
+Editar
+docker service scale server=3
+Get internal load balancing between replicas.
+
+Use a reverse proxy like Traefik or Nginx (Swarm-aware) to balance external HTTP traffic.
+
+🚫 Why not plain Docker Compose?
+You can technically scale with:
+
+bash
+Copiar
+Editar
+docker-compose up --scale server=3
+But:
+
+It won't automatically load balance traffic to those replicas.
+
+It creates multiple containers with no built-in way to spread traffic unless you manually configure an external load balancer.
+
+
+🔁 Alternatives:
+Traefik or Nginx manually configured in Docker Compose to balance across multiple server containers.
+
+Kubernetes if you're planning a more complex or large-scale deployment (heavier than Swarm).
+
+✅ Recommendation (for a single VPS with replica needs):
+Use Docker Swarm for proper container-level service scaling and built-in load balancing.
+
+Or, use Docker Compose + Nginx as a load balancer, but this requires more manual setup.
+
+
+
+
+If you want to track visits to your website running on your MERN + Docker Swarm stack, here are three solid approaches, depending on how detailed and privacy-aware you want the tracking to be:
+
+✅ Option 1: Use a Self-Hosted Web Analytics Tool (Recommended)
+These tools work similarly to Google Analytics but run on your own server, which:
+
+Gives you full control of the data
+
+Is often GDPR-compliant out of the box
+
+Can be deployed as Docker services alongside your stack
+
+🔧 Recommended tools:
+1. Plausible Analytics (lightweight, privacy-focused)
+Easy to self-host (Docker)
+
+Script-based frontend tracking (like Google Analytics)
+
+Dashboards + metrics like page views, bounce rate, referral sources
+
+Deployment: Add it to your Swarm stack:
+
+yaml
+Copiar
+Editar
+plausible:
+  image: plausible/analytics
+  environment:
+    - BASE_URL=https://yourdomain.com
+    - SECRET_KEY=your-super-secret
+  ports:
+    - "8000:8000"
+  networks:
+    - mern-net
+👉 GitHub
+
+2. Matomo (formerly Piwik, full GA replacement)
+Much more advanced
+
+Supports event tracking, goals, heatmaps, user behavior
+
+Heavier to run, but works great for high-traffic.
+
+✅ Option 2: Use Nginx Access Logs for Passive Tracking
+If you already use Nginx as a reverse proxy, you can:
+
+Enable access logs
+
+Pipe logs into GoAccess or Matomo Log Analytics
+
+Example:
+nginx
+Copiar
+Editar
+log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                '$status $body_bytes_sent "$http_referer" '
+                '"$http_user_agent"';
+
+access_log /var/log/nginx/access.log main;
+Then analyze with:
+
+bash
+Copiar
+Editar
+goaccess /var/log/nginx/access.log --log-format=COMBINED --real-time-html
+🧠 This is a no-JavaScript, low-resource solution. Good for simple stats like IPs, paths, referrers.
+
+✅ Option 3: Use Google Analytics or Cloud-based Trackers (Quick & Free)
+If you're okay with a 3rd-party tool:
+
+Drop the GA4 or Plausible JS snippet into your React app:
+
+js
+Copiar
+Editar
+// index.js or App.js
+ReactGA.initialize('G-XXXXXXX');
+ReactGA.pageview(window.location.pathname + window.location.search);
+But:
+
+You don't control the data.
+
+It may conflict with privacy regulations depending on your audience.
+
+🧠 TL;DR Recommendations:
+Use Case	Tool	Pros	Cons
+Privacy-friendly, easy	Plausible	Lightweight, Docker-ready	Limited advanced features
+Deep analytics, complex	Matomo	Full-featured	Heavier, more setup
+Fast, no JS, basic logs	Nginx + GoAccess	Lightweight, no cookies	No event/session tracking
+Quickest, least control	Google Analytics	Free, simple	Not privacy-respecting
