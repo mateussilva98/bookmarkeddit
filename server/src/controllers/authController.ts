@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import fetch from "node-fetch";
 import { formatErrorResponse } from "../utils/responses.js";
+import { logInfo, logError, logWarn } from "../utils/logger.js";
 
 // Handle token exchange from authorization code
 export async function exchangeToken(req: Request, res: Response) {
@@ -10,7 +11,12 @@ export async function exchangeToken(req: Request, res: Response) {
     const clientSecret = process.env.CLIENT_SECRET;
 
     if (!code || !redirectUri) {
-      console.error("Missing parameters in request:", req.body);
+      logError("Missing parameters in token exchange request", null, {
+        body: req.body,
+        missingCode: !code,
+        missingRedirectUri: !redirectUri,
+      });
+
       return res
         .status(400)
         .json(
@@ -22,9 +28,15 @@ export async function exchangeToken(req: Request, res: Response) {
     }
 
     if (!clientId || !clientSecret) {
-      console.error(
-        "Missing server environment variables: CLIENT_ID or CLIENT_SECRET"
+      logError(
+        "Missing server environment variables for Reddit API credentials",
+        null,
+        {
+          missingClientId: !clientId,
+          missingClientSecret: !clientSecret,
+        }
       );
+
       return res
         .status(500)
         .json(
@@ -35,9 +47,10 @@ export async function exchangeToken(req: Request, res: Response) {
         );
     }
 
-    console.log(
-      `Proxy: Attempting token exchange with redirectURI: ${redirectUri}`
-    );
+    logInfo(`Attempting token exchange with Reddit`, {
+      redirectUri,
+      hasCode: !!code,
+    });
 
     const encodedCredentials = Buffer.from(
       `${clientId}:${clientSecret}`
@@ -57,11 +70,10 @@ export async function exchangeToken(req: Request, res: Response) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        "Proxy: Token exchange failed:",
-        response.status,
-        errorText
-      );
+      logError("Token exchange failed with Reddit API", null, {
+        status: response.status,
+        errorText,
+      });
 
       return res
         .status(response.status)
@@ -74,11 +86,15 @@ export async function exchangeToken(req: Request, res: Response) {
     }
 
     const data = (await response.json()) as Record<string, any>;
-    console.log("Proxy: Token exchange successful");
+    logInfo("Token exchange successful", {
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
+      scope: data.scope,
+    });
 
     return res.json(data);
   } catch (error) {
-    console.error("Proxy: Error during token exchange:", error);
+    logError("Error during token exchange", error);
 
     return res
       .status(500)
@@ -101,12 +117,19 @@ export async function refreshToken(req: Request, res: Response) {
     const clientSecret = process.env.CLIENT_SECRET;
 
     if (!refreshToken) {
+      logError("Missing refresh token in request", null, { body: req.body });
+
       return res
         .status(400)
         .json(formatErrorResponse(400, "Missing refresh token"));
     }
 
     if (!clientId || !clientSecret) {
+      logError("Missing server environment variables for token refresh", null, {
+        missingClientId: !clientId,
+        missingClientSecret: !clientSecret,
+      });
+
       return res
         .status(500)
         .json(
@@ -117,7 +140,7 @@ export async function refreshToken(req: Request, res: Response) {
         );
     }
 
-    console.log("Proxy: Attempting to refresh token");
+    logInfo("Attempting to refresh Reddit API token");
 
     const encodedCredentials = Buffer.from(
       `${clientId}:${clientSecret}`
@@ -137,7 +160,10 @@ export async function refreshToken(req: Request, res: Response) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Proxy: Token refresh failed:", response.status, errorText);
+      logError("Token refresh failed with Reddit API", null, {
+        status: response.status,
+        errorText,
+      });
 
       return res
         .status(response.status)
@@ -150,7 +176,10 @@ export async function refreshToken(req: Request, res: Response) {
     }
 
     const data = (await response.json()) as Record<string, any>;
-    console.log("Proxy: Token refresh successful");
+    logInfo("Token refresh successful", {
+      tokenType: data.token_type,
+      expiresIn: data.expires_in,
+    });
 
     // Reddit doesn't return refresh_token on refresh requests, so add it back
     return res.json({
@@ -158,7 +187,7 @@ export async function refreshToken(req: Request, res: Response) {
       refresh_token: refreshToken,
     });
   } catch (error) {
-    console.error("Proxy: Error during token refresh:", error);
+    logError("Error during token refresh", error);
 
     return res
       .status(500)

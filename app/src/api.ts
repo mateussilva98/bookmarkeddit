@@ -4,6 +4,20 @@ import { Buffer } from "buffer";
 const PROXY_BASE_URL = "http://localhost:3001";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
+// Cache for user profile data
+let userProfileCache: {
+  profile: UserProfile | null;
+  accessToken: string | null;
+  timestamp: number | null;
+} = {
+  profile: null,
+  accessToken: null,
+  timestamp: null,
+};
+
+// Cache timeout in milliseconds (5 minutes)
+const PROFILE_CACHE_TIMEOUT = 5 * 60 * 1000;
+
 // Type definitions for auth responses
 export interface AuthTokenResponse {
   access_token: string;
@@ -159,8 +173,20 @@ export const authService = {
     }
   },
 
-  // Get user profile
+  // Get user profile with caching
   getUserProfile: async (accessToken: string): Promise<UserProfile> => {
+    // Check if we have a cached profile for this access token that's not expired
+    const now = Date.now();
+    if (
+      userProfileCache.profile &&
+      userProfileCache.accessToken === accessToken &&
+      userProfileCache.timestamp &&
+      now - userProfileCache.timestamp < PROFILE_CACHE_TIMEOUT
+    ) {
+      console.log("Returning cached user profile");
+      return userProfileCache.profile;
+    }
+
     try {
       const response = await fetch(`${PROXY_BASE_URL}/reddit/me`, {
         headers: {
@@ -176,7 +202,16 @@ export const authService = {
         );
       }
 
-      return await response.json();
+      const profile = await response.json();
+
+      // Cache the result
+      userProfileCache = {
+        profile,
+        accessToken,
+        timestamp: Date.now(),
+      };
+
+      return profile;
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;

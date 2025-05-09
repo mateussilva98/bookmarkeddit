@@ -9,6 +9,7 @@ import {
   AuthenticationError,
 } from "../utils/errors.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
+import { logInfo, logError, logWarn, logDebug } from "../utils/logger.js";
 
 // Rate limiting management
 const rateLimitReset: { [key: string]: number } = {}; // Store reset times for rate limits
@@ -30,6 +31,10 @@ export function setRateLimit(
   now: number = Date.now()
 ) {
   rateLimitReset[token] = now + retrySeconds * 1000 + RATE_LIMIT_BUFFER;
+  logWarn(`Rate limit set for token. Retry after ${retrySeconds} seconds.`, {
+    retrySeconds,
+    resetAt: new Date(rateLimitReset[token]).toISOString(),
+  });
 }
 
 // Fetch user profile - example of using the new error handling system
@@ -47,6 +52,8 @@ export const getUserProfile = asyncHandler(
       );
     }
 
+    logInfo("Fetching user profile from Reddit API");
+
     const response = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -61,9 +68,11 @@ export const getUserProfile = asyncHandler(
 
       setRateLimit(accessToken, retrySeconds, now);
 
-      console.error(
-        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
-      );
+      logError(`Rate limited by Reddit API when fetching user profile`, null, {
+        retryAfter: retrySeconds,
+        endpoint: "/api/v1/me",
+      });
+
       throw new RateLimitError("Too many requests to Reddit API", retrySeconds);
     }
 
@@ -78,7 +87,11 @@ export const getUserProfile = asyncHandler(
         errorText = await response.text();
       }
 
-      console.error("Reddit API Error fetching user profile:", errorText);
+      logError("Reddit API Error fetching user profile", null, {
+        status: response.status,
+        errorText,
+        errorData,
+      });
 
       // Handle authentication errors specifically
       if (response.status === 401) {
@@ -96,6 +109,7 @@ export const getUserProfile = asyncHandler(
     }
 
     const data = (await response.json()) as RedditUserResponse;
+    logInfo("Successfully fetched user profile", { username: data.name });
     res.json(data);
   }
 );
@@ -105,6 +119,8 @@ export async function validateToken(req: Request, res: Response) {
   const accessToken = req.headers.accessToken as string;
 
   try {
+    logInfo("Validating Reddit API token");
+
     const response = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -114,7 +130,11 @@ export async function validateToken(req: Request, res: Response) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Token validation failed:", response.status, errorText);
+      logError("Token validation failed", null, {
+        status: response.status,
+        errorText,
+      });
+
       return res
         .status(response.status)
         .json(
@@ -125,10 +145,11 @@ export async function validateToken(req: Request, res: Response) {
         );
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as RedditUserResponse;
+    logInfo("Token validated successfully", { username: data.name });
     return res.json({ valid: true, user: data });
   } catch (error) {
-    console.error("Error validating token:", error);
+    logError("Error validating token", error);
     return res
       .status(500)
       .json(
@@ -152,6 +173,11 @@ export async function getSavedPosts(req: Request, res: Response) {
   // Check if we're in a rate limit cooldown period
   const retryAfter = isRateLimited(accessToken, now);
   if (retryAfter) {
+    logWarn("Rate limit in effect for saved posts request", {
+      retryAfter,
+      endpoint: "/saved",
+    });
+
     return res
       .status(429)
       .json(
@@ -165,6 +191,8 @@ export async function getSavedPosts(req: Request, res: Response) {
 
   try {
     // First, get the username of the authenticated user
+    logInfo("Fetching username for saved posts request");
+
     const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -174,7 +202,10 @@ export async function getSavedPosts(req: Request, res: Response) {
 
     if (!userResponse.ok) {
       const errorText = await userResponse.text();
-      console.error("Token validation failed:", userResponse.status, errorText);
+      logError("Token validation failed when fetching saved posts", null, {
+        status: userResponse.status,
+        errorText,
+      });
 
       // If token is invalid, return appropriate error
       if (userResponse.status === 401) {
@@ -203,13 +234,17 @@ export async function getSavedPosts(req: Request, res: Response) {
     const username = userData.name;
 
     if (!username) {
-      console.error("Failed to get username from Reddit API");
+      logError("Failed to get username from Reddit API");
       return res
         .status(500)
         .json(formatErrorResponse(500, "Failed to get your Reddit username"));
     }
 
-    console.log(`Fetching saved posts for user: ${username}`);
+    logInfo(`Fetching saved posts for user`, {
+      username,
+      limit,
+      after: after || "none",
+    });
 
     // Build the URL with the username instead of "me"
     let url = `https://oauth.reddit.com/user/${username}/saved?limit=${limit}&raw_json=1`;
@@ -217,7 +252,7 @@ export async function getSavedPosts(req: Request, res: Response) {
       url += `&after=${after}`;
     }
 
-    console.log(`Fetching saved posts with URL: ${url}`);
+    logDebug(`Constructed URL for saved posts`, { url });
 
     const response = await fetch(url, {
       headers: {
@@ -226,7 +261,10 @@ export async function getSavedPosts(req: Request, res: Response) {
       },
     });
 
-    console.log("Reddit API Response Status:", response.status);
+    logInfo("Reddit API Response for saved posts", {
+      status: response.status,
+      ok: response.ok,
+    });
 
     // Handle rate limiting
     if (response.status === 429) {
@@ -235,9 +273,11 @@ export async function getSavedPosts(req: Request, res: Response) {
 
       setRateLimit(accessToken, retrySeconds, now);
 
-      console.error(
-        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
-      );
+      logError("Rate limited by Reddit API when fetching saved posts", null, {
+        retryAfter: retrySeconds,
+        endpoint: "/user/saved",
+      });
+
       return res
         .status(429)
         .json(
@@ -251,14 +291,20 @@ export async function getSavedPosts(req: Request, res: Response) {
 
     if (!response.ok) {
       let errorText;
+      let errorData;
+
       try {
-        const errorData = await response.json();
+        errorData = await response.json();
         errorText = JSON.stringify(errorData);
       } catch (e) {
         errorText = await response.text();
       }
 
-      console.error("Reddit API Error:", errorText);
+      logError("Reddit API Error when fetching saved posts", null, {
+        status: response.status,
+        errorText,
+        errorData,
+      });
 
       // Handle specific error codes
       if (response.status === 400) {
@@ -277,10 +323,16 @@ export async function getSavedPosts(req: Request, res: Response) {
         .json(formatErrorResponse(response.status, errorText));
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as RedditApiResponse;
+
+    logInfo("Successfully fetched saved posts", {
+      count: data.data?.children?.length || 0,
+      hasMore: !!data.data?.after,
+    });
+
     res.json(data);
   } catch (error) {
-    console.error("Error fetching saved posts:", error);
+    logError("Error fetching saved posts", error);
     res
       .status(500)
       .json(
@@ -303,6 +355,11 @@ export async function getAllSavedPosts(req: Request, res: Response) {
   // Check if we're in a rate limit cooldown period
   const retryAfter = isRateLimited(accessToken, now);
   if (retryAfter) {
+    logWarn("Rate limit in effect for all saved posts request", {
+      retryAfter,
+      endpoint: "/saved-all",
+    });
+
     return res
       .status(429)
       .json(
@@ -316,6 +373,8 @@ export async function getAllSavedPosts(req: Request, res: Response) {
 
   try {
     // First, get the username of the authenticated user
+    logInfo("Fetching username for all saved posts request");
+
     const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -325,7 +384,10 @@ export async function getAllSavedPosts(req: Request, res: Response) {
 
     if (!userResponse.ok) {
       const errorText = await userResponse.text();
-      console.error("Token validation failed:", userResponse.status, errorText);
+      logError("Token validation failed when fetching all saved posts", null, {
+        status: userResponse.status,
+        errorText,
+      });
 
       // If token is invalid, return appropriate error
       if (userResponse.status === 401) {
@@ -354,13 +416,16 @@ export async function getAllSavedPosts(req: Request, res: Response) {
     const username = userData.name;
 
     if (!username) {
-      console.error("Failed to get username from Reddit API");
+      logError("Failed to get username from Reddit API");
       return res
         .status(500)
         .json(formatErrorResponse(500, "Failed to get your Reddit username"));
     }
 
-    console.log(`Fetching all saved posts for user: ${username}`);
+    logInfo(`Starting incremental fetch of all saved posts`, {
+      username,
+      limit,
+    });
 
     // Initialize variables for the incremental fetching
     let allPosts: any[] = [];
@@ -376,7 +441,7 @@ export async function getAllSavedPosts(req: Request, res: Response) {
         url += `&after=${afterToken}`;
       }
 
-      console.log(`Fetching batch #${batchNumber} with URL: ${url}`);
+      logDebug(`Fetching batch #${batchNumber}`, { url, batchNumber });
 
       const response = await fetch(url, {
         headers: {
@@ -385,7 +450,11 @@ export async function getAllSavedPosts(req: Request, res: Response) {
         },
       });
 
-      console.log(`Batch #${batchNumber} response status:`, response.status);
+      logInfo(`Batch #${batchNumber} response received`, {
+        status: response.status,
+        ok: response.ok,
+        batchNumber,
+      });
 
       // Handle rate limiting
       if (response.status === 429) {
@@ -394,9 +463,12 @@ export async function getAllSavedPosts(req: Request, res: Response) {
 
         setRateLimit(accessToken, retrySeconds, now);
 
-        console.error(
-          `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
-        );
+        logError(`Rate limited by Reddit API on batch #${batchNumber}`, null, {
+          retryAfter: retrySeconds,
+          endpoint: "/user/saved",
+          batchNumber,
+        });
+
         return res
           .status(429)
           .json(
@@ -410,14 +482,21 @@ export async function getAllSavedPosts(req: Request, res: Response) {
 
       if (!response.ok) {
         let errorText;
+        let errorData;
+
         try {
-          const errorData = await response.json();
+          errorData = await response.json();
           errorText = JSON.stringify(errorData);
         } catch (e) {
           errorText = await response.text();
         }
 
-        console.error(`Reddit API Error in batch #${batchNumber}:`, errorText);
+        logError(`Reddit API Error in batch #${batchNumber}`, null, {
+          status: response.status,
+          errorText,
+          errorData,
+          batchNumber,
+        });
 
         // Handle specific error codes
         if (response.status === 400) {
@@ -442,11 +521,13 @@ export async function getAllSavedPosts(req: Request, res: Response) {
       // Add the children to our collection
       if (batchData.data?.children && batchData.data.children.length > 0) {
         allPosts = [...allPosts, ...batchData.data.children];
-        console.log(
-          `Added ${batchData.data.children.length} posts from batch #${batchNumber}. Total so far: ${allPosts.length}`
-        );
+        logInfo(`Added posts from batch #${batchNumber}`, {
+          batchCount: batchData.data.children.length,
+          totalSoFar: allPosts.length,
+          batchNumber,
+        });
       } else {
-        console.log(`Batch #${batchNumber} returned no posts.`);
+        logInfo(`Batch #${batchNumber} returned no posts`, { batchNumber });
       }
 
       // Check if there are more posts to fetch
@@ -455,7 +536,7 @@ export async function getAllSavedPosts(req: Request, res: Response) {
         batchNumber++;
       } else {
         hasMore = false;
-        console.log("No more posts to fetch.");
+        logInfo("No more posts to fetch, completed incremental fetch");
       }
 
       // Add a small delay to prevent overwhelming the Reddit API
@@ -476,10 +557,14 @@ export async function getAllSavedPosts(req: Request, res: Response) {
       },
     };
 
-    console.log(`Successfully fetched all ${allPosts.length} saved posts.`);
+    logInfo(`Successfully fetched all saved posts`, {
+      totalPosts: allPosts.length,
+      batchesRequired: batchNumber,
+    });
+
     res.json(fullResponse);
   } catch (error) {
-    console.error("Error fetching all saved posts:", error);
+    logError("Error fetching all saved posts", error);
     res
       .status(500)
       .json(
@@ -500,6 +585,7 @@ export async function unsavePost(req: Request, res: Response) {
   const now = Date.now();
 
   if (!id) {
+    logError("Missing post ID in unsave request", null, { body: req.body });
     return res
       .status(400)
       .json(formatErrorResponse(400, "Post ID is required"));
@@ -508,6 +594,12 @@ export async function unsavePost(req: Request, res: Response) {
   // Check if we're in a rate limit cooldown period
   const retryAfter = isRateLimited(accessToken, now);
   if (retryAfter) {
+    logWarn("Rate limit in effect for unsave request", {
+      retryAfter,
+      endpoint: "/unsave",
+      postId: id,
+    });
+
     return res
       .status(429)
       .json(
@@ -520,6 +612,8 @@ export async function unsavePost(req: Request, res: Response) {
   }
 
   try {
+    logInfo("Attempting to unsave post", { postId: id });
+
     const response = await fetch(`https://oauth.reddit.com/api/unsave`, {
       method: "POST",
       headers: {
@@ -537,9 +631,12 @@ export async function unsavePost(req: Request, res: Response) {
 
       setRateLimit(accessToken, retrySeconds, now);
 
-      console.error(
-        `Rate limited by Reddit API. Retry after ${retrySeconds} seconds.`
-      );
+      logError("Rate limited by Reddit API when unsaving post", null, {
+        retryAfter: retrySeconds,
+        endpoint: "/api/unsave",
+        postId: id,
+      });
+
       return res
         .status(429)
         .json(
@@ -553,22 +650,31 @@ export async function unsavePost(req: Request, res: Response) {
 
     if (!response.ok) {
       let errorText;
+      let errorData;
+
       try {
-        const errorData = await response.json();
+        errorData = await response.json();
         errorText = JSON.stringify(errorData);
       } catch (e) {
         errorText = await response.text();
       }
 
-      console.error("Reddit API Error when unsaving:", errorText);
+      logError("Reddit API Error when unsaving post", null, {
+        status: response.status,
+        errorText,
+        errorData,
+        postId: id,
+      });
+
       return res
         .status(response.status)
         .json(formatErrorResponse(response.status, errorText));
     }
 
+    logInfo("Successfully unsaved post", { postId: id });
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error("Error unsaving post:", error);
+    logError("Error unsaving post", error, { postId: id });
     res
       .status(500)
       .json(
@@ -587,9 +693,17 @@ export function clearRateLimit(req: Request, res: Response) {
   const { token } = req.body;
 
   if (token && rateLimitReset[token]) {
+    logInfo("Manually clearing rate limit for token", {
+      wasLimitedUntil: new Date(rateLimitReset[token]).toISOString(),
+    });
+
     delete rateLimitReset[token];
     res.json({ success: true, message: "Rate limit cleared" });
   } else {
+    logWarn("Failed to clear rate limit - invalid token or no rate limit set", {
+      token: !!token,
+    });
+
     res.status(400).json({ error: "Invalid token or no rate limit set" });
   }
 }

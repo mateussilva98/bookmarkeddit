@@ -43,11 +43,11 @@ Next up:
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
   ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
   ☐ better scatfolding for the proxy server
-    ☐ add a info logger for requests and responses 
-    ☐ add a error logger for requests and responses
-    ☐ add better error handling
-    ☐ add .env file for the proxy server
-    ☐ add a .env.example file for the proxy server
+    ☐ add a info logger 
+    ☐ add a error logger
+    ✔ add better error handling @done(25-05-09 00:45)
+    ✔ add .env file for the proxy server @done(25-05-09 00:45)
+    ✔ add a .env.example file for the proxy server @done(25-05-09 00:45)
     ✔ improve error handling @done(25-05-09 00:31)
   ☐ show/hide filters
     ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile

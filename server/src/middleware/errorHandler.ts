@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utils/errors.js";
 import { formatErrorResponse } from "../utils/responses.js";
+import { logError } from "../utils/logger.js";
 
 /**
  * Global error handling middleware
@@ -11,8 +12,6 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error("Error:", err);
-
   // Default error values
   let statusCode = 500;
   let message = "Internal Server Error";
@@ -40,6 +39,18 @@ export const errorHandler = (
     message = "Internal Server Error";
   }
 
+  // Log the error with our structured logger
+  logError(`${req.method} ${req.originalUrl} caused error: ${message}`, err, {
+    statusCode,
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    retryAfter,
+    requestBody: req.method !== "GET" ? req.body : undefined,
+    requestQuery: req.query,
+    requestParams: req.params,
+  });
+
   // Send the response
   res
     .status(statusCode)
@@ -50,6 +61,13 @@ export const errorHandler = (
  * Catch 404 errors for undefined routes
  */
 export const notFoundHandler = (req: Request, res: Response) => {
+  logError(`Route not found: ${req.method} ${req.originalUrl}`, null, {
+    statusCode: 404,
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+  });
+
   res
     .status(404)
     .json(
