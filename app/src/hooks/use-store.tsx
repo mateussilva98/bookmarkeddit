@@ -12,7 +12,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { AuthTokenResponse, UserProfile, authService } from "../api";
+import { UserProfile, authService } from "../api";
 
 // Type definitions for store properties
 type ThemeType = "dark" | "light";

@@ -60,6 +60,23 @@ View posts in an attractive grid layout or detailed list view depending on your 
 
 - Node.js (v14 or higher)
 - Reddit account with saved posts
+- Reddit Developer Application credentials (see below)
+
+### Reddit API Credentials Setup
+
+1. Go to [Reddit's App Preferences](https://www.reddit.com/prefs/apps)
+2. Click "Create App" or "Create Another App" button at the bottom
+3. Fill in the following:
+   - Name: Bookmarkeddit (or any name you prefer)
+   - App type: Select "web app"
+   - Description: Optional
+   - About URL: Optional
+   - Redirect URI: `http://localhost/login/callback` (for local development)
+   - Note this URI for your .env file configuration
+4. Click "Create app" button
+5. Note your:
+   - Client ID: The string under the app name
+   - Client Secret: Listed as "secret"
 
 ### Installation & Setup
 
@@ -82,21 +99,42 @@ View posts in an attractive grid layout or detailed list view depending on your 
    npm install
    ```
 
-3. Create `.env` files:
+3. Create and configure the environment files:
 
-   For the server (`server/.env`):
+   **For the server:**
+
+   Copy the example environment file:
+
+   ```bash
+   cp server/example.env server/.env
+   ```
+
+   Edit `server/.env` with your Reddit API credentials:
 
    ```
-   CLIENT_ID=your_reddit_app_client_id
-   CLIENT_SECRET=your_reddit_app_client_secret
+   # Reddit API credentials
+   CLIENT_ID=your_reddit_client_id
+   CLIENT_SECRET=your_reddit_client_secret
+
+   # Server configuration
    PORT=3001
+   NODE_ENV=development
    ```
 
-   For the app (`app/.env`):
+   **For the app:**
+
+   Copy the example environment file:
+
+   ```bash
+   cp app/.env.example app/.env
+   ```
+
+   Edit `app/.env` with your Reddit API credentials:
 
    ```
-   VITE_API_URL=http://localhost:3001
-   VITE_CLIENT_ID=your_reddit_app_client_id
+   # Reddit API Configuration
+   VITE_CLIENT_ID=your_reddit_client_id
+   VITE_REDIRECT_URI=http://localhost/login/callback
    ```
 
 4. Start the development servers:
@@ -112,6 +150,72 @@ View posts in an attractive grid layout or detailed list view depending on your 
    ```
 
 5. Navigate to `http://localhost:5173` in your browser
+
+## 🐳 Docker Deployment
+
+Bookmarkeddit supports Docker for easy deployment. Follow these steps to run the application using Docker:
+
+### Using Docker Compose
+
+1. Make sure you have Docker and Docker Compose installed on your system
+
+2. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/bookmarkeddit.git
+   cd bookmarkeddit
+   ```
+
+3. Create the necessary environment files:
+
+   ```bash
+   # For the server
+   cp server/example.env server/.env
+
+   # For the app
+   cp app/.env.example app/.env
+
+   # For docker-compose
+   cp .env.example .env
+   ```
+
+4. Edit the `.env` files with your Reddit API credentials and other configuration
+
+5. Build and start the containers:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+6. Access the application at http://localhost
+
+### Building and Running Containers Separately
+
+If you prefer to build and run the containers separately:
+
+#### Backend Server
+
+```bash
+cd server
+docker build -t bookmarkeddit-server .
+docker run -p 3000:3000 --env-file .env -d bookmarkeddit-server
+```
+
+#### Frontend App
+
+```bash
+cd app
+docker build -t bookmarkeddit-app .
+docker run -p 80:80 -d bookmarkeddit-app
+```
+
+### Production Deployment
+
+For production deployment, consider:
+
+1. Setting appropriate environment variables for production
+2. Setting up proper SSL/TLS with a reverse proxy like Caddy or Nginx
+3. Using Docker Swarm for better container orchestration and zero-downtime updates
 
 ## 📄 Authentication & Permissions
 

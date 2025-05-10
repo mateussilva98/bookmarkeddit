@@ -35,7 +35,6 @@ export const Posts: FC = () => {
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [isWaitingToRetry, setIsWaitingToRetry] = useState<boolean>(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Refs to track fetch status
@@ -126,12 +125,11 @@ export const Posts: FC = () => {
     cleanUpTimers();
 
     setRetryAfter(seconds);
-    setRetryCountdown(seconds);
     setIsWaitingToRetry(true);
 
     // Set up countdown timer to update UI
     countdownIntervalRef.current = setInterval(() => {
-      setRetryCountdown((prev) => {
+      setRetryAfter((prev) => {
         if (prev !== null && prev > 0) {
           return prev - 1;
         } else {
@@ -147,7 +145,6 @@ export const Posts: FC = () => {
     retryTimeoutRef.current = setTimeout(() => {
       setIsWaitingToRetry(false);
       setRetryAfter(null);
-      setRetryCountdown(null);
       fetchSavedPosts();
     }, seconds * 1000);
   }, []);
@@ -159,7 +156,6 @@ export const Posts: FC = () => {
     cleanUpTimers();
     setIsWaitingToRetry(false);
     setRetryAfter(null);
-    setRetryCountdown(null);
   }, [cleanUpTimers]);
 
   /**
@@ -493,7 +489,6 @@ export const Posts: FC = () => {
             onComplete={() => {
               setIsWaitingToRetry(false);
               setRetryAfter(null);
-              setRetryCountdown(null);
               fetchSavedPosts();
             }}
           />

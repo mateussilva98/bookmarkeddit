@@ -2,7 +2,6 @@
  * API service for handling authentication and Reddit API requests
  * This file contains services for authentication flow and Reddit API interactions
  */
-import { Buffer } from "buffer";
 
 // Base URLs for API endpoints
 const PROXY_BASE_URL = "http://localhost:3001";
@@ -75,7 +74,10 @@ export const authService = {
    * @returns Promise with token response
    */
   getTokens: async (code: string): Promise<AuthTokenResponse> => {
-    const redirectURI = window.location.origin + "/login/callback";
+    // Use a fixed redirect URI that matches exactly what you registered with Reddit
+    const redirectURI =
+      import.meta.env.VITE_REDIRECT_URI ||
+      window.location.origin + "/login/callback";
 
     try {
       console.log(`Attempting token exchange with redirectURI: ${redirectURI}`);
@@ -255,7 +257,10 @@ export const authService = {
    */
   getLoginUrl: (): string => {
     const clientId = import.meta.env.VITE_CLIENT_ID;
-    const redirectURI = window.location.origin + "/login/callback";
+    // Use a fixed redirect URI that matches exactly what you registered with Reddit
+    const redirectURI =
+      import.meta.env.VITE_REDIRECT_URI ||
+      window.location.origin + "/login/callback";
     return `${REDDIT_BASE_URL}/api/v1/authorize?client_id=${clientId}&response_type=code&state=bookmarkeddit&redirect_uri=${redirectURI}&duration=permanent&scope=identity,history,save`;
   },
 };
@@ -360,14 +365,9 @@ export const redditApi = {
    * Fetch all saved posts incrementally using the server's batching mechanism
    * @param accessToken - The access token for authentication
    * @param limit - Number of posts to fetch per batch
-   * @param onBatchProgress - Optional callback for batch progress updates
    * @returns Promise with all saved posts data
    */
-  getAllSavedPosts: async (
-    accessToken: string,
-    limit = 100,
-    onBatchProgress?: (batchData: any, totalSoFar: number) => void
-  ): Promise<any> => {
+  getAllSavedPosts: async (accessToken: string, limit = 100): Promise<any> => {
     try {
       // Build query parameters
       const params = new URLSearchParams();
