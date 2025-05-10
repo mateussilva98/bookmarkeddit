@@ -117,7 +117,7 @@ View posts in an attractive grid layout or detailed list view depending on your 
    CLIENT_SECRET=your_reddit_client_secret
 
    # Server configuration
-   PORT=3001
+   PORT=3000
    NODE_ENV=development
    ```
 
@@ -189,9 +189,33 @@ Bookmarkeddit supports Docker for easy deployment. Follow these steps to run the
 
 6. Access the application at http://localhost
 
-### Building and Running Containers Separately
+### Restarting Docker Compose
 
-If you prefer to build and run the containers separately:
+There are two ways to restart the Docker Compose containers:
+
+#### Method 1: Using Docker Compose Commands
+
+```bash
+# Stop the containers
+docker-compose down
+
+# Start the containers again
+docker-compose up -d
+```
+
+#### Method 2: Using the Provided Script
+
+For convenience, you can use the included restart script:
+
+```bash
+# Make the script executable (first time only)
+chmod +x restart-containers.sh
+
+# Run the restart script
+./restart-containers.sh
+```
+
+### Building and Running Containers Separately
 
 #### Backend Server
 

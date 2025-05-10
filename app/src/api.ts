@@ -4,7 +4,7 @@
  */
 
 // Base URLs for API endpoints
-const PROXY_BASE_URL = "http://localhost:3001";
+const PROXY_BASE_URL = "http://localhost:3000";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
 // Cache for user profile data to reduce API calls
@@ -17,6 +17,9 @@ let userProfileCache: {
   accessToken: null,
   timestamp: null,
 };
+
+// Add a promise cache to handle multiple simultaneous requests
+let pendingProfileRequest: Promise<UserProfile> | null = null;
 
 // Cache timeout in milliseconds (5 minutes)
 const PROFILE_CACHE_TIMEOUT = 5 * 60 * 1000;
@@ -214,32 +217,50 @@ export const authService = {
       return userProfileCache.profile;
     }
 
+    // Return the pending request if one is in progress
+    if (pendingProfileRequest) {
+      console.log("Returning pending user profile request");
+      return pendingProfileRequest;
+    }
+
     try {
-      const response = await fetch(`${PROXY_BASE_URL}/reddit/me`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // Create and store the pending request
+      pendingProfileRequest = (async () => {
+        try {
+          console.log("Fetching user profile from API");
+          const response = await fetch(`${PROXY_BASE_URL}/reddit/me`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-      if (!response.ok) {
-        throw new ApiError(
-          `Failed to fetch user profile: ${response.statusText}`,
-          response.status
-        );
-      }
+          if (!response.ok) {
+            throw new ApiError(
+              `Failed to fetch user profile: ${response.statusText}`,
+              response.status
+            );
+          }
 
-      const profile = await response.json();
+          const profile = await response.json();
 
-      // Cache the result
-      userProfileCache = {
-        profile,
-        accessToken,
-        timestamp: Date.now(),
-      };
+          // Cache the result
+          userProfileCache = {
+            profile,
+            accessToken,
+            timestamp: Date.now(),
+          };
 
-      return profile;
+          return profile;
+        } finally {
+          // Clear the pending request
+          pendingProfileRequest = null;
+        }
+      })();
+
+      return pendingProfileRequest;
     } catch (error) {
+      pendingProfileRequest = null;
       if (error instanceof ApiError) {
         throw error;
       }
