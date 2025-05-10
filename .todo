@@ -43,8 +43,8 @@ Next up:
   ✔ esc or click outside to close modal @done(25-05-03 16:28)
   ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
   ☐ better scatfolding for the proxy server
-    ☐ add a info logger 
-    ☐ add a error logger
+    ✔ add a info logger @done(25-05-10 01:24)
+    ✔ add a error logger @done(25-05-10 01:24)
     ✔ add better error handling @done(25-05-09 00:45)
     ✔ add .env file for the proxy server @done(25-05-09 00:45)
     ✔ add a .env.example file for the proxy server @done(25-05-09 00:45)
@@ -79,6 +79,7 @@ Backlog - to implement:
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
   ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit.
+  ☐ replace implemented logic with a library like Winston, Pino, Morgan, Buyan or log4js that sabes the logs to a file and/or sends them to a remote server for analysis.
 
 
   1. Implement Virtual Scrolling (Windowing)

@@ -33,9 +33,8 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  logInfo(`Proxy server running on http://localhost:${PORT}`, {
+  logInfo(`Proxy server running:`, {
     port: PORT,
     environment: process.env.NODE_ENV || "development",
-    logLevel: process.env.LOG_LEVEL || "info",
   });
 });
