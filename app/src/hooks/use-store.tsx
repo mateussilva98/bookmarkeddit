@@ -1,3 +1,7 @@
+/**
+ * Global state management for Bookmarkeddit
+ * Implements a custom store using React Context API
+ */
 import {
   createContext,
   Dispatch,
@@ -10,12 +14,16 @@ import {
 } from "react";
 import { AuthTokenResponse, UserProfile, authService } from "../api";
 
+// Type definitions for store properties
 type ThemeType = "dark" | "light";
 type Layout = "grid" | "list";
 type SortOption = "recent" | "upvotes" | "comments";
 type Compactness = "compact" | "normal";
 
-// User authentication state
+/**
+ * User authentication state interface
+ * Tracks tokens, expiration, user profile, and auth status
+ */
 interface AuthState {
   access_token: string | null;
   refresh_token: string | null;
@@ -37,6 +45,9 @@ const initialAuthState: AuthState = {
   error: null,
 };
 
+/**
+ * Main store interface with all application settings and state
+ */
 interface StoreProps {
   theme: ThemeType;
   layout: Layout;
@@ -45,10 +56,11 @@ interface StoreProps {
   showImages: boolean;
   compactText: boolean;
   blurNSFW: boolean;
-  showFilters: boolean; // New property for filters visibility
+  showFilters: boolean; // Controls filters visibility
   auth: AuthState;
 }
 
+// Initial default store values
 const initialStore: StoreProps = {
   theme: "dark",
   layout: "grid",
@@ -61,6 +73,7 @@ const initialStore: StoreProps = {
   auth: initialAuthState,
 };
 
+// Create the context with default values
 export const StoreContext = createContext<{
   store: StoreProps;
   setStore: Dispatch<SetStateAction<StoreProps>>;
@@ -71,10 +84,18 @@ export const StoreContext = createContext<{
   },
 });
 
+/**
+ * Custom hook for accessing and manipulating the global store
+ * Provides convenience methods for common state operations
+ */
 export const useStore = () => {
   const { store, setStore } = useContext(StoreContext);
 
   // UI Preferences functions
+
+  /**
+   * Toggle between light and dark theme
+   */
   const changeTheme = () => {
     const newTheme = store.theme === "dark" ? "light" : "dark";
     document.body.classList.remove(store.theme);
@@ -83,39 +104,60 @@ export const useStore = () => {
     setStore((currentStore) => ({ ...currentStore, theme: newTheme }));
   };
 
+  /**
+   * Change layout between grid and list views
+   */
   const changeLayout = (layout: Layout) => {
     localStorage.setItem("layout", layout);
     setStore((currentStore) => ({ ...currentStore, layout }));
   };
 
+  /**
+   * Change sort order for posts
+   */
   const changeSortBy = (sortBy: SortOption) => {
     localStorage.setItem("sortBy", sortBy);
     setStore((currentStore) => ({ ...currentStore, sortBy }));
   };
 
+  /**
+   * Change text display compactness
+   */
   const changeCompactness = (compactness: Compactness) => {
     localStorage.setItem("compactness", compactness);
     setStore((currentStore) => ({ ...currentStore, compactness }));
   };
 
+  /**
+   * Toggle image display on/off
+   */
   const toggleShowImages = () => {
     const newValue = !store.showImages;
     localStorage.setItem("showImages", newValue.toString());
     setStore((currentStore) => ({ ...currentStore, showImages: newValue }));
   };
 
+  /**
+   * Toggle compact text display on/off
+   */
   const toggleCompactText = () => {
     const newValue = !store.compactText;
     localStorage.setItem("compactText", newValue.toString());
     setStore((currentStore) => ({ ...currentStore, compactText: newValue }));
   };
 
+  /**
+   * Toggle NSFW content blurring on/off
+   */
   const toggleBlurNSFW = () => {
     const newValue = !store.blurNSFW;
     localStorage.setItem("blurNSFW", newValue.toString());
     setStore((currentStore) => ({ ...currentStore, blurNSFW: newValue }));
   };
 
+  /**
+   * Toggle filters sidebar visibility
+   */
   const toggleFiltersVisibility = () => {
     const newValue = !store.showFilters;
     localStorage.setItem("showFilters", newValue.toString());
@@ -123,6 +165,10 @@ export const useStore = () => {
   };
 
   // Authentication functions
+
+  /**
+   * Set authentication tokens and update store
+   */
   const setAuthTokens = (
     accessToken: string,
     refreshToken: string,
@@ -151,6 +197,9 @@ export const useStore = () => {
     }));
   };
 
+  /**
+   * Update user profile in the store
+   */
   const setUserProfile = (user: UserProfile) => {
     setStore((currentStore) => ({
       ...currentStore,
@@ -161,6 +210,9 @@ export const useStore = () => {
     }));
   };
 
+  /**
+   * Set authentication error in the store
+   */
   const setAuthError = (error: string) => {
     setStore((currentStore) => ({
       ...currentStore,
@@ -172,6 +224,9 @@ export const useStore = () => {
     }));
   };
 
+  /**
+   * Set authentication loading state
+   */
   const setAuthLoading = (isLoading: boolean) => {
     setStore((currentStore) => ({
       ...currentStore,
@@ -185,7 +240,10 @@ export const useStore = () => {
   // Track ongoing refresh promise to prevent multiple simultaneous refreshes
   let refreshPromise: Promise<boolean> | null = null;
 
-  // Handle OAuth code exchange and token refresh
+  /**
+   * Handle OAuth code exchange after Reddit callback
+   * Exchanges authorization code for tokens and fetches user profile
+   */
   const handleCodeExchange = async (code: string): Promise<boolean> => {
     try {
       setAuthLoading(true);
@@ -217,6 +275,10 @@ export const useStore = () => {
     }
   };
 
+  /**
+   * Refresh authentication tokens using the refresh token
+   * Ensures only one refresh happens at a time
+   */
   const refreshAuth = async (): Promise<boolean> => {
     if (refreshPromise) {
       // If a refresh is already in progress, return the same promise
@@ -251,6 +313,10 @@ export const useStore = () => {
     return refreshPromise;
   };
 
+  /**
+   * Check if access token is valid or needs refresh
+   * Returns valid token or null if auth failed
+   */
   const checkTokenExpiration = async (): Promise<string | null> => {
     const { access_token, refresh_token, expires_at } = store.auth;
 
@@ -270,6 +336,9 @@ export const useStore = () => {
     return access_token;
   };
 
+  /**
+   * Log out the current user by clearing tokens and auth state
+   */
   const logout = () => {
     // Clear localStorage immediately to complete the logout
     localStorage.removeItem("access_token");
@@ -367,6 +436,10 @@ export const useStore = () => {
   };
 };
 
+/**
+ * Store Provider component that wraps the application
+ * Initializes the store and provides it to all child components
+ */
 export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
   const [store, setStore] = useState<StoreProps>(initialStore);
 

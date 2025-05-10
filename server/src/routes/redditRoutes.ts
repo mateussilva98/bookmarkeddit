@@ -1,3 +1,7 @@
+/**
+ * Reddit API route definitions
+ * Maps endpoint URLs to controller functions with appropriate middleware
+ */
 import { Router } from "express";
 import {
   getUserProfile,
@@ -11,14 +15,14 @@ import { checkAuth } from "../middleware/auth.js";
 
 const router = Router();
 
-// Reddit API Routes
-router.get("/me", checkAuth, getUserProfile);
-router.get("/validate-token", checkAuth, validateToken);
-router.get("/saved", checkAuth, getSavedPosts);
-router.get("/saved-all", checkAuth, getAllSavedPosts);
-router.post("/unsave", checkAuth, unsavePost);
+// Protected API routes - all require authentication
+router.get("/me", checkAuth, getUserProfile); // Get authenticated user profile
+router.get("/validate-token", checkAuth, validateToken); // Validate access token
+router.get("/saved", checkAuth, getSavedPosts); // Get paginated saved posts
+router.get("/saved-all", checkAuth, getAllSavedPosts); // Get all saved posts in one request
+router.post("/unsave", checkAuth, unsavePost); // Unsave a post or comment
 
-// Debug route
+// Debug/development route - not protected
 router.post("/clear-rate-limit", clearRateLimit);
 
 export default router;

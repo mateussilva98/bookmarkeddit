@@ -1,10 +1,20 @@
-import styles from "./App.module.scss";
+/**
+ * Main application component for Bookmarkeddit
+ * Handles routing and provides global state through StoreProvider
+ */
 import { StoreProvider } from "./hooks/use-store";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Home } from "./components/Home";
 import { Posts } from "./pages/Posts";
 import { LoginCallback } from "./components/LoginCallback";
 
+/**
+ * App component defines the main application routes
+ * - / => Home page (landing page)
+ * - /login/callback => OAuth callback handler
+ * - /posts => Main posts display page (requires authentication)
+ * - * => Redirect to home for any undefined routes
+ */
 function App() {
   return (
     <StoreProvider>

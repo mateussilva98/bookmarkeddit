@@ -1,72 +1,21 @@
 Next up:
-  ✔ not selectable text on NSFW badge @done(25-04-19 01:52)
-  ✔ text filter on posts to filter the filtered posts (https://www.fusejs.io/examples.html#extended-search) @done(25-04-19 22:58)
-    ✔ add input to filter the posts (title, description, subreddit, author) @done(25-04-19 22:58)
-    ✔ add a button to clear the filter (X on the input) @done(25-04-20 00:15)
-    ✔ implement functionality @done(25-04-19 22:58)
-  ✔ order by most recent saved, most upvotes, most comments @done(25-04-20 00:15)
-  ✔ add a button to share the link @done(25-04-20 01:10)
-    ✔ add share functionality @done(25-04-22 21:09)
-  ✔ add a button to unsave the post @done(25-04-20 01:10)
-    ✔ add unsave functionality @done(25-05-05 19:38)
-      ✔ show a modal to confirm the unsave action @done(25-05-05 19:38)
-      ✔ add toast on unsave and update posts without new fetch @done(25-05-05 19:38)
-      ✔ remove community if there are no more posts in the community @done(25-05-05 19:38)
-  ✔ tooltip on unsave, share and open in new tab @done(25-04-20 22:22)
-  ✔ add loader @done(25-04-20 23:19)
-  ✔ add a button to go back to the top of the page @done(25-04-21 17:12)
-  ✔ order by most recent saved, most upvotes, most comments @done(25-04-21 17:13)
-  ✔ improve post card design @done(25-04-29 23:08)
-    ✔ add thumbnail image @done(25-04-29 23:08)
-  ✔ settings button that opens modal @done(25-05-02 23:29)
-    ✔ show only after logged in @done(25-04-21 19:48)
-    ✔ dark mode @done(25-05-01 01:36)
-    ✔ compact or no compact in settings @done(25-05-01 01:36)
-      ✔ implement that logic on the posts page - (elipsis on title and description) - make it compact by default @done(25-05-01 21:30)
-    ✔ blur images on nsfw posts @done(25-05-01 01:36)
-      ✔ implement that logic @done(25-05-02 23:29)
-    ✔ show or hide images @done(25-05-01 01:36)
-      ✔ implement that logic @done(25-05-01 21:49)
-  ✔ find a way to identify that they are comments @done(25-04-21 21:16)
-  ✔ fix on url on comments @done(25-04-23 14:57)
-  ✔ implement incremental fetch on backend (Fetch saved Reddit posts, using `after` for full fetch and `before` for incremental fetch.) - make it keep going, meaning, fetch first 100 posts, then 100 more, and so on until there are no more posts to fetch. (https://www.reddit.com/prefs/apps) @done(25-05-05 22:02)
-  ✔ create a api.ts file to handle all the api calls @done(25-05-03 16:14)
-  ✔ improve logic on login. when going to main sure, if there's already tokens, redirect to posts page @done(25-05-03 16:14)
-  ✔ Implement full-text search within post content (not just titles) @done(25-05-01 21:38)
-  ✔ Create a saved filters feature that stores filter preferences locally @done(25-05-01 21:31)
-  ✔ redo front page with a better design and features description @done(25-05-08 00:28)
-  ✔ get loggedin user after token @done(25-05-03 17:57)
-  ✔ show total saved posts @done(25-05-03 16:58)
-  ✔ show logged in user on top of the page (left side of settings button) @done(25-05-03 17:11)
   ☐ general mobile styling improvments
-  ✔ support for videos (example: Girl has amazing... 6th sense? or Still kinda cool ngl) @done(25-05-03 16:40)
-  ✔ esc or click outside to close modal @done(25-05-03 16:28)
-  ✔ button to force refresh the posts (fetch new posts from reddit) @done(25-05-03 17:11)
-  ☐ better scatfolding for the proxy server
-    ✔ add a info logger @done(25-05-10 01:24)
-    ✔ add a error logger @done(25-05-10 01:24)
-    ✔ add better error handling @done(25-05-09 00:45)
-    ✔ add .env file for the proxy server @done(25-05-09 00:45)
-    ✔ add a .env.example file for the proxy server @done(25-05-09 00:45)
-    ✔ improve error handling @done(25-05-09 00:31)
-  ☐ show/hide filters
-    ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
-  ✔ Implement keyboard shortcuts actions (Ctrl + F: Scroll to top and focus the text input filter and Ctrl + R: Refresh the posts) @done(25-05-03 23:05)
-  ✔ send only required information to the frontend (remove unnecessary data from the response) @done(25-05-05 22:19)
+    ☐ show/hide filters
+      ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
   ☐ comment code, remove unused code and files, and make sure everything is working as expected
-  ☐ algo está errado com os url - talvez por causa dos thumbnails
   
 
 
 Deployment:
   ☐ dockerize the app (docker-compose) and make sure everything is working as expected
-  ☐ get a vps and configure from scratch (caddy, nginx, etc.) and make sure everything is working as expected - maybe get vps from https://www.hetzner.com/
+  ☐ get a vps and configure from scratch (caddy for ssl, nginx for reverse proxy, etc.) and make sure everything is working as expected - maybe get vps from https://www.hetzner.com/
   ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
   ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it
   ☐ add a license file to the repo (maybe MIT or something like that)
   ☐ add a .env file to the repo with instructions on how to create it and what to put in it
   ☐ create a github actions file to automate the deployment process (build and push the docker image to docker hub, and deploy it to the vps)
-  ☐ add a way to track the app usage (maybe using google analytics or something like that)
+  ☐ add an image to track the app usage (maybe using google analytics or something like that)
+  ☐ Docker Swarm? Even tho i don't plan to scale your app across multiple VPS nodes (i.e., clustering), I still want built-in service discovery, load balancing, and failover, zero-downtime rolling updates for services and its a simpler alternative to Kubernetes for orchestrating containers.
   
 
 ☐ when finalized, create reddit posts to show off the app
@@ -75,81 +24,33 @@ Backlog - to implement:
   ☐ post content in markdown 
   ☐ add locale to settings
   ☐ export to csv file
-  ☐ performance improvements (maybe related to images)
+  ☐ performance improvements (maybe related to images?)
+    ☐ Option 1: Implement Virtual Scrolling (Windowing) - The most effective solution would be to implement virtual scrolling (windowing), which only renders the items currently visible in the viewport.
+    ☐ Option 2: Debounce Search and Resize: - Debounce the search input and grid resize calculations to avoid excessive re-renders and recalculations. (can i calculate based on image properties and associate them with the posts?)
+    ☐ Option 3: Optimize Grid Calculations - Consider using CSS-only masonry layouts (e.g., grid-template-rows: masonry) if browser support is sufficient, or switch to a simpler layout for large lists.
+    ☐ Option 4: Pagination or Infinite Scroll - Instead of showing all posts, implement pagination or infinite scrolling to load posts in chunks. (Infinite scroll is already implemented, but maybe not in the best way)
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ even tho i have all posts loaded, only load some of them (20) and then load more when scrolling down (infinite scroll)
-  ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit.
+  ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit in the background.
   ☐ replace implemented logic with a library like Winston, Pino, Morgan, Buyan or log4js that sabes the logs to a file and/or sends them to a remote server for analysis.
+  
 
 
-  1. Implement Virtual Scrolling (Windowing)
-The most effective solution would be to implement virtual scrolling (windowing), which only renders the items currently visible in the viewport.
 
-
-Virtualization (Windowing):
-
-Use a library like react-window or react-virtualized to only render the visible posts in the viewport. This drastically reduces the number of DOM nodes and improves performance.
-Lazy Loading Images:
-
-Use the loading="lazy" attribute on images or a library like react-lazyload to defer loading images until they are about to enter the viewport.
-Debounce Search and Resize:
-
-Debounce the search input and grid resize calculations to avoid excessive re-renders and recalculations.
-Optimize Grid Calculations:
-
-Consider using CSS-only masonry layouts (e.g., grid-template-rows: masonry) if browser support is sufficient, or switch to a simpler layout for large lists.
-Pagination or Infinite Scroll:
-
-Instead of showing all posts, implement pagination or infinite scrolling to load posts in chunks.
 
 Backlog - (features to consider for future updates):
   ☐ Dashboard and Stats (Create a dashboard showing statistics about saved posts, Track saving patterns, favorite subreddits, etc.)
   ☐ Add text customization (font size, line spacing)
-  ☐ Improve caching of API responses for faster loading and reduced API usage
   ☐ Pin posts (Allow users to pin certain posts to the top of their saved list for easy access)
-  ☐ Remove all PWA logic and files (service worker, manifest, install prompt, icons, etc.)
+  ☐ PWA (service worker, manifest, install prompt, icons, etc.)
 
 
 Bug Fixes and Improvements:
   ☐ Video sound not working. not really important, but would be nice to have
-  ☐ add "no saved posts" message when there are no saved posts
 
 
 
-✅ When Docker Swarm is useful
-Use Docker Swarm if you:
 
-Plan to scale your app across multiple VPS nodes (i.e., clustering).
-
-Want built-in service discovery, load balancing, and failover.
-
-Need zero-downtime rolling updates for services.
-
-Prefer a simpler alternative to Kubernetes for orchestrating containers.
-
-❌ When Docker Swarm isn't necessary
-Skip Docker Swarm if you:
-
-Are deploying to a single VPS with no immediate plans to scale out.
-
-Just want to run your MERN app in containers for convenience and consistency.
-
-Are fine managing containers with docker-compose or plain docker run.
-
-🛠 Recommended approach for single VPS:
-Use Docker Compose for local development and production deployment.
-
-Include services like:
-
-client (React)
-
-server (Node.js/Express)
-
-mongo
-
-Optional: Nginx or Caddy for reverse proxy and SSL
-
-Set up a CI/CD pipeline to redeploy on code changes.
 
 
 
@@ -163,9 +64,6 @@ Docker Compose does not support scaling with built-in load balancing across cont
 
 Scale a service (e.g., the server) using:
 
-bash
-Copiar
-Editar
 docker service scale server=3
 Get internal load balancing between replicas.
 
@@ -174,10 +72,9 @@ Use a reverse proxy like Traefik or Nginx (Swarm-aware) to balance external HTTP
 🚫 Why not plain Docker Compose?
 You can technically scale with:
 
-bash
-Copiar
-Editar
+
 docker-compose up --scale server=3
+
 But:
 
 It won't automatically load balance traffic to those replicas.
@@ -188,13 +85,11 @@ It creates multiple containers with no built-in way to spread traffic unless you
 🔁 Alternatives:
 Traefik or Nginx manually configured in Docker Compose to balance across multiple server containers.
 
-Kubernetes if you're planning a more complex or large-scale deployment (heavier than Swarm).
 
 ✅ Recommendation (for a single VPS with replica needs):
 Use Docker Swarm for proper container-level service scaling and built-in load balancing.
 
 Or, use Docker Compose + Nginx as a load balancer, but this requires more manual setup.
-
 
 
 
@@ -220,8 +115,7 @@ Dashboards + metrics like page views, bounce rate, referral sources
 Deployment: Add it to your Swarm stack:
 
 yaml
-Copiar
-Editar
+
 plausible:
   image: plausible/analytics
   environment:

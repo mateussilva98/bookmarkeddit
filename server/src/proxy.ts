@@ -1,3 +1,7 @@
+/**
+ * Express server proxy for Reddit API interactions
+ * Handles authentication flow and provides endpoints for client requests
+ */
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -8,26 +12,26 @@ import { requestLogger, logInfo } from "./utils/logger.js";
 
 const app = express();
 
-// Middleware
+// Middleware setup
 app.use(cors());
 app.use(express.json());
 
-// Add request logger middleware (logs all incoming requests)
+// Request logging middleware - captures all incoming requests
 app.use(requestLogger);
 
-// Register routes
+// Register API routes
 app.use("/reddit", redditRoutes);
 app.use("/reddit/auth", authRoutes);
 
-// Debug route to check if server is running
+// Health check endpoint
 app.get("/", (req, res) => {
   res.json({ status: "Proxy server is running" });
 });
 
-// 404 handler - must be placed after all routes
+// 404 handler for undefined routes - must be after all defined routes
 app.use(notFoundHandler);
 
-// Global error handler - must be the last middleware
+// Global error handler - must be the last middleware in the chain
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

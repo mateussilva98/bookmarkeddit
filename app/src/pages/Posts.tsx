@@ -1,3 +1,7 @@
+/**
+ * Main Posts page component
+ * Handles fetching, displaying, and filtering saved Reddit posts
+ */
 import { FC, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../hooks/use-store";
@@ -15,6 +19,7 @@ export const Posts: FC = () => {
   const { store, checkTokenExpiration, toggleFiltersVisibility } = useStore();
   const navigate = useNavigate();
 
+  // UI state management
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -24,36 +29,44 @@ export const Posts: FC = () => {
     type: null,
     nsfw: null,
   });
-  // Using store.showFilters instead of local state
+  // Using store.showFilters from global state instead of local state
 
-  // Rate limiting state
+  // Rate limiting state management
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [isWaitingToRetry, setIsWaitingToRetry] = useState<boolean>(false);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Track if a fetch is already in progress to prevent duplicates
-  const isFetchingRef = useRef<boolean>(false);
-  // Track if initial fetch was completed
-  const initialFetchDoneRef = useRef<boolean>(false);
+  // Refs to track fetch status
+  const isFetchingRef = useRef<boolean>(false); // Prevent duplicate fetches
+  const initialFetchDoneRef = useRef<boolean>(false); // Track initial data load
 
-  // Handle settings button click
+  /**
+   * Opens the settings modal
+   */
   const handleSettingsClick = () => {
     setIsSettingsOpen(true);
   };
 
-  // Handle closing the settings modal
+  /**
+   * Closes the settings modal
+   */
   const handleCloseSettings = () => {
     setIsSettingsOpen(false);
   };
 
-  // Handle filter changes
+  /**
+   * Updates active filters when filter selections change
+   */
   const handleFilterChange = useCallback((newFilters: SelectedFilters) => {
     setActiveFilters(newFilters);
   }, []);
 
-  // Handle post unsave from PostsList
+  /**
+   * Handles post unsave action from PostsList
+   * Updates posts array and manages community filters if a community has no more posts
+   */
   const handlePostUnsave = useCallback(
     (postId: string) => {
       setPosts((prevPosts) => {
@@ -91,7 +104,9 @@ export const Posts: FC = () => {
     [activeFilters.communities]
   );
 
-  // Clean up timers when component unmounts or on retry
+  /**
+   * Cleans up timer references to prevent memory leaks
+   */
   const cleanUpTimers = useCallback(() => {
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
@@ -103,7 +118,10 @@ export const Posts: FC = () => {
     }
   }, []);
 
-  // Set up automatic retry based on rate limit info
+  /**
+   * Sets up automatic retry with countdown after rate limiting
+   * @param seconds - Number of seconds to wait before retrying
+   */
   const setupRetry = useCallback((seconds: number) => {
     cleanUpTimers();
 
@@ -111,7 +129,7 @@ export const Posts: FC = () => {
     setRetryCountdown(seconds);
     setIsWaitingToRetry(true);
 
-    // Set up countdown timer
+    // Set up countdown timer to update UI
     countdownIntervalRef.current = setInterval(() => {
       setRetryCountdown((prev) => {
         if (prev !== null && prev > 0) {
@@ -125,7 +143,7 @@ export const Posts: FC = () => {
       });
     }, 1000);
 
-    // Set up retry timer
+    // Set up automatic retry after countdown finishes
     retryTimeoutRef.current = setTimeout(() => {
       setIsWaitingToRetry(false);
       setRetryAfter(null);
@@ -134,7 +152,9 @@ export const Posts: FC = () => {
     }, seconds * 1000);
   }, []);
 
-  // Cancel automatic retry
+  /**
+   * Cancels any active automatic retry
+   */
   const cancelRetry = useCallback(() => {
     cleanUpTimers();
     setIsWaitingToRetry(false);
@@ -142,7 +162,10 @@ export const Posts: FC = () => {
     setRetryCountdown(null);
   }, [cleanUpTimers]);
 
-  // Fetch saved posts from Reddit - using incremental fetching
+  /**
+   * Fetches saved posts from Reddit API and processes them
+   * Handles authentication, rate limiting, and data transformation
+   */
   const fetchSavedPosts = useCallback(async () => {
     // Prevent multiple simultaneous requests
     if (isFetchingRef.current) {
@@ -267,6 +290,7 @@ export const Posts: FC = () => {
           };
         }
 
+        // Create standardized post object with needed properties
         const postP: Post = {
           id: post.data.id,
           subreddit: post.data.subreddit,
@@ -326,7 +350,10 @@ export const Posts: FC = () => {
     }
   }, [checkTokenExpiration, navigate, setupRetry, isWaitingToRetry]);
 
-  // Handle manual retry button click
+  /**
+   * Handles manual retry button click
+   * Cancels any ongoing automatic retry and forces a new fetch
+   */
   const handleRetry = useCallback(() => {
     setError(null);
     if (isWaitingToRetry) {
@@ -336,7 +363,10 @@ export const Posts: FC = () => {
     fetchSavedPosts();
   }, [isWaitingToRetry, cancelRetry, fetchSavedPosts]);
 
-  // Effect to handle initial fetch and cleanup
+  /**
+   * Effect to handle initial fetch and authentication check
+   * Also cleans up timers when component unmounts
+   */
   useEffect(() => {
     // Redirect to home if not authenticated
     if (!store.auth.isLoading && !store.auth.isAuthenticated) {
@@ -366,7 +396,9 @@ export const Posts: FC = () => {
     cleanUpTimers,
   ]);
 
-  // Generate filter data from posts
+  /**
+   * Generate counts of posts by subreddit for filtering
+   */
   const subredditCounts = useMemo(() => {
     const counts = posts.reduce((acc, post) => {
       const subreddit = post.subreddit;
@@ -380,6 +412,9 @@ export const Posts: FC = () => {
     }));
   }, [posts]);
 
+  /**
+   * Generate counts of posts by type (Post/Comment) for filtering
+   */
   const typeCounts = useMemo(() => {
     const counts = posts.reduce((acc, post) => {
       const type = post.type;
@@ -393,6 +428,9 @@ export const Posts: FC = () => {
     }));
   }, [posts]);
 
+  /**
+   * Generate counts of NSFW vs non-NSFW posts for filtering
+   */
   const nsfwCounts = useMemo(() => {
     let nsfwCount = 0;
     let nonNsfwCount = 0;
@@ -411,7 +449,9 @@ export const Posts: FC = () => {
     ];
   }, [posts]);
 
-  // Apply filters to posts
+  /**
+   * Apply active filters to the posts
+   */
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
       // Filter by communities (if any are selected)

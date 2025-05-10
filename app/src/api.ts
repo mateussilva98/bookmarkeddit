@@ -1,10 +1,14 @@
-// API service for handling authentication and Reddit requests
+/**
+ * API service for handling authentication and Reddit API requests
+ * This file contains services for authentication flow and Reddit API interactions
+ */
 import { Buffer } from "buffer";
 
+// Base URLs for API endpoints
 const PROXY_BASE_URL = "http://localhost:3001";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
-// Cache for user profile data
+// Cache for user profile data to reduce API calls
 let userProfileCache: {
   profile: UserProfile | null;
   accessToken: string | null;
@@ -32,6 +36,9 @@ export interface UserProfile {
   icon_img: string;
 }
 
+/**
+ * Custom error class for authentication-related errors
+ */
 export class AuthenticationError extends Error {
   status?: number;
 
@@ -42,6 +49,10 @@ export class AuthenticationError extends Error {
   }
 }
 
+/**
+ * Custom error class for API-related errors
+ * Includes support for rate limiting information
+ */
 export class ApiError extends Error {
   status?: number;
   retryAfter?: number;
@@ -54,9 +65,15 @@ export class ApiError extends Error {
   }
 }
 
-// Auth service
+/**
+ * Authentication service for handling Reddit OAuth flow
+ */
 export const authService = {
-  // Exchange authorization code for tokens
+  /**
+   * Exchange authorization code for access and refresh tokens
+   * @param code - The authorization code from Reddit OAuth
+   * @returns Promise with token response
+   */
   getTokens: async (code: string): Promise<AuthTokenResponse> => {
     const redirectURI = window.location.origin + "/login/callback";
 
@@ -116,7 +133,11 @@ export const authService = {
     }
   },
 
-  // Refresh the access token
+  /**
+   * Refresh the access token using a refresh token
+   * @param refreshToken - The refresh token to use
+   * @returns Promise with new token response
+   */
   refreshToken: async (refreshToken: string): Promise<AuthTokenResponse> => {
     try {
       console.log("Attempting to refresh token");
@@ -173,7 +194,11 @@ export const authService = {
     }
   },
 
-  // Get user profile with caching
+  /**
+   * Get user profile information with caching support
+   * @param accessToken - The access token for authentication
+   * @returns Promise with user profile data
+   */
   getUserProfile: async (accessToken: string): Promise<UserProfile> => {
     // Check if we have a cached profile for this access token that's not expired
     const now = Date.now();
@@ -224,7 +249,10 @@ export const authService = {
     }
   },
 
-  // Generate login URL
+  /**
+   * Generate the OAuth login URL for Reddit
+   * @returns Login URL string with proper scopes and parameters
+   */
   getLoginUrl: (): string => {
     const clientId = import.meta.env.VITE_CLIENT_ID;
     const redirectURI = window.location.origin + "/login/callback";
@@ -232,9 +260,17 @@ export const authService = {
   },
 };
 
-// Reddit API service
+/**
+ * Reddit API service for interacting with Reddit endpoints
+ */
 export const redditApi = {
-  // Fetch saved posts with rate limit handling and retry capability
+  /**
+   * Fetch saved posts with pagination support
+   * @param accessToken - The access token for authentication
+   * @param after - Pagination token for fetching next batch
+   * @param limit - Number of posts to fetch per request
+   * @returns Promise with saved posts data
+   */
   getSavedPosts: async (
     accessToken: string,
     after?: string,
@@ -320,7 +356,13 @@ export const redditApi = {
     }
   },
 
-  // Fetch all saved posts incrementally
+  /**
+   * Fetch all saved posts incrementally using the server's batching mechanism
+   * @param accessToken - The access token for authentication
+   * @param limit - Number of posts to fetch per batch
+   * @param onBatchProgress - Optional callback for batch progress updates
+   * @returns Promise with all saved posts data
+   */
   getAllSavedPosts: async (
     accessToken: string,
     limit = 100,
@@ -408,7 +450,12 @@ export const redditApi = {
     }
   },
 
-  // Unsave a post or comment with rate limit handling
+  /**
+   * Unsave a post or comment with rate limit handling
+   * @param accessToken - The access token for authentication
+   * @param id - The Reddit ID of the item to unsave
+   * @returns Promise that resolves when unsave is complete
+   */
   unsaveItem: async (accessToken: string, id: string): Promise<void> => {
     try {
       const response = await fetch(`${PROXY_BASE_URL}/reddit/unsave`, {
