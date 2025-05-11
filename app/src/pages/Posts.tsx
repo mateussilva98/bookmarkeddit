@@ -646,8 +646,7 @@ export const Posts: FC = () => {
   /**
    * Handles post unsave action from PostsList
    * Updates posts array and manages community filters if a community has no more posts
-   */
-  const handlePostUnsave = useCallback(
+   */ const handlePostUnsave = useCallback(
     (postId: string) => {
       console.log("[Posts] handlePostUnsave called with postId:", postId);
       console.log(
@@ -731,7 +730,7 @@ export const Posts: FC = () => {
         return newPosts;
       });
     },
-    [savePostsToLocalStorage, addToast]
+    [savePostsToLocalStorage, addToast, activeFilters, setActiveFilters]
   );
 
   /**
@@ -986,6 +985,7 @@ export const Posts: FC = () => {
           <div className={styles.mainContent}>
             {store.showFilters ? (
               <div className={styles.filters}>
+                {" "}
                 <Filters
                   subredditCounts={subredditCounts}
                   typeCounts={typeCounts}
@@ -994,6 +994,7 @@ export const Posts: FC = () => {
                   totalPosts={posts.length}
                   onRefresh={handleRetry}
                   onToggleVisibility={toggleFiltersVisibility}
+                  currentFilters={activeFilters}
                 />
               </div>
             ) : (

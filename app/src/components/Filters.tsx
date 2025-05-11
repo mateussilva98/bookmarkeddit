@@ -26,6 +26,7 @@ type FiltersProps = {
   totalPosts: number;
   onRefresh: () => void;
   onToggleVisibility?: () => void;
+  currentFilters?: SelectedFilters;
 };
 
 export const Filters: FC<FiltersProps> = ({
@@ -36,6 +37,7 @@ export const Filters: FC<FiltersProps> = ({
   totalPosts,
   onRefresh,
   onToggleVisibility,
+  currentFilters,
 }) => {
   const { toggleFiltersVisibility } = useStore();
 
@@ -45,9 +47,23 @@ export const Filters: FC<FiltersProps> = ({
   const [communitySearch, setCommunitySearch] = useState("");
 
   // State to track selected filters
-  const [selectedCommunities, setSelectedCommunities] = useState<string[]>([]);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [selectedNSFW, setSelectedNSFW] = useState<string | null>(null);
+  const [selectedCommunities, setSelectedCommunities] = useState<string[]>(
+    currentFilters?.communities || []
+  );
+  const [selectedType, setSelectedType] = useState<string | null>(
+    currentFilters?.type || null
+  );
+  const [selectedNSFW, setSelectedNSFW] = useState<string | null>(
+    currentFilters?.nsfw || null
+  );
+  // Update selected filters when currentFilters prop changes
+  useEffect(() => {
+    if (currentFilters) {
+      setSelectedCommunities(currentFilters.communities);
+      setSelectedType(currentFilters.type);
+      setSelectedNSFW(currentFilters.nsfw);
+    }
+  }, [currentFilters]);
 
   // Update parent component whenever filters change
   useEffect(() => {
