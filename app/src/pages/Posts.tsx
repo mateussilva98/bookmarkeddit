@@ -340,9 +340,7 @@ export const Posts: FC = () => {
                 }
               }
             });
-          }
-
-          // If no images were found but there's a thumbnail, add it
+          } // If no images were found but there's a valid thumbnail, use it as an image
           if (
             images.length === 0 &&
             post.data.thumbnail &&
@@ -407,9 +405,7 @@ export const Posts: FC = () => {
               url: decodeHtmlEntities(videoUrl),
               isGif: videoUrl.includes(".gif") || videoUrl.includes("gfycat"),
             };
-          }
-
-          // Create standardized post object with needed properties
+          } // Create standardized post object with needed properties
           const postP: Post = {
             id: post.data.id,
             subreddit: post.data.subreddit,
@@ -420,12 +416,6 @@ export const Posts: FC = () => {
             url: post.data.url || post.data.link_url || "",
             score: post.data.score,
             media_metadata: post.data.media_metadata,
-            thumbnail:
-              post.data.thumbnail &&
-              post.data.thumbnail !== "self" &&
-              post.data.thumbnail !== "default"
-                ? post.data.thumbnail
-                : "",
             images: images.length > 0 ? images : undefined,
             video: videoInfo,
             type: post.kind === "t3" ? "Post" : "Comment",
@@ -437,6 +427,7 @@ export const Posts: FC = () => {
           processedPosts.push(postP);
         }
 
+        console.log(processedPosts);
         // Mark initial fetch as done
         initialFetchDoneRef.current = true;
         console.log(`Processed ${processedPosts.length} posts successfully`);
@@ -577,6 +568,8 @@ export const Posts: FC = () => {
       comparePostsWithStored,
       posts,
       addToast,
+      activeFilters,
+      handleAuthError,
     ]
   );
 

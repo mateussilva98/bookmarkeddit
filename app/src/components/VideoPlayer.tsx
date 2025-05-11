@@ -60,7 +60,6 @@ export const VideoPlayer: FC<VideoPlayerProps> = ({
         autoPlay={video.isGif && !isBlurred}
         playsInline
         onClick={togglePlayPause}
-        poster={video.thumbnail}
         width="100%"
       >
         <source src={videoUrl} type="video/mp4" />

@@ -134,8 +134,7 @@ export const PostsList: FC<PostsListProps> = ({
         }
         return;
       }
-
-      const thumbnail = content.querySelector<HTMLImageElement>(".thumbnail");
+      const images = content.querySelectorAll<HTMLImageElement>("img");
       const video = content.querySelector<HTMLVideoElement>("video");
 
       const calculateRowSpan = () => {
@@ -151,13 +150,22 @@ export const PostsList: FC<PostsListProps> = ({
         }
       };
 
-      if (thumbnail && !thumbnail.complete) {
-        thumbnail.onload = () => {
-          calculateRowSpan();
-        };
-        thumbnail.onerror = () => {
-          calculateRowSpan();
-        };
+      // Check if there are any images that haven't loaded yet
+      const hasUnloadedImages = Array.from(images).some((img) => !img.complete);
+
+      if (images.length > 0 && hasUnloadedImages) {
+        // Set up onload/onerror handlers for the first unloaded image
+        const firstUnloadedImage = Array.from(images).find(
+          (img) => !img.complete
+        );
+        if (firstUnloadedImage) {
+          firstUnloadedImage.onload = () => {
+            calculateRowSpan();
+          };
+          firstUnloadedImage.onerror = () => {
+            calculateRowSpan();
+          };
+        }
       } else if (video && video.readyState < 1) {
         // Wait for video metadata to load
         const onLoadedMetadata = () => {

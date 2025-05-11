@@ -23,7 +23,6 @@ export type VideoInfo = {
   hlsUrl?: string;
   isGif?: boolean;
   duration?: number;
-  thumbnail?: string;
 };
 
 export type Post = {
@@ -36,9 +35,8 @@ export type Post = {
   url: string;
   score: number;
   media_metadata?: { [key: string]: MediaMetadata };
-  thumbnail?: string;
-  images?: string[]; // Add array to store multiple image URLs
-  video?: VideoInfo; // Add information for video content
+  images?: string[]; // Array to store multiple image URLs
+  video?: VideoInfo; // Information for video content
   type: string;
   nsfw: boolean;
   commentCount: number;
