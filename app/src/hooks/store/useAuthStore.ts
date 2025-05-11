@@ -123,6 +123,37 @@ export const useAuthStore = () => {
   );
 
   /**
+   * Handle authentication errors (401/403)
+   * Clears both auth and posts data from localStorage
+   */
+  const handleAuthError = useCallback(() => {
+    console.log("Authentication error detected, clearing all session data");
+
+    // Clear auth data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("expires_at");
+    localStorage.removeItem("user_profile");
+
+    // Clear posts data
+    localStorage.removeItem("bookmarkeddit_posts");
+    localStorage.removeItem("bookmarkeddit_posts_timestamp");
+
+    // Reset auth state
+    setStore((currentStore) => ({
+      ...currentStore,
+      auth: {
+        ...initialAuthState,
+        isLoading: false,
+        error: "Your session has expired. Please log in again.",
+      },
+    }));
+
+    // Redirect to homepage
+    window.location.href = "/";
+  }, [setStore]);
+
+  /**
    * Log out the current user by clearing tokens and auth state
    */
   const logout = useCallback(() => {
@@ -266,5 +297,6 @@ export const useAuthStore = () => {
     refreshAuth,
     checkTokenExpiration,
     logout,
+    handleAuthError,
   };
 };

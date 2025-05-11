@@ -22,7 +22,12 @@ const POSTS_STORAGE_KEY = "bookmarkeddit_posts";
 const POSTS_TIMESTAMP_KEY = "bookmarkeddit_posts_timestamp";
 
 export const Posts: FC = () => {
-  const { store, checkTokenExpiration, toggleFiltersVisibility } = useStore();
+  const {
+    store,
+    checkTokenExpiration,
+    toggleFiltersVisibility,
+    handleAuthError,
+  } = useStore();
   const navigate = useNavigate();
 
   // UI state management
@@ -522,6 +527,13 @@ export const Posts: FC = () => {
       } catch (error) {
         console.error("Error fetching saved posts:", error);
 
+        // Handle authentication errors (401/403)
+        if (error instanceof ApiError && error.isAuthError) {
+          console.log("Authentication error detected, redirecting to login");
+          handleAuthError();
+          return;
+        }
+
         // Handle rate limiting
         if (
           error instanceof ApiError &&
@@ -637,10 +649,20 @@ export const Posts: FC = () => {
    */
   const handlePostUnsave = useCallback(
     (postId: string) => {
+      console.log("[Posts] handlePostUnsave called with postId:", postId);
+      console.log(
+        "[Posts] Current activeFilters.communities:",
+        activeFilters.communities
+      );
+
       setPosts((prevPosts) => {
         // Find the post that was unsaved
         const unsavedPost = prevPosts.find((post) => post.id === postId);
         const newPosts = prevPosts.filter((post) => post.id !== postId);
+
+        if (unsavedPost) {
+          console.log("[Posts] Found unsaved post:", unsavedPost.subreddit);
+        }
 
         // If we found the unsaved post and have active community filters
         if (unsavedPost && activeFilters.communities.length > 0) {
@@ -651,24 +673,45 @@ export const Posts: FC = () => {
             (post) => post.subreddit === unsavedCommunity
           ).length;
 
+          console.log(
+            `[Posts] Remaining posts in ${unsavedCommunity}: ${remainingPostsInCommunity}`
+          );
+          console.log(
+            `[Posts] Is ${unsavedCommunity} in filter:`,
+            activeFilters.communities.includes(unsavedCommunity)
+          );
+
           // If this was the last post from this community and it was in our active filters
           if (
             remainingPostsInCommunity === 0 &&
             activeFilters.communities.includes(unsavedCommunity)
           ) {
-            // Remove this community from active filters
-            setActiveFilters((prev) => ({
-              ...prev,
-              communities: prev.communities.filter(
-                (community) => community !== unsavedCommunity
-              ),
-            }));
-
-            // Show notification when a subreddit is completely removed
-            addToast(
-              `No more posts from r/${unsavedCommunity}, removed from filters`,
-              "info"
+            console.log(
+              `[Posts] Last post from ${unsavedCommunity} was unsaved, removing from filters`
             );
+
+            // Remove this community from active filters
+            setActiveFilters((prev) => {
+              const updatedCommunities = prev.communities.filter(
+                (community) => community !== unsavedCommunity
+              );
+
+              console.log(
+                "[Posts] Updated communities filter:",
+                updatedCommunities
+              );
+
+              // Show notification when a subreddit is completely removed
+              addToast(
+                `No more posts from r/${unsavedCommunity}, removed from filters`,
+                "info"
+              );
+
+              return {
+                ...prev,
+                communities: updatedCommunities,
+              };
+            });
           }
         }
 
@@ -688,7 +731,7 @@ export const Posts: FC = () => {
         return newPosts;
       });
     },
-    [activeFilters.communities, savePostsToLocalStorage, addToast]
+    [savePostsToLocalStorage, addToast]
   );
 
   /**
@@ -845,11 +888,11 @@ export const Posts: FC = () => {
       { nsfw: "Only non-NSFW posts", count: nonNsfwCount },
     ];
   }, [posts]);
-
   /**
    * Apply active filters to the posts
    */
   const filteredPosts = useMemo(() => {
+    console.log("Filtering posts with activeFilters:", activeFilters);
     return posts.filter((post) => {
       // Filter by communities (if any are selected)
       if (

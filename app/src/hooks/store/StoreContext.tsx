@@ -60,8 +60,6 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const compactTextStr = localStorage.getItem("compactText");
     const blurNSFWStr = localStorage.getItem("blurNSFW");
     const showFiltersStr = localStorage.getItem("showFilters");
-    const compactnessStr = localStorage.getItem("compactness");
-
     const showImages = showImagesStr !== null ? showImagesStr === "true" : true;
     const compactText =
       compactTextStr !== null ? compactTextStr === "true" : true;

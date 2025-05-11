@@ -50,7 +50,7 @@ const calculateTimeAgo = (timestamp: number): string => {
 };
 
 export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
-  const { store } = useStore();
+  const { store, handleAuthError } = useStore();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isUnsaving, setIsUnsaving] = useState(false);
 
@@ -72,7 +72,6 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
       });
     }
   };
-
   const handleUnsaveClick = () => {
     setIsConfirmModalOpen(true);
   };
@@ -92,6 +91,13 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
       }
     } catch (error) {
       console.error("Error unsaving post:", error);
+
+      // Check if this is an authentication error (401/403)
+      if (error instanceof ApiError && error.isAuthError) {
+        // Use the auth error handler to clear data and redirect
+        handleAuthError();
+        return;
+      }
 
       const errorMessage =
         error instanceof ApiError

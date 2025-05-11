@@ -122,7 +122,6 @@ export const useStore = () => {
     // Only include dependencies that won't change with every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   // Return combined store functions and properties
   return {
     store,
@@ -138,6 +137,7 @@ export const useStore = () => {
     refreshAuth: auth.refreshAuth,
     checkTokenExpiration: auth.checkTokenExpiration,
     logout: auth.logout,
+    handleAuthError: auth.handleAuthError,
 
     // Settings state and methods
     theme: store.theme,

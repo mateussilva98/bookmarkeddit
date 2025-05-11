@@ -58,12 +58,15 @@ export class AuthenticationError extends Error {
 export class ApiError extends Error {
   status?: number;
   retryAfter?: number;
+  isAuthError: boolean;
 
   constructor(message: string, status?: number, retryAfter?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.retryAfter = retryAfter;
+    // Mark 401 and 403 responses as auth errors
+    this.isAuthError = status === 401 || status === 403;
   }
 }
 
@@ -487,6 +490,12 @@ export const redditApi = {
         },
         body: JSON.stringify({ id }),
       });
+      if (response.status === 401 || response.status === 403) {
+        throw new ApiError(
+          "Your session has expired. Please log in again.",
+          response.status
+        );
+      }
 
       if (response.status === 429) {
         // Handle rate limiting

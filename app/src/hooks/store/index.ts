@@ -22,6 +22,5 @@ export type {
   ThemeType,
   Layout,
   SortOption,
-  Compactness,
   SettingsState,
 } from "./useSettingsStore";
