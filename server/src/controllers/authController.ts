@@ -75,7 +75,7 @@ export async function exchangeToken(req: Request, res: Response) {
       headers: {
         Authorization: `Basic ${encodedCredentials}`,
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
       body: `grant_type=authorization_code&code=${encodeURIComponent(
         code
@@ -178,7 +178,7 @@ export async function refreshToken(req: Request, res: Response) {
       headers: {
         Authorization: `Basic ${encodedCredentials}`,
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
       body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(
         refreshToken

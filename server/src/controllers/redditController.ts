@@ -57,7 +57,7 @@ export const getUserProfile = asyncHandler(
     const response = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
     });
 
@@ -124,7 +124,7 @@ export async function validateToken(req: Request, res: Response) {
     const response = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
     });
 
@@ -196,7 +196,7 @@ export async function getSavedPosts(req: Request, res: Response) {
     const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
     });
 
@@ -257,7 +257,7 @@ export async function getSavedPosts(req: Request, res: Response) {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
     });
 
@@ -378,7 +378,7 @@ export async function getAllSavedPosts(req: Request, res: Response) {
     const userResponse = await fetch("https://oauth.reddit.com/api/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
     });
 
@@ -446,7 +446,7 @@ export async function getAllSavedPosts(req: Request, res: Response) {
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "User-Agent": "bookmarkeddit/1.0",
+          "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
         },
       });
 
@@ -619,7 +619,7 @@ export async function unsavePost(req: Request, res: Response) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/x-www-form-urlencoded",
-        "User-Agent": "bookmarkeddit/1.0",
+        "User-Agent": process.env.USER_AGENT || "bookmarkeddit/1.0",
       },
       body: `id=${id}`,
     });

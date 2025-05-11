@@ -12,8 +12,14 @@ import { PostsList } from "../components/PostsList";
 import { Loader } from "../components/ui/Loader";
 import { RateLimitCountdown } from "../components/ui/RateLimitCountdown";
 import { SettingsModal } from "../components/SettingsModal";
+import { ToastContainer, ToastType } from "../components/ui/Toast";
 import { redditApi, ApiError } from "../api";
+import { v4 as uuidv4 } from "uuid";
 import styles from "./Posts.module.scss";
+
+// localStorage key constants
+const POSTS_STORAGE_KEY = "bookmarkeddit_posts";
+const POSTS_TIMESTAMP_KEY = "bookmarkeddit_posts_timestamp";
 
 export const Posts: FC = () => {
   const { store, checkTokenExpiration, toggleFiltersVisibility } = useStore();
@@ -29,17 +35,581 @@ export const Posts: FC = () => {
     type: null,
     nsfw: null,
   });
-  // Using store.showFilters from global state instead of local state
+
+  // New state for background fetching and updates
+  const [backgroundFetching, setBackgroundFetching] = useState<boolean>(false);
+  const [toasts, setToasts] = useState<
+    { id: string; message: string; type: ToastType }[]
+  >([]);
 
   // Rate limiting state management
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [isWaitingToRetry, setIsWaitingToRetry] = useState<boolean>(false);
+
+  // Refs for timers and state tracking
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Refs to track fetch status
   const isFetchingRef = useRef<boolean>(false); // Prevent duplicate fetches
   const initialFetchDoneRef = useRef<boolean>(false); // Track initial data load
+  const fetchSavedPostsRef = useRef<
+    ((backgroundFetch?: boolean) => Promise<void>) | null
+  >(null);
+  // Ref to track previous authentication state for detecting logout
+  const wasAuthenticatedRef = useRef<boolean>(false);
+  /**
+   * Save posts to localStorage
+   */
+  const savePostsToLocalStorage = useCallback((postsToSave: Post[]) => {
+    try {
+      localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(postsToSave));
+      localStorage.setItem(POSTS_TIMESTAMP_KEY, Date.now().toString());
+    } catch (error) {
+      console.error("Error saving posts to localStorage:", error);
+    }
+  }, []);
+
+  /**
+   * Clears posts-related data from localStorage
+   * Called when user logs out
+   */
+  const clearPostsFromLocalStorage = useCallback(() => {
+    try {
+      console.log("Clearing posts data from localStorage due to logout");
+      localStorage.removeItem(POSTS_STORAGE_KEY);
+      localStorage.removeItem(POSTS_TIMESTAMP_KEY);
+    } catch (error) {
+      console.error("Error clearing posts from localStorage:", error);
+    }
+  }, []);
+
+  /**
+   * Get posts from localStorage
+   * @returns Array of posts or null if not found/invalid
+   */
+  const getPostsFromLocalStorage = useCallback((): {
+    posts: Post[] | null;
+    timestamp: number | null;
+  } => {
+    try {
+      const postsJson = localStorage.getItem(POSTS_STORAGE_KEY);
+      const timestamp = localStorage.getItem(POSTS_TIMESTAMP_KEY);
+
+      if (!postsJson) return { posts: null, timestamp: null };
+
+      const parsedPosts = JSON.parse(postsJson) as Post[];
+      const parsedTimestamp = timestamp ? parseInt(timestamp) : null;
+
+      return {
+        posts: Array.isArray(parsedPosts) ? parsedPosts : null,
+        timestamp: parsedTimestamp,
+      };
+    } catch (error) {
+      console.error("Error retrieving posts from localStorage:", error);
+      return { posts: null, timestamp: null };
+    }
+  }, []);
+
+  /**
+   * Compare stored posts with fresh posts from API
+   * @returns Information about differences
+   */
+  const comparePostsWithStored = useCallback(
+    (storedPosts: Post[], freshPosts: Post[]) => {
+      const storedIds = new Set(storedPosts.map((post) => post.id));
+      const freshIds = new Set(freshPosts.map((post) => post.id));
+
+      // Find new posts that aren't in stored posts
+      const newPosts = freshPosts.filter((post) => !storedIds.has(post.id));
+
+      // Find deleted posts that are in stored but not in fresh
+      const deletedPosts = storedPosts.filter((post) => !freshIds.has(post.id));
+
+      return {
+        hasChanges: newPosts.length > 0 || deletedPosts.length > 0,
+        newCount: newPosts.length,
+        deletedCount: deletedPosts.length,
+        completelyNew: storedPosts.length === 0,
+      };
+    },
+    []
+  );
+
+  /**
+   * Remove a toast notification by ID
+   */
+  const removeToast = useCallback((id: string) => {
+    setToasts((currentToasts) =>
+      currentToasts.filter((toast) => toast.id !== id)
+    );
+  }, []);
+
+  /**
+   * Add a toast notification
+   */
+  const addToast = useCallback(
+    (message: string, type: ToastType) => {
+      const id = uuidv4();
+      setToasts((currentToasts) => [...currentToasts, { id, message, type }]);
+      // Automatically remove toast after 5 seconds
+      setTimeout(() => {
+        removeToast(id);
+      }, 5000);
+    },
+    [removeToast]
+  );
+
+  /**
+   * Cleans up timer references to prevent memory leaks
+   */
+  const cleanUpTimers = useCallback(() => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  }, []);
+
+  /**
+   * Cancels any active automatic retry
+   */
+  const cancelRetry = useCallback(() => {
+    cleanUpTimers();
+    setIsWaitingToRetry(false);
+    setRetryAfter(null);
+  }, [cleanUpTimers]);
+
+  /**
+   * Sets up automatic retry with countdown after rate limiting
+   * Uses fetchSavedPostsRef to avoid circular dependency
+   * @param seconds - Number of seconds to wait before retrying
+   */
+  const setupRetry = useCallback(
+    (seconds: number) => {
+      cleanUpTimers();
+
+      setRetryAfter(seconds);
+      setIsWaitingToRetry(true);
+
+      // Set up countdown timer to update UI
+      countdownIntervalRef.current = setInterval(() => {
+        setRetryAfter((prev) => {
+          if (prev !== null && prev > 0) {
+            return prev - 1;
+          } else {
+            if (countdownIntervalRef.current) {
+              clearInterval(countdownIntervalRef.current);
+            }
+            return 0;
+          }
+        });
+      }, 1000);
+
+      // Set up automatic retry after countdown finishes
+      retryTimeoutRef.current = setTimeout(() => {
+        setIsWaitingToRetry(false);
+        setRetryAfter(null);
+        // Use the ref to avoid circular dependency
+        if (fetchSavedPostsRef.current) {
+          fetchSavedPostsRef.current();
+        }
+      }, seconds * 1000);
+    },
+    [cleanUpTimers]
+  );
+
+  /**
+   * Fetches saved posts from Reddit API and processes them
+   * Handles authentication, rate limiting, and data transformation
+   * If backgroundFetch is true, will fetch in background without showing main loader
+   */
+  const fetchSavedPosts = useCallback(
+    async (backgroundFetch = false) => {
+      // Prevent multiple simultaneous requests
+      if (isFetchingRef.current) {
+        console.log("Fetch already in progress, skipping duplicate request");
+        return;
+      }
+
+      try {
+        isFetchingRef.current = true;
+        if (!backgroundFetch) {
+          setLoading(true);
+          console.log("Starting posts fetch (foreground)");
+        } else {
+          setBackgroundFetching(true);
+          console.log("Starting posts fetch (background)");
+        }
+        setError(null);
+
+        // Check if token needs refreshing
+        console.log("Checking token validity...");
+        const validToken = await checkTokenExpiration();
+        if (!validToken) {
+          console.error("No valid token available, redirecting to login");
+          navigate("/");
+          return;
+        }
+        console.log("Token is valid, proceeding with fetch");
+
+        // Try to load cached posts first if this is not a background fetch
+        if (!backgroundFetch) {
+          const { posts: storedPosts, timestamp } = getPostsFromLocalStorage();
+
+          // If we have stored posts and they're not too old (less than 24 hours), use them first
+          const MAX_POSTS_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+          const isStoredPostsRecent =
+            timestamp && Date.now() - timestamp < MAX_POSTS_AGE_MS;
+
+          if (storedPosts && storedPosts.length > 0 && isStoredPostsRecent) {
+            console.log(
+              `Using ${storedPosts.length} posts from localStorage (${new Date(
+                timestamp || 0
+              ).toLocaleString()})`
+            );
+            setPosts(storedPosts);
+            setLoading(false);
+
+            // Continue with background fetch to update data
+            console.log("Scheduling background fetch to update data");
+            setTimeout(() => {
+              if (fetchSavedPostsRef.current) {
+                fetchSavedPostsRef.current(true);
+              }
+            }, 100);
+            return;
+          } else {
+            console.log(
+              "No recent posts in localStorage or posts are too old, fetching from API"
+            );
+            if (storedPosts) {
+              console.log(
+                `Found ${storedPosts.length} posts from ${
+                  timestamp
+                    ? new Date(timestamp).toLocaleString()
+                    : "unknown time"
+                }`
+              );
+            } else {
+              console.log("No stored posts found in localStorage");
+            }
+          }
+        }
+
+        console.log("Starting to fetch all saved posts from Reddit API");
+        const data = await redditApi.getAllSavedPosts(validToken);
+        console.log(
+          `Successfully fetched ${data.data.children.length} saved posts from Reddit API`
+        );
+
+        // Process the posts
+        const processedPosts: Post[] = [];
+        console.log("Beginning post processing...");
+
+        for (const post of data.data.children) {
+          // Function to decode HTML entities in URLs
+          const decodeHtmlEntities = (url: string): string => {
+            const doc = new DOMParser().parseFromString(url, "text/html");
+            return doc.documentElement.textContent || url;
+          };
+
+          // Extract images from media_metadata if available
+          const images: string[] = [];
+          if (
+            post.data.media_metadata &&
+            typeof post.data.media_metadata === "object"
+          ) {
+            Object.values(
+              post.data.media_metadata as Record<string, MediaMetadata>
+            ).forEach((media) => {
+              // Try to get the best quality image
+              if (media.s && media.s.u) {
+                images.push(decodeHtmlEntities(media.s.u));
+              } else if (media.p && media.p.length > 0) {
+                // Get the largest preview if s.u is not available
+                const largestPreview = media.p[media.p.length - 1];
+                if (largestPreview.u) {
+                  images.push(decodeHtmlEntities(largestPreview.u));
+                }
+              }
+            });
+          }
+
+          // If no images were found but there's a thumbnail, add it
+          if (
+            images.length === 0 &&
+            post.data.thumbnail &&
+            post.data.thumbnail !== "self" &&
+            post.data.thumbnail !== "default"
+          ) {
+            images.push(post.data.thumbnail);
+          }
+
+          // Extract video information if available
+          let videoInfo: VideoInfo | undefined = undefined;
+
+          // Check for Reddit hosted videos
+          if (post.data.media && post.data.media.reddit_video) {
+            const redditVideo = post.data.media.reddit_video;
+            videoInfo = {
+              url: decodeHtmlEntities(redditVideo.fallback_url),
+              width: redditVideo.width,
+              height: redditVideo.height,
+              duration: redditVideo.duration,
+              isGif: redditVideo.is_gif || false,
+              dashUrl: redditVideo.dash_url
+                ? decodeHtmlEntities(redditVideo.dash_url)
+                : undefined,
+              hlsUrl: redditVideo.hls_url
+                ? decodeHtmlEntities(redditVideo.hls_url)
+                : undefined,
+              fallbackUrl: redditVideo.fallback_url
+                ? decodeHtmlEntities(redditVideo.fallback_url)
+                : undefined,
+            };
+          }
+          // Check for external videos from trusted sources like YouTube, Vimeo, etc.
+          else if (post.data.media && post.data.media.oembed) {
+            const oembed = post.data.media.oembed;
+            if (oembed.type === "video" && oembed.html) {
+              // Extract the iframe src URL from the HTML embed code if possible
+              const srcMatch = oembed.html.match(/src="([^"]+)"/);
+              if (srcMatch && srcMatch[1]) {
+                videoInfo = {
+                  url: decodeHtmlEntities(srcMatch[1]),
+                  width: oembed.width,
+                  height: oembed.height,
+                };
+              }
+            }
+          }
+          // Check for gfycat and gifv links
+          else if (
+            post.data.url &&
+            (post.data.url.includes("gfycat.com") ||
+              post.data.url.includes(".gifv") ||
+              post.data.url.includes(".mp4"))
+          ) {
+            let videoUrl = post.data.url;
+            // Convert Imgur .gifv to .mp4
+            if (videoUrl.endsWith(".gifv")) {
+              videoUrl = videoUrl.replace(".gifv", ".mp4");
+            }
+
+            videoInfo = {
+              url: decodeHtmlEntities(videoUrl),
+              isGif: videoUrl.includes(".gif") || videoUrl.includes("gfycat"),
+            };
+          }
+
+          // Create standardized post object with needed properties
+          const postP: Post = {
+            id: post.data.id,
+            subreddit: post.data.subreddit,
+            author: post.data.author,
+            createdAt: post.data.created,
+            title: post.data.title || post.data.link_title || "",
+            description: post.data.selftext || post.data.body || "",
+            url: post.data.url || post.data.link_url || "",
+            score: post.data.score,
+            media_metadata: post.data.media_metadata,
+            thumbnail:
+              post.data.thumbnail &&
+              post.data.thumbnail !== "self" &&
+              post.data.thumbnail !== "default"
+                ? post.data.thumbnail
+                : "",
+            images: images.length > 0 ? images : undefined,
+            video: videoInfo,
+            type: post.kind === "t3" ? "Post" : "Comment",
+            nsfw: post.data.over_18,
+            commentCount: post.data.num_comments,
+            fullname: post.kind + "_" + post.data.id,
+          };
+
+          processedPosts.push(postP);
+        }
+
+        // Mark initial fetch as done
+        initialFetchDoneRef.current = true;
+        console.log(`Processed ${processedPosts.length} posts successfully`);
+
+        // If this was a background fetch, compare with current posts
+        if (backgroundFetch) {
+          // Compare with current posts
+          const comparison = comparePostsWithStored(posts, processedPosts);
+
+          // Save to localStorage
+          console.log(
+            `Saving ${processedPosts.length} posts to localStorage (background fetch)`
+          );
+          savePostsToLocalStorage(processedPosts); // Only show notification if there are actual changes
+          if (comparison.hasChanges) {
+            console.log(
+              `Found ${comparison.newCount} new posts and ${comparison.deletedCount} deleted posts in background fetch`
+            );
+
+            // Automatically apply new posts to update state
+            setPosts(processedPosts);
+
+            // Display different toasts based on what changed
+            if (comparison.newCount > 0 && comparison.deletedCount > 0) {
+              // Both additions and deletions
+              addToast(
+                `Updated: ${comparison.newCount} new, ${comparison.deletedCount} removed posts`,
+                "success"
+              );
+            } else if (comparison.newCount > 0) {
+              // Only additions
+              addToast(
+                `Loaded ${comparison.newCount} new post${
+                  comparison.newCount > 1 ? "s" : ""
+                }`,
+                "success"
+              );
+            } else if (comparison.deletedCount > 0) {
+              // Only deletions
+              addToast(
+                `Removed ${comparison.deletedCount} unsaved post${
+                  comparison.deletedCount > 1 ? "s" : ""
+                }`,
+                "info"
+              );
+            }
+
+            // Reset active filters if they reference subreddits that no longer exist
+            if (
+              comparison.deletedCount > 0 &&
+              activeFilters.communities.length > 0
+            ) {
+              // Get all current subreddits after the update
+              const availableSubreddits = new Set(
+                processedPosts.map((post) => post.subreddit)
+              );
+
+              // Filter out communities that no longer exist in the updated posts
+              const validCommunities = activeFilters.communities.filter(
+                (community) => availableSubreddits.has(community)
+              );
+
+              // If some communities were removed from the filter, update the filter
+              if (
+                validCommunities.length !== activeFilters.communities.length
+              ) {
+                console.log(
+                  "Updating filters to remove non-existent communities"
+                );
+                setActiveFilters((prev) => ({
+                  ...prev,
+                  communities: validCommunities,
+                }));
+              }
+            }
+          } else {
+            console.log("No changes found in background fetch");
+            addToast("Your saved posts are up to date", "info");
+          }
+        } else {
+          // Initial fetch - set posts directly and save to localStorage
+          console.log(
+            `Setting ${processedPosts.length} posts to state and localStorage (initial fetch)`
+          );
+          setPosts(processedPosts);
+          savePostsToLocalStorage(processedPosts);
+        }
+      } catch (error) {
+        console.error("Error fetching saved posts:", error);
+
+        // Handle rate limiting
+        if (
+          error instanceof ApiError &&
+          error.status === 429 &&
+          error.retryAfter
+        ) {
+          console.log(
+            `Rate limit reached, will retry in ${error.retryAfter} seconds`
+          );
+          setError(
+            `Reddit rate limit reached. Automatically retrying in ${error.retryAfter} seconds...`
+          );
+          setupRetry(error.retryAfter);
+        } else {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to load your saved posts. Please try again.";
+          console.error(`Setting error state: ${errorMessage}`);
+          setError(errorMessage);
+        }
+      } finally {
+        if (!backgroundFetch) {
+          console.log("Fetch complete, resetting loading state (foreground)");
+          setLoading(false);
+        } else {
+          console.log("Fetch complete, resetting background fetching state");
+          setBackgroundFetching(false);
+        }
+        // Reset the fetching flag when done
+        isFetchingRef.current = false;
+        console.log("Fetch process complete");
+      }
+    },
+    [
+      checkTokenExpiration,
+      navigate,
+      setupRetry,
+      getPostsFromLocalStorage,
+      savePostsToLocalStorage,
+      comparePostsWithStored,
+      posts,
+      addToast,
+    ]
+  );
+
+  // Store the fetchSavedPosts function in a ref to avoid circular dependencies
+  useEffect(() => {
+    fetchSavedPostsRef.current = fetchSavedPosts;
+  }, [fetchSavedPosts]);
+
+  /**
+   * Force refresh posts
+   * Can be called programmatically when needed
+   */
+  const forceRefreshPosts = useCallback(() => {
+    console.log("Force refreshing posts");
+    if (store.auth.isAuthenticated) {
+      // Reset the fetch flag to ensure a fresh fetch
+      initialFetchDoneRef.current = false;
+      // Clear any pending retries
+      if (isWaitingToRetry) {
+        cancelRetry();
+      }
+      // Trigger a fresh fetch using the ref to avoid circular dependency
+      if (fetchSavedPostsRef.current) {
+        fetchSavedPostsRef.current();
+      }
+    } else {
+      console.log("Cannot refresh posts - not authenticated");
+    }
+  }, [store.auth.isAuthenticated, cancelRetry, isWaitingToRetry]);
+
+  /**
+   * Handles manual retry button click
+   * Cancels any ongoing automatic retry and forces a new fetch
+   */
+  const handleRetry = useCallback(() => {
+    setError(null);
+    if (isWaitingToRetry) {
+      // If we're waiting for a rate-limit retry, cancel it and force a retry now
+      cancelRetry();
+    }
+    // Use the ref to avoid circular dependency
+    if (fetchSavedPostsRef.current) {
+      fetchSavedPostsRef.current();
+    }
+  }, [isWaitingToRetry, cancelRetry]);
 
   /**
    * Opens the settings modal
@@ -61,7 +631,6 @@ export const Posts: FC = () => {
   const handleFilterChange = useCallback((newFilters: SelectedFilters) => {
     setActiveFilters(newFilters);
   }, []);
-
   /**
    * Handles post unsave action from PostsList
    * Updates posts array and manages community filters if a community has no more posts
@@ -94,289 +663,102 @@ export const Posts: FC = () => {
                 (community) => community !== unsavedCommunity
               ),
             }));
+
+            // Show notification when a subreddit is completely removed
+            addToast(
+              `No more posts from r/${unsavedCommunity}, removed from filters`,
+              "info"
+            );
           }
+        }
+
+        // Also update localStorage
+        savePostsToLocalStorage(newPosts);
+
+        // Show toast notification for the unsaved post
+        if (unsavedPost) {
+          addToast(
+            `Post "${unsavedPost.title.substring(0, 30)}${
+              unsavedPost.title.length > 30 ? "..." : ""
+            }" removed`,
+            "info"
+          );
         }
 
         return newPosts;
       });
     },
-    [activeFilters.communities]
+    [activeFilters.communities, savePostsToLocalStorage, addToast]
   );
 
   /**
-   * Cleans up timer references to prevent memory leaks
+   * Effect to handle logout - clears posts data from localStorage
    */
-  const cleanUpTimers = useCallback(() => {
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = null;
-    }
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-  }, []);
-
-  /**
-   * Sets up automatic retry with countdown after rate limiting
-   * @param seconds - Number of seconds to wait before retrying
-   */
-  const setupRetry = useCallback((seconds: number) => {
-    cleanUpTimers();
-
-    setRetryAfter(seconds);
-    setIsWaitingToRetry(true);
-
-    // Set up countdown timer to update UI
-    countdownIntervalRef.current = setInterval(() => {
-      setRetryAfter((prev) => {
-        if (prev !== null && prev > 0) {
-          return prev - 1;
-        } else {
-          if (countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-          }
-          return 0;
-        }
-      });
-    }, 1000);
-
-    // Set up automatic retry after countdown finishes
-    retryTimeoutRef.current = setTimeout(() => {
-      setIsWaitingToRetry(false);
-      setRetryAfter(null);
-      fetchSavedPosts();
-    }, seconds * 1000);
-  }, []);
-
-  /**
-   * Cancels any active automatic retry
-   */
-  const cancelRetry = useCallback(() => {
-    cleanUpTimers();
-    setIsWaitingToRetry(false);
-    setRetryAfter(null);
-  }, [cleanUpTimers]);
-
-  /**
-   * Fetches saved posts from Reddit API and processes them
-   * Handles authentication, rate limiting, and data transformation
-   */
-  const fetchSavedPosts = useCallback(async () => {
-    // Prevent multiple simultaneous requests
-    if (isFetchingRef.current) {
-      console.log("Fetch already in progress, skipping duplicate request");
-      return;
+  useEffect(() => {
+    // If previously authenticated but now not authenticated (logout)
+    if (
+      wasAuthenticatedRef.current &&
+      !store.auth.isLoading &&
+      !store.auth.isAuthenticated
+    ) {
+      console.log("Logout detected, clearing posts data from localStorage");
+      clearPostsFromLocalStorage();
     }
 
-    try {
-      isFetchingRef.current = true;
-      setLoading(true);
-      setError(null);
+    // Update the ref with current authentication state
+    wasAuthenticatedRef.current = store.auth.isAuthenticated;
+  }, [
+    store.auth.isAuthenticated,
+    store.auth.isLoading,
+    clearPostsFromLocalStorage,
+  ]);
 
-      // Check if token needs refreshing
-      const validToken = await checkTokenExpiration();
-      if (!validToken) {
-        navigate("/");
-        return;
-      }
-
-      console.log("Starting to fetch all saved posts incrementally");
-      const data = await redditApi.getAllSavedPosts(validToken);
-      console.log(
-        `Successfully fetched all ${data.data.children.length} saved posts`
-      );
-
-      // Process the posts
-      const processedPosts: Post[] = [];
-
-      for (const post of data.data.children) {
-        // Function to decode HTML entities in URLs
-        const decodeHtmlEntities = (url: string): string => {
-          const doc = new DOMParser().parseFromString(url, "text/html");
-          return doc.documentElement.textContent || url;
-        };
-
-        // Extract images from media_metadata if available
-        const images: string[] = [];
-        if (
-          post.data.media_metadata &&
-          typeof post.data.media_metadata === "object"
-        ) {
-          Object.values(
-            post.data.media_metadata as Record<string, MediaMetadata>
-          ).forEach((media) => {
-            // Try to get the best quality image
-            if (media.s && media.s.u) {
-              images.push(decodeHtmlEntities(media.s.u));
-            } else if (media.p && media.p.length > 0) {
-              // Get the largest preview if s.u is not available
-              const largestPreview = media.p[media.p.length - 1];
-              if (largestPreview.u) {
-                images.push(decodeHtmlEntities(largestPreview.u));
-              }
-            }
-          });
-        }
-
-        // If no images were found but there's a thumbnail, add it
-        if (
-          images.length === 0 &&
-          post.data.thumbnail &&
-          post.data.thumbnail !== "self" &&
-          post.data.thumbnail !== "default"
-        ) {
-          images.push(post.data.thumbnail);
-        }
-
-        // Extract video information if available
-        let videoInfo: VideoInfo | undefined = undefined;
-
-        // Check for Reddit hosted videos
-        if (post.data.media && post.data.media.reddit_video) {
-          const redditVideo = post.data.media.reddit_video;
-          videoInfo = {
-            url: decodeHtmlEntities(redditVideo.fallback_url),
-            width: redditVideo.width,
-            height: redditVideo.height,
-            duration: redditVideo.duration,
-            isGif: redditVideo.is_gif || false,
-            dashUrl: redditVideo.dash_url
-              ? decodeHtmlEntities(redditVideo.dash_url)
-              : undefined,
-            hlsUrl: redditVideo.hls_url
-              ? decodeHtmlEntities(redditVideo.hls_url)
-              : undefined,
-            fallbackUrl: redditVideo.fallback_url
-              ? decodeHtmlEntities(redditVideo.fallback_url)
-              : undefined,
-          };
-        }
-        // Check for external videos from trusted sources like YouTube, Vimeo, etc.
-        else if (post.data.media && post.data.media.oembed) {
-          const oembed = post.data.media.oembed;
-          if (oembed.type === "video" && oembed.html) {
-            // Extract the iframe src URL from the HTML embed code if possible
-            const srcMatch = oembed.html.match(/src="([^"]+)"/);
-            if (srcMatch && srcMatch[1]) {
-              videoInfo = {
-                url: decodeHtmlEntities(srcMatch[1]),
-                width: oembed.width,
-                height: oembed.height,
-              };
-            }
-          }
-        }
-        // Check for gfycat and gifv links
-        else if (
-          post.data.url &&
-          (post.data.url.includes("gfycat.com") ||
-            post.data.url.includes(".gifv") ||
-            post.data.url.includes(".mp4"))
-        ) {
-          let videoUrl = post.data.url;
-          // Convert Imgur .gifv to .mp4
-          if (videoUrl.endsWith(".gifv")) {
-            videoUrl = videoUrl.replace(".gifv", ".mp4");
-          }
-
-          videoInfo = {
-            url: decodeHtmlEntities(videoUrl),
-            isGif: videoUrl.includes(".gif") || videoUrl.includes("gfycat"),
-          };
-        }
-
-        // Create standardized post object with needed properties
-        const postP: Post = {
-          id: post.data.id,
-          subreddit: post.data.subreddit,
-          author: post.data.author,
-          createdAt: post.data.created,
-          title: post.data.title || post.data.link_title || "",
-          description: post.data.selftext || post.data.body || "",
-          url: post.data.url || post.data.link_url || "",
-          score: post.data.score,
-          media_metadata: post.data.media_metadata,
-          thumbnail:
-            post.data.thumbnail &&
-            post.data.thumbnail !== "self" &&
-            post.data.thumbnail !== "default"
-              ? post.data.thumbnail
-              : "",
-          images: images.length > 0 ? images : undefined,
-          video: videoInfo,
-          type: post.kind === "t3" ? "Post" : "Comment",
-          nsfw: post.data.over_18,
-          commentCount: post.data.num_comments,
-          fullname: post.kind + "_" + post.data.id,
-        };
-
-        processedPosts.push(postP);
-      }
-
-      initialFetchDoneRef.current = true;
-      console.log(`Processed ${processedPosts.length} posts`);
-      setPosts(processedPosts);
-    } catch (error) {
-      console.error("Error fetching saved posts:", error);
-
-      // Handle rate limiting
-      if (
-        error instanceof ApiError &&
-        error.status === 429 &&
-        error.retryAfter
-      ) {
-        setError(
-          `Reddit rate limit reached. Automatically retrying in ${error.retryAfter} seconds...`
+  /**
+   * Effect to handle authentication state changes
+   * Specifically monitors for authentication completion
+   */
+  useEffect(() => {
+    // If the auth state changed from loading to authenticated, trigger post fetch
+    if (!store.auth.isLoading && store.auth.isAuthenticated) {
+      // Special case when auth just completed (no initial fetch done yet)
+      if (!initialFetchDoneRef.current && !isFetchingRef.current) {
+        console.log(
+          "Auth state change detected: authenticated, triggering post fetch"
         );
-        setupRetry(error.retryAfter);
-      } else {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Failed to load your saved posts. Please try again."
-        );
+        forceRefreshPosts();
       }
-    } finally {
-      if (!isWaitingToRetry) {
-        setLoading(false);
-      }
-      // Reset the fetching flag when done
-      isFetchingRef.current = false;
     }
-  }, [checkTokenExpiration, navigate, setupRetry, isWaitingToRetry]);
-
-  /**
-   * Handles manual retry button click
-   * Cancels any ongoing automatic retry and forces a new fetch
-   */
-  const handleRetry = useCallback(() => {
-    setError(null);
-    if (isWaitingToRetry) {
-      // If we're waiting for a rate-limit retry, cancel it and force a retry now
-      cancelRetry();
-    }
-    fetchSavedPosts();
-  }, [isWaitingToRetry, cancelRetry, fetchSavedPosts]);
+  }, [store.auth.isLoading, store.auth.isAuthenticated, forceRefreshPosts]);
 
   /**
    * Effect to handle initial fetch and authentication check
    * Also cleans up timers when component unmounts
    */
   useEffect(() => {
+    console.log("Auth state changed:", {
+      isLoading: store.auth.isLoading,
+      isAuthenticated: store.auth.isAuthenticated,
+      initialFetchDone: initialFetchDoneRef.current,
+      isWaiting: isWaitingToRetry,
+    });
+
     // Redirect to home if not authenticated
     if (!store.auth.isLoading && !store.auth.isAuthenticated) {
+      console.log("Not authenticated, redirecting to home");
       navigate("/");
       return;
     }
 
-    // Only fetch on initial mount and when explicitly needed (not on every render)
+    // Only fetch posts when auth is complete and we haven't fetched yet
     if (
+      !store.auth.isLoading &&
       store.auth.isAuthenticated &&
       !isWaitingToRetry &&
-      !initialFetchDoneRef.current
+      !initialFetchDoneRef.current &&
+      fetchSavedPostsRef.current
     ) {
-      fetchSavedPosts();
+      console.log("Authentication complete, fetching saved posts...");
+      fetchSavedPostsRef.current();
     }
 
     // Clean up timers when component unmounts
@@ -387,10 +769,29 @@ export const Posts: FC = () => {
     store.auth.isAuthenticated,
     store.auth.isLoading,
     navigate,
-    fetchSavedPosts,
     isWaitingToRetry,
     cleanUpTimers,
   ]);
+
+  /**
+   * Error boundary effect to catch and report any errors
+   * Helps identify issues in the authentication and post loading flow
+   */
+  useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error(
+        "Unhandled error in Posts component:",
+        error.error || error.message
+      );
+      // You could also send this to an error reporting service
+    };
+
+    window.addEventListener("error", handleError);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+    };
+  }, []);
 
   /**
    * Generate counts of posts by subreddit for filtering
@@ -489,7 +890,9 @@ export const Posts: FC = () => {
             onComplete={() => {
               setIsWaitingToRetry(false);
               setRetryAfter(null);
-              fetchSavedPosts();
+              if (fetchSavedPostsRef.current) {
+                fetchSavedPostsRef.current();
+              }
             }}
           />
           <div className={styles.retryButtons}>
@@ -524,35 +927,50 @@ export const Posts: FC = () => {
 
       {!loading && !error && !isWaitingToRetry && posts.length > 0 && (
         <main className={styles.root}>
-          {store.showFilters ? (
-            <div className={styles.filters}>
-              <Filters
-                subredditCounts={subredditCounts}
-                typeCounts={typeCounts}
-                nsfwCounts={nsfwCounts}
-                onFilterChange={handleFilterChange}
-                totalPosts={posts.length}
-                onRefresh={handleRetry}
-                onToggleVisibility={toggleFiltersVisibility}
-              />
-            </div>
-          ) : (
-            <div className={styles.filtersToggle}>
-              <button
-                className="btn-icon"
-                onClick={toggleFiltersVisibility}
-                aria-label="Show filters"
-              >
-                <span className={styles.toggleIcon}>⟩</span>
-              </button>
+          {/* Show background fetching indicator */}
+          {backgroundFetching && (
+            <div className={styles.notificationBar}>
+              <div className={styles.backgroundFetching}>
+                <span className={styles.fetchingSpinner}></span>
+                Updating posts in background...
+              </div>
             </div>
           )}
-          <div className={styles.postsList}>
-            <PostsList
-              posts={filteredPosts}
-              onRefresh={handleRetry}
-              onPostUnsave={handlePostUnsave}
-            />
+
+          {/* Toast container for notifications */}
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+          <div className={styles.mainContent}>
+            {store.showFilters ? (
+              <div className={styles.filters}>
+                <Filters
+                  subredditCounts={subredditCounts}
+                  typeCounts={typeCounts}
+                  nsfwCounts={nsfwCounts}
+                  onFilterChange={handleFilterChange}
+                  totalPosts={posts.length}
+                  onRefresh={handleRetry}
+                  onToggleVisibility={toggleFiltersVisibility}
+                />
+              </div>
+            ) : (
+              <div className={styles.filtersToggle}>
+                <button
+                  className="btn-icon"
+                  onClick={toggleFiltersVisibility}
+                  aria-label="Show filters"
+                >
+                  <span className={styles.toggleIcon}>⟩</span>
+                </button>
+              </div>
+            )}
+            <div className={styles.postsList}>
+              <PostsList
+                posts={filteredPosts}
+                onRefresh={handleRetry}
+                onPostUnsave={handlePostUnsave}
+              />
+            </div>
           </div>
         </main>
       )}

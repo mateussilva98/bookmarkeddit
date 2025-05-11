@@ -1,17 +1,17 @@
 import { FC, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.scss";
-import { Sun } from "./icons/Sun";
+import { Sun } from "../components/icons/Sun";
 import { useStore } from "../hooks/use-store";
-import { Moon } from "./icons/Moon";
-import { Search } from "./icons/Search";
-import { Refresh } from "./icons/Refresh";
-import { Chart } from "./icons/Chart";
-import { Lock } from "./icons/Lock";
+import { Moon } from "../components/icons/Moon";
+import { Search } from "../components/icons/Search";
+import { Refresh } from "../components/icons/Refresh";
+import { Chart } from "../components/icons/Chart";
+import { Lock } from "../components/icons/Lock";
 import LOGO from "../assets/images/logo.svg";
 import LOGO_WHITE from "../assets/images/logo_white.svg";
 import { authService } from "../api";
-import { FeatureCard } from "./ui/FeatureCard";
+import { FeatureCard } from "../components/ui/FeatureCard";
 
 export const Home: FC = () => {
   const { store, changeTheme } = useStore();

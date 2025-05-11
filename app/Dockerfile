@@ -9,8 +9,11 @@ RUN npm ci
 # Copy app source
 COPY . .
 
-# Build the app
-RUN npm run build
+# Make build script executable
+RUN chmod +x ./build.sh 
+
+# Build the app (use direct TypeScript and Vite commands if there are issues with the script)
+RUN npm run build || (npx tsc --noEmit && npx vite build)
 
 # Production stage
 FROM nginx:alpine

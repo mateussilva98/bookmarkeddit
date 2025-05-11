@@ -8,8 +8,10 @@ import {
   FC,
   PropsWithChildren,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { UserProfile, authService } from "../api";
@@ -18,7 +20,6 @@ import { UserProfile, authService } from "../api";
 type ThemeType = "dark" | "light";
 type Layout = "grid" | "list";
 type SortOption = "recent" | "upvotes" | "comments";
-type Compactness = "compact" | "normal";
 
 /**
  * User authentication state interface
@@ -52,7 +53,6 @@ interface StoreProps {
   theme: ThemeType;
   layout: Layout;
   sortBy: SortOption;
-  compactness: Compactness;
   showImages: boolean;
   compactText: boolean;
   blurNSFW: boolean;
@@ -65,7 +65,6 @@ const initialStore: StoreProps = {
   theme: "dark",
   layout: "grid",
   sortBy: "recent",
-  compactness: "normal",
   showImages: true,
   compactText: true,
   blurNSFW: true,
@@ -83,6 +82,10 @@ export const StoreContext = createContext<{
     throw new Error("setStore must be used within a StoreProvider");
   },
 });
+
+// Use this to prevent initialization from running multiple times
+// This prevents infinite loops in development mode with React.StrictMode
+let globalAuthInitialized = false;
 
 /**
  * Custom hook for accessing and manipulating the global store
@@ -118,14 +121,6 @@ export const useStore = () => {
   const changeSortBy = (sortBy: SortOption) => {
     localStorage.setItem("sortBy", sortBy);
     setStore((currentStore) => ({ ...currentStore, sortBy }));
-  };
-
-  /**
-   * Change text display compactness
-   */
-  const changeCompactness = (compactness: Compactness) => {
-    localStorage.setItem("compactness", compactness);
-    setStore((currentStore) => ({ ...currentStore, compactness }));
   };
 
   /**
@@ -169,127 +164,128 @@ export const useStore = () => {
   /**
    * Set authentication tokens and update store
    */
-  const setAuthTokens = (
-    accessToken: string,
-    refreshToken: string,
-    expiresIn: number
-  ) => {
-    // Calculate expiration timestamp
-    const expiresAt = Date.now() + expiresIn * 1000;
+  const setAuthTokens = useCallback(
+    (accessToken: string, refreshToken: string, expiresIn: number) => {
+      // Calculate expiration timestamp
+      const expiresAt = Date.now() + expiresIn * 1000;
 
-    // Save to localStorage
-    localStorage.setItem("access_token", accessToken);
-    localStorage.setItem("refresh_token", refreshToken);
-    localStorage.setItem("expires_at", expiresAt.toString());
+      // Save to localStorage
+      localStorage.setItem("access_token", accessToken);
+      localStorage.setItem("refresh_token", refreshToken);
+      localStorage.setItem("expires_at", expiresAt.toString());
 
-    // Update store
-    setStore((currentStore) => ({
-      ...currentStore,
-      auth: {
-        ...currentStore.auth,
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        expires_at: expiresAt,
-        isAuthenticated: true,
-        isLoading: false,
-        error: null,
-      },
-    }));
-  };
+      // Update store
+      setStore((currentStore) => ({
+        ...currentStore,
+        auth: {
+          ...currentStore.auth,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: expiresAt,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        },
+      }));
+    },
+    [setStore]
+  );
 
   /**
-   * Update user profile in the store
+   * Update user profile in the store and localStorage
    */
-  const setUserProfile = (user: UserProfile) => {
-    setStore((currentStore) => ({
-      ...currentStore,
-      auth: {
-        ...currentStore.auth,
-        user,
-      },
-    }));
-  };
+  const setUserProfile = useCallback(
+    (user: UserProfile) => {
+      // Save to localStorage as JSON string
+      localStorage.setItem("user_profile", JSON.stringify(user));
+
+      setStore((currentStore) => ({
+        ...currentStore,
+        auth: {
+          ...currentStore.auth,
+          user,
+        },
+      }));
+    },
+    [setStore]
+  );
 
   /**
    * Set authentication error in the store
    */
-  const setAuthError = (error: string) => {
-    setStore((currentStore) => ({
-      ...currentStore,
-      auth: {
-        ...currentStore.auth,
-        error,
-        isLoading: false,
-      },
-    }));
-  };
+  const setAuthError = useCallback(
+    (error: string) => {
+      setStore((currentStore) => ({
+        ...currentStore,
+        auth: {
+          ...currentStore.auth,
+          error,
+          isLoading: false,
+        },
+      }));
+    },
+    [setStore]
+  );
 
   /**
    * Set authentication loading state
    */
-  const setAuthLoading = (isLoading: boolean) => {
+  const setAuthLoading = useCallback(
+    (isLoading: boolean) => {
+      setStore((currentStore) => ({
+        ...currentStore,
+        auth: {
+          ...currentStore.auth,
+          isLoading,
+        },
+      }));
+    },
+    [setStore]
+  );
+
+  /**
+   * Log out the current user by clearing tokens and auth state
+   */
+  const logout = useCallback(() => {
+    // Clear localStorage immediately to complete the logout
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("expires_at");
+    localStorage.removeItem("user_profile");
+
+    // Reset auth state
     setStore((currentStore) => ({
       ...currentStore,
       auth: {
-        ...currentStore.auth,
-        isLoading,
+        ...initialAuthState,
+        isLoading: false,
       },
     }));
-  };
+
+    // Navigate to homepage - this will force a clean app state
+    window.location.href = "/";
+  }, [setStore]);
 
   // Track ongoing refresh promise to prevent multiple simultaneous refreshes
-  let refreshPromise: Promise<boolean> | null = null;
-
-  /**
-   * Handle OAuth code exchange after Reddit callback
-   * Exchanges authorization code for tokens and fetches user profile
-   */
-  const handleCodeExchange = async (code: string): Promise<boolean> => {
-    try {
-      setAuthLoading(true);
-      const tokenData = await authService.getTokens(code);
-      setAuthTokens(
-        tokenData.access_token,
-        tokenData.refresh_token,
-        tokenData.expires_in
-      );
-
-      // Get user profile after successful authentication
-      try {
-        const userProfile = await authService.getUserProfile(
-          tokenData.access_token
-        );
-        setUserProfile(userProfile);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      }
-
-      return true;
-    } catch (error) {
-      setAuthError(
-        error instanceof Error
-          ? error.message
-          : "Failed to exchange code for token"
-      );
-      return false;
-    }
-  };
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
 
   /**
    * Refresh authentication tokens using the refresh token
    * Ensures only one refresh happens at a time
    */
-  const refreshAuth = async (): Promise<boolean> => {
-    if (refreshPromise) {
+  const refreshAuth = useCallback(async (): Promise<boolean> => {
+    if (refreshPromiseRef.current) {
       // If a refresh is already in progress, return the same promise
-      return refreshPromise;
+      return refreshPromiseRef.current;
     }
+
     const refreshToken = store.auth.refresh_token;
     if (!refreshToken) {
       setAuthError("No refresh token available");
       return false;
     }
-    refreshPromise = (async () => {
+
+    refreshPromiseRef.current = (async () => {
       try {
         setAuthLoading(true);
         const tokenData = await authService.refreshToken(refreshToken);
@@ -307,17 +303,64 @@ export const useStore = () => {
         return false;
       } finally {
         setAuthLoading(false);
-        refreshPromise = null; // Reset promise after completion
+        refreshPromiseRef.current = null; // Reset promise after completion
       }
     })();
-    return refreshPromise;
-  };
+
+    return refreshPromiseRef.current;
+  }, [
+    store.auth.refresh_token,
+    setAuthError,
+    setAuthLoading,
+    setAuthTokens,
+    logout,
+  ]);
+
+  /**
+   * Handle OAuth code exchange after Reddit callback
+   * Exchanges authorization code for tokens and fetches user profile
+   */
+  const handleCodeExchange = useCallback(
+    async (code: string): Promise<boolean> => {
+      try {
+        setAuthLoading(true);
+        const tokenData = await authService.getTokens(code);
+        setAuthTokens(
+          tokenData.access_token,
+          tokenData.refresh_token,
+          tokenData.expires_in
+        );
+
+        // Get user profile after successful authentication
+        try {
+          const userProfile = await authService.getUserProfile(
+            tokenData.access_token
+          );
+          setUserProfile(userProfile);
+        } catch (error) {
+          console.error("Error fetching user profile:", error);
+        }
+
+        return true;
+      } catch (error) {
+        setAuthError(
+          error instanceof Error
+            ? error.message
+            : "Failed to exchange code for token"
+        );
+        return false;
+      } finally {
+        setAuthLoading(false);
+      }
+    },
+    [setAuthError, setAuthLoading, setAuthTokens, setUserProfile]
+  );
 
   /**
    * Check if access token is valid or needs refresh
    * Returns valid token or null if auth failed
    */
-  const checkTokenExpiration = async (): Promise<string | null> => {
+  const checkTokenExpiration = useCallback(async (): Promise<string | null> => {
     const { access_token, refresh_token, expires_at } = store.auth;
 
     if (!access_token || !refresh_token) {
@@ -334,45 +377,51 @@ export const useStore = () => {
     }
 
     return access_token;
-  };
-
-  /**
-   * Log out the current user by clearing tokens and auth state
-   */
-  const logout = () => {
-    // Clear localStorage immediately to complete the logout
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("expires_at");
-
-    // Reset auth state
-    setStore((currentStore) => ({
-      ...currentStore,
-      auth: {
-        ...initialAuthState,
-        isLoading: false,
-      },
-    }));
-
-    // Navigate to homepage - this will force a clean app state
-    window.location.href = "/";
-  };
+  }, [store.auth, refreshAuth]);
 
   // Initialize auth state from localStorage
   useEffect(() => {
+    // CRITICAL: Skip initialization if already done
+    // This prevents infinite loops when store updates trigger re-renders
+    if (globalAuthInitialized) {
+      return;
+    }
+
+    // Mark as initialized globally
+    globalAuthInitialized = true;
+
     const initializeAuthState = async () => {
       setAuthLoading(true);
+      console.log("Initializing auth state from localStorage...");
 
       const accessToken = localStorage.getItem("access_token");
       const refreshToken = localStorage.getItem("refresh_token");
       const expiresAt = localStorage.getItem("expires_at");
+      const userProfileStr = localStorage.getItem("user_profile");
 
       if (!accessToken || !refreshToken || !expiresAt) {
+        console.log("No auth tokens found in localStorage");
         setAuthLoading(false);
         return;
       }
 
-      // Update store with saved tokens
+      console.log("Found auth tokens in localStorage");
+
+      // Try to parse stored user profile if it exists
+      let storedUserProfile: UserProfile | null = null;
+      if (userProfileStr) {
+        try {
+          storedUserProfile = JSON.parse(userProfileStr) as UserProfile;
+          console.log(
+            "Using cached user profile from localStorage:",
+            storedUserProfile.name
+          );
+        } catch (e) {
+          console.error("Failed to parse stored user profile:", e);
+        }
+      }
+
+      // Update store with saved tokens and user profile
       setStore((currentStore) => ({
         ...currentStore,
         auth: {
@@ -381,23 +430,38 @@ export const useStore = () => {
           refresh_token: refreshToken,
           expires_at: parseInt(expiresAt),
           isAuthenticated: true,
+          user: storedUserProfile,
         },
       }));
+
+      console.log("Auth state updated, isAuthenticated set to true", {
+        hasUserProfile: !!storedUserProfile,
+        userName: storedUserProfile?.name,
+      });
 
       // Check if token is expired or will expire soon
       const expiresAtNum = parseInt(expiresAt);
       const isExpiringSoon = expiresAtNum < Date.now() + 5 * 60 * 1000;
+      console.log("Token expiration check:", {
+        expiresAt: new Date(expiresAtNum).toLocaleString(),
+        isExpiringSoon,
+        timeRemaining:
+          Math.floor((expiresAtNum - Date.now()) / 1000) + " seconds",
+      });
 
       try {
         if (isExpiringSoon) {
+          console.log("Token is expiring soon, refreshing...");
           // Refresh the token if it's expiring soon
           await refreshAuth();
-        } else {
-          // Otherwise just fetch the user profile
+        } else if (!storedUserProfile) {
+          console.log("Fetching user profile from API...");
+          // Only fetch the user profile if we don't have it stored
           const userProfile = await authService.getUserProfile(accessToken);
           setUserProfile(userProfile);
-          setAuthLoading(false);
         }
+        console.log("Auth initialization complete, setting isLoading to false");
+        setAuthLoading(false);
       } catch (error) {
         console.error("Error during auth initialization:", error);
         // If there's an error, attempt to refresh the token
@@ -410,6 +474,8 @@ export const useStore = () => {
     };
 
     initializeAuthState();
+    // Only include dependencies that won't change with every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
@@ -419,7 +485,6 @@ export const useStore = () => {
     changeTheme,
     changeLayout,
     changeSortBy,
-    changeCompactness,
     toggleShowImages,
     toggleCompactText,
     toggleBlurNSFW,
@@ -448,9 +513,6 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
     const theme = localStorage.getItem("theme") as ThemeType | null;
     const layout = localStorage.getItem("layout") as Layout | null;
     const sortBy = localStorage.getItem("sortBy") as SortOption | null;
-    const compactness = localStorage.getItem(
-      "compactness"
-    ) as Compactness | null;
     const showImagesStr = localStorage.getItem("showImages");
     const compactTextStr = localStorage.getItem("compactText");
     const blurNSFWStr = localStorage.getItem("blurNSFW");
@@ -479,7 +541,6 @@ export const StoreProvider: FC<PropsWithChildren> = ({ children }) => {
       ...currentStore,
       layout: layout || initialStore.layout,
       sortBy: sortBy || initialStore.sortBy,
-      compactness: compactness || initialStore.compactness,
       showImages,
       compactText,
       blurNSFW,

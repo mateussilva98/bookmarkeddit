@@ -2,7 +2,9 @@ Next up:
   ☐ general mobile styling improvments
     ☐ show/hide filters
       ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
-  
+
+
+
 
 
 Deployment:
@@ -29,7 +31,6 @@ Backlog - to implement:
     ☐ Option 3: Optimize Grid Calculations - Consider using CSS-only masonry layouts (e.g., grid-template-rows: masonry) if browser support is sufficient, or switch to a simpler layout for large lists.
     ☐ Option 4: Pagination or Infinite Scroll - Instead of showing all posts, implement pagination or infinite scrolling to load posts in chunks. (Infinite scroll is already implemented, but maybe not in the best way)
   ☐ highlight the seached text on the posts (and show how many posts matched) 
-  ☐ Saved posts will now be cached locally in the browser so the search would be available right after loading while posts are refreshed from Reddit in the background.
   ☐ replace implemented logic with a library like Winston, Pino, Morgan, Buyan or log4js that sabes the logs to a file and/or sends them to a remote server for analysis.
   
 

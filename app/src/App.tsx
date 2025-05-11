@@ -4,7 +4,7 @@
  */
 import { StoreProvider } from "./hooks/use-store";
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Home } from "./components/Home";
+import { Home } from "./pages/Home";
 import { Posts } from "./pages/Posts";
 import { LoginCallback } from "./components/LoginCallback";
 
