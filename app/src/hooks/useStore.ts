@@ -38,29 +38,25 @@ export const useStore = () => {
 
     const initializeAuthState = async () => {
       auth.setAuthLoading(true);
-      console.log("Initializing auth state from localStorage...");
+      // Initialize authentication state by retrieving tokens from localStorage
 
       const accessToken = localStorage.getItem("access_token");
       const refreshToken = localStorage.getItem("refresh_token");
       const expiresAt = localStorage.getItem("expires_at");
       const userProfileStr = localStorage.getItem("user_profile");
-
       if (!accessToken || !refreshToken || !expiresAt) {
-        console.log("No auth tokens found in localStorage");
+        // No authentication tokens found, abort initialization
         auth.setAuthLoading(false);
         return;
       }
-      console.log("Found auth tokens in localStorage");
+      // Authentication tokens found in localStorage
 
       // Try to parse stored user profile if it exists
       let storedUserProfile: any = null;
       if (userProfileStr) {
         try {
+          // Successfully parsed user profile from local storage
           storedUserProfile = JSON.parse(userProfileStr);
-          console.log(
-            "Using cached user profile from localStorage:",
-            storedUserProfile.name
-          );
         } catch (e) {
           console.error("Failed to parse stored user profile:", e);
         }
@@ -79,33 +75,21 @@ export const useStore = () => {
         },
       }));
 
-      console.log("Auth state updated, isAuthenticated set to true", {
-        hasUserProfile: !!storedUserProfile,
-        userName: storedUserProfile?.name,
-      });
+      // Authentication state updated in store with user profile and tokens
 
-      // Check if token is expired or will expire soon
+      // Check if token is expired or will expire soon (5 minutes buffer)
       const expiresAtNum = parseInt(expiresAt);
       const isExpiringSoon = expiresAtNum < Date.now() + 5 * 60 * 1000;
-      console.log("Token expiration check:", {
-        expiresAt: new Date(expiresAtNum).toLocaleString(),
-        isExpiringSoon,
-        timeRemaining:
-          Math.floor((expiresAtNum - Date.now()) / 1000) + " seconds",
-      });
-
       try {
         if (isExpiringSoon) {
-          console.log("Token is expiring soon, refreshing...");
-          // Refresh the token if it's expiring soon
+          // Token is about to expire, initiating refresh process
           await auth.refreshAuth();
         } else if (!storedUserProfile) {
-          console.log("Fetching user profile from API...");
-          // Only fetch the user profile if we don't have it stored
+          // No user profile in cache, fetching from API
           const userProfile = await authService.getUserProfile(accessToken);
           auth.setUserProfile(userProfile);
         }
-        console.log("Auth initialization complete, setting isLoading to false");
+        // Auth initialization completed successfully
         auth.setAuthLoading(false);
       } catch (error) {
         console.error("Error during auth initialization:", error);

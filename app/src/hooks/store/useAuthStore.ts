@@ -127,7 +127,7 @@ export const useAuthStore = () => {
    * Clears both auth and posts data from localStorage
    */
   const handleAuthError = useCallback(() => {
-    console.log("Authentication error detected, clearing all session data");
+    // Detected authentication error, clearing all session data for security
 
     // Clear auth data
     localStorage.removeItem("access_token");
@@ -245,6 +245,7 @@ export const useAuthStore = () => {
           );
           setUserProfile(userProfile);
         } catch (error) {
+          // Unable to fetch user profile data after authentication
           console.error("Error fetching user profile:", error);
         }
 

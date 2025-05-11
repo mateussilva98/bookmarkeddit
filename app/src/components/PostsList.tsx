@@ -426,7 +426,11 @@ export const PostsList: FC<PostsListProps> = ({
               }
             >
               <div className="post-content">
-                <PostComponent post={post} onUnsave={handlePostUnsave} />
+                <PostComponent
+                  post={post}
+                  onUnsave={handlePostUnsave}
+                  addToast={addToast}
+                />
               </div>
               <hr />
             </div>

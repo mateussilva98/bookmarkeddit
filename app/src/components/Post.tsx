@@ -21,6 +21,7 @@ interface PostProps {
     succeeded: boolean,
     errorMessage?: string
   ) => void;
+  addToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
 // Calculate data text - 1 day ago, 4 days ago, 1 motnh ago, etc.
@@ -49,7 +50,7 @@ const calculateTimeAgo = (timestamp: number): string => {
   return "just now";
 };
 
-export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
+export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
   const { store, handleAuthError } = useStore();
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [isUnsaving, setIsUnsaving] = useState(false);
@@ -62,13 +63,27 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave }) => {
           text: post.description,
           url: url,
         })
-        .then(() => console.log("Post shared successfully"))
-        .catch((error) => console.error("Error sharing post:", error));
+        .then(() => {
+          // Web Share API successfully shared the post
+          if (addToast) {
+            addToast("Post shared successfully", "success");
+          }
+        })
+        .catch((error) => {
+          console.error("Error sharing post:", error);
+          if (addToast) {
+            addToast("Failed to share post", "error");
+          }
+        });
     } else {
       // Fallback for browsers that don't support the Web Share API - copy to clipboard
       navigator.clipboard.writeText(url).then(() => {
-        console.log("Post URL copied to clipboard:", url);
-        alert("Post URL copied to clipboard: " + url);
+        // URL successfully copied to clipboard
+        if (addToast) {
+          addToast("Post URL copied to clipboard", "success");
+        } else {
+          alert("Post URL copied to clipboard: " + url);
+        }
       });
     }
   };

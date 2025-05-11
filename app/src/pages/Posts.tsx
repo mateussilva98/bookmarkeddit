@@ -76,10 +76,9 @@ export const Posts: FC = () => {
   /**
    * Clears posts-related data from localStorage
    * Called when user logs out
-   */
-  const clearPostsFromLocalStorage = useCallback(() => {
+   */ const clearPostsFromLocalStorage = useCallback(() => {
     try {
-      console.log("Clearing posts data from localStorage due to logout");
+      // Clearing posts data when user logs out to maintain privacy
       localStorage.removeItem(POSTS_STORAGE_KEY);
       localStorage.removeItem(POSTS_TIMESTAMP_KEY);
     } catch (error) {
@@ -234,7 +233,6 @@ export const Posts: FC = () => {
     async (backgroundFetch = false) => {
       // Prevent multiple simultaneous requests
       if (isFetchingRef.current) {
-        console.log("Fetch already in progress, skipping duplicate request");
         return;
       }
 
@@ -242,22 +240,20 @@ export const Posts: FC = () => {
         isFetchingRef.current = true;
         if (!backgroundFetch) {
           setLoading(true);
-          console.log("Starting posts fetch (foreground)");
         } else {
           setBackgroundFetching(true);
-          console.log("Starting posts fetch (background)");
         }
         setError(null);
 
         // Check if token needs refreshing
-        console.log("Checking token validity...");
+        // Validating authentication token before making API calls
         const validToken = await checkTokenExpiration();
         if (!validToken) {
           console.error("No valid token available, redirecting to login");
           navigate("/");
           return;
         }
-        console.log("Token is valid, proceeding with fetch");
+        // Token validation successful
 
         // Try to load cached posts first if this is not a background fetch
         if (!backgroundFetch) {
@@ -269,16 +265,12 @@ export const Posts: FC = () => {
             timestamp && Date.now() - timestamp < MAX_POSTS_AGE_MS;
 
           if (storedPosts && storedPosts.length > 0 && isStoredPostsRecent) {
-            console.log(
-              `Using ${storedPosts.length} posts from localStorage (${new Date(
-                timestamp || 0
-              ).toLocaleString()})`
-            );
+            // Using cached posts from local storage since they're recent enough
             setPosts(storedPosts);
             setLoading(false);
 
             // Continue with background fetch to update data
-            console.log("Scheduling background fetch to update data");
+            // Schedule background fetch to refresh data while displaying cached posts
             setTimeout(() => {
               if (fetchSavedPostsRef.current) {
                 fetchSavedPostsRef.current(true);
@@ -286,32 +278,22 @@ export const Posts: FC = () => {
             }, 100);
             return;
           } else {
-            console.log(
-              "No recent posts in localStorage or posts are too old, fetching from API"
-            );
+            // Cache is not available or too old
             if (storedPosts) {
-              console.log(
-                `Found ${storedPosts.length} posts from ${
-                  timestamp
-                    ? new Date(timestamp).toLocaleString()
-                    : "unknown time"
-                }`
-              );
+              // Found outdated posts in local storage
             } else {
-              console.log("No stored posts found in localStorage");
+              // No cached posts found in local storage
             }
           }
         }
 
-        console.log("Starting to fetch all saved posts from Reddit API");
+        // No valid cache, fetching all saved posts from Reddit API
         const data = await redditApi.getAllSavedPosts(validToken);
-        console.log(
-          `Successfully fetched ${data.data.children.length} saved posts from Reddit API`
-        );
+        // Successfully retrieved saved posts from Reddit API
 
         // Process the posts
         const processedPosts: Post[] = [];
-        console.log("Beginning post processing...");
+        // Starting to transform raw Reddit API data into application-specific Post objects
 
         for (const post of data.data.children) {
           // Function to decode HTML entities in URLs
@@ -427,10 +409,10 @@ export const Posts: FC = () => {
           processedPosts.push(postP);
         }
 
-        console.log(processedPosts);
+        // Processing of posts completed
         // Mark initial fetch as done
         initialFetchDoneRef.current = true;
-        console.log(`Processed ${processedPosts.length} posts successfully`);
+        // Successfully processed all posts
 
         // If this was a background fetch, compare with current posts
         if (backgroundFetch) {
@@ -438,14 +420,10 @@ export const Posts: FC = () => {
           const comparison = comparePostsWithStored(posts, processedPosts);
 
           // Save to localStorage
-          console.log(
-            `Saving ${processedPosts.length} posts to localStorage (background fetch)`
-          );
+          // Saving updated posts to local storage after background fetch
           savePostsToLocalStorage(processedPosts); // Only show notification if there are actual changes
           if (comparison.hasChanges) {
-            console.log(
-              `Found ${comparison.newCount} new posts and ${comparison.deletedCount} deleted posts in background fetch`
-            );
+            // Changes detected in background fetch
 
             // Automatically apply new posts to update state
             setPosts(processedPosts);
@@ -494,9 +472,6 @@ export const Posts: FC = () => {
               if (
                 validCommunities.length !== activeFilters.communities.length
               ) {
-                console.log(
-                  "Updating filters to remove non-existent communities"
-                );
                 setActiveFilters((prev) => ({
                   ...prev,
                   communities: validCommunities,
@@ -504,23 +479,19 @@ export const Posts: FC = () => {
               }
             }
           } else {
-            console.log("No changes found in background fetch");
+            // Background fetch completed with no changes detected
             addToast("Your saved posts are up to date", "info");
           }
         } else {
           // Initial fetch - set posts directly and save to localStorage
-          console.log(
-            `Setting ${processedPosts.length} posts to state and localStorage (initial fetch)`
-          );
+
           setPosts(processedPosts);
           savePostsToLocalStorage(processedPosts);
         }
       } catch (error) {
-        console.error("Error fetching saved posts:", error);
-
-        // Handle authentication errors (401/403)
+        console.error("Error fetching saved posts:", error); // Handle authentication errors (401/403)
         if (error instanceof ApiError && error.isAuthError) {
-          console.log("Authentication error detected, redirecting to login");
+          // Authentication error detected, redirecting to login page
           handleAuthError();
           return;
         }
@@ -531,9 +502,6 @@ export const Posts: FC = () => {
           error.status === 429 &&
           error.retryAfter
         ) {
-          console.log(
-            `Rate limit reached, will retry in ${error.retryAfter} seconds`
-          );
           setError(
             `Reddit rate limit reached. Automatically retrying in ${error.retryAfter} seconds...`
           );
@@ -548,15 +516,15 @@ export const Posts: FC = () => {
         }
       } finally {
         if (!backgroundFetch) {
-          console.log("Fetch complete, resetting loading state (foreground)");
+          // Foreground operation finished - UI loading indicator can be removed
           setLoading(false);
         } else {
-          console.log("Fetch complete, resetting background fetching state");
+          // Background operation finished - update state accordingly
           setBackgroundFetching(false);
         }
         // Reset the fetching flag when done
         isFetchingRef.current = false;
-        console.log("Fetch process complete");
+        // Post retrieval and processing workflow completed
       }
     },
     [
@@ -583,7 +551,7 @@ export const Posts: FC = () => {
    * Can be called programmatically when needed
    */
   const forceRefreshPosts = useCallback(() => {
-    console.log("Force refreshing posts");
+    // Manual refresh triggered - fetching fresh posts from Reddit
     if (store.auth.isAuthenticated) {
       // Reset the fetch flag to ensure a fresh fetch
       initialFetchDoneRef.current = false;
@@ -596,7 +564,7 @@ export const Posts: FC = () => {
         fetchSavedPostsRef.current();
       }
     } else {
-      console.log("Cannot refresh posts - not authenticated");
+      // Refresh attempt blocked - user must be authenticated first
     }
   }, [store.auth.isAuthenticated, cancelRetry, isWaitingToRetry]);
 
@@ -641,11 +609,8 @@ export const Posts: FC = () => {
    * Updates posts array and manages community filters if a community has no more posts
    */ const handlePostUnsave = useCallback(
     (postId: string) => {
-      console.log("[Posts] handlePostUnsave called with postId:", postId);
-      console.log(
-        "[Posts] Current activeFilters.communities:",
-        activeFilters.communities
-      );
+      // Processing post unsave action with tracking ID
+      // Checking active community filters for potential updates
 
       setPosts((prevPosts) => {
         // Find the post that was unsaved
@@ -653,7 +618,7 @@ export const Posts: FC = () => {
         const newPosts = prevPosts.filter((post) => post.id !== postId);
 
         if (unsavedPost) {
-          console.log("[Posts] Found unsaved post:", unsavedPost.subreddit);
+          // Post identified for tracking community filter updates
         }
 
         // If we found the unsaved post and have active community filters
@@ -665,22 +630,15 @@ export const Posts: FC = () => {
             (post) => post.subreddit === unsavedCommunity
           ).length;
 
-          console.log(
-            `[Posts] Remaining posts in ${unsavedCommunity}: ${remainingPostsInCommunity}`
-          );
-          console.log(
-            `[Posts] Is ${unsavedCommunity} in filter:`,
-            activeFilters.communities.includes(unsavedCommunity)
-          );
+          // Tracking number of remaining posts from this subreddit community
+          // Checking if this community is in active filters for potential cleanup
 
           // If this was the last post from this community and it was in our active filters
           if (
             remainingPostsInCommunity === 0 &&
             activeFilters.communities.includes(unsavedCommunity)
           ) {
-            console.log(
-              `[Posts] Last post from ${unsavedCommunity} was unsaved, removing from filters`
-            );
+            // Last post from community unsaved - removing from filters since no more content exists
 
             // Remove this community from active filters
             setActiveFilters((prev) => {
@@ -688,10 +646,7 @@ export const Posts: FC = () => {
                 (community) => community !== unsavedCommunity
               );
 
-              console.log(
-                "[Posts] Updated communities filter:",
-                updatedCommunities
-              );
+              // Community filter updated after removing empty subreddit
 
               // Show notification when a subreddit is completely removed
               addToast(
@@ -736,7 +691,7 @@ export const Posts: FC = () => {
       !store.auth.isLoading &&
       !store.auth.isAuthenticated
     ) {
-      console.log("Logout detected, clearing posts data from localStorage");
+      // User has logged out - removing cached posts data for security/privacy
       clearPostsFromLocalStorage();
     }
 
@@ -757,9 +712,6 @@ export const Posts: FC = () => {
     if (!store.auth.isLoading && store.auth.isAuthenticated) {
       // Special case when auth just completed (no initial fetch done yet)
       if (!initialFetchDoneRef.current && !isFetchingRef.current) {
-        console.log(
-          "Auth state change detected: authenticated, triggering post fetch"
-        );
         forceRefreshPosts();
       }
     }
@@ -770,16 +722,9 @@ export const Posts: FC = () => {
    * Also cleans up timers when component unmounts
    */
   useEffect(() => {
-    console.log("Auth state changed:", {
-      isLoading: store.auth.isLoading,
-      isAuthenticated: store.auth.isAuthenticated,
-      initialFetchDone: initialFetchDoneRef.current,
-      isWaiting: isWaitingToRetry,
-    });
-
     // Redirect to home if not authenticated
     if (!store.auth.isLoading && !store.auth.isAuthenticated) {
-      console.log("Not authenticated, redirecting to home");
+      // Authentication required - redirecting unauthenticated user to login page
       navigate("/");
       return;
     }
@@ -792,7 +737,7 @@ export const Posts: FC = () => {
       !initialFetchDoneRef.current &&
       fetchSavedPostsRef.current
     ) {
-      console.log("Authentication complete, fetching saved posts...");
+      // Authentication successful - starting initial post data retrieval
       fetchSavedPostsRef.current();
     }
 
@@ -884,7 +829,7 @@ export const Posts: FC = () => {
    * Apply active filters to the posts
    */
   const filteredPosts = useMemo(() => {
-    console.log("Filtering posts with activeFilters:", activeFilters);
+    // Applying active filter criteria (communities, types, NSFW) to post collection
     return posts.filter((post) => {
       // Filter by communities (if any are selected)
       if (

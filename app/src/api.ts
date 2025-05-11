@@ -84,9 +84,8 @@ export const authService = {
     const redirectURI =
       import.meta.env.VITE_REDIRECT_URI ||
       window.location.origin + "/login/callback";
-
     try {
-      console.log(`Attempting token exchange with redirectURI: ${redirectURI}`);
+      // Initiating OAuth token exchange with Reddit
 
       const response = await fetch(`${PROXY_BASE_URL}/reddit/auth/token`, {
         method: "POST",
@@ -117,7 +116,7 @@ export const authService = {
       }
 
       const data = await response.json();
-      console.log("Token exchange successful");
+      // Successfully received authentication tokens from Reddit
       return data as AuthTokenResponse;
     } catch (error) {
       // Detailed error logging
@@ -145,10 +144,11 @@ export const authService = {
    * Refresh the access token using a refresh token
    * @param refreshToken - The refresh token to use
    * @returns Promise with new token response
-   */
-  refreshToken: async (refreshToken: string): Promise<AuthTokenResponse> => {
+   */ refreshToken: async (
+    refreshToken: string
+  ): Promise<AuthTokenResponse> => {
     try {
-      console.log("Attempting to refresh token");
+      // Initiating token refresh process
 
       const response = await fetch(`${PROXY_BASE_URL}/reddit/auth/refresh`, {
         method: "POST",
@@ -178,7 +178,7 @@ export const authService = {
       }
 
       const data = await response.json();
-      console.log("Token refresh successful");
+      // Successfully refreshed authentication tokens
       return data as AuthTokenResponse;
     } catch (error) {
       // Detailed error logging
@@ -216,13 +216,13 @@ export const authService = {
       userProfileCache.timestamp &&
       now - userProfileCache.timestamp < PROFILE_CACHE_TIMEOUT
     ) {
-      console.log("Returning cached user profile");
+      // Using cached user profile data (within 5 minute window)
       return userProfileCache.profile;
     }
 
     // Return the pending request if one is in progress
     if (pendingProfileRequest) {
-      console.log("Returning pending user profile request");
+      // Reusing existing profile request that's already in progress
       return pendingProfileRequest;
     }
 
@@ -230,7 +230,7 @@ export const authService = {
       // Create and store the pending request
       pendingProfileRequest = (async () => {
         try {
-          console.log("Fetching user profile from API");
+          // Fetching current user profile information from Reddit API
           const response = await fetch(`${PROXY_BASE_URL}/reddit/me`, {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -311,11 +311,9 @@ export const redditApi = {
       if (limit) params.append("limit", limit.toString());
       if (after) params.append("after", after);
 
-      const query = params.toString() ? `?${params.toString()}` : "";
-
-      // Only log on development
+      const query = params.toString() ? `?${params.toString()}` : ""; // Only log on development
       if (import.meta.env.DEV) {
-        console.log(`Making request to /reddit/saved${query}`);
+        // Debug: Making a request to the saved posts endpoint with query parameters
       }
 
       const response = await fetch(`${PROXY_BASE_URL}/reddit/saved${query}`, {
@@ -397,11 +395,9 @@ export const redditApi = {
       const params = new URLSearchParams();
       if (limit) params.append("limit", limit.toString());
 
-      const query = params.toString() ? `?${params.toString()}` : "";
-
-      // Only log on development
+      const query = params.toString() ? `?${params.toString()}` : ""; // Only log on development
       if (import.meta.env.DEV) {
-        console.log(`Making request to /reddit/saved-all${query}`);
+        // Debug: Making a request to get all saved posts with query parameters
       }
 
       const response = await fetch(
