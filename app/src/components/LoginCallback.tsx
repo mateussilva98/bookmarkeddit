@@ -1,7 +1,7 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import styles from "./LoginCallback.module.scss";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 import { Loader } from "./ui/Loader";
 import { AuthenticationError, authService } from "../api";
 
@@ -14,27 +14,30 @@ export const LoginCallback: FC = () => {
   const [attempts, setAttempts] = useState<number>(0);
   const MAX_RETRY_ATTEMPTS = 3;
 
-  const processLoginCallback = async (code: string) => {
-    try {
-      setIsRetrying(true);
-      // Exchange the code for tokens
-      const success = await handleCodeExchange(code);
-      if (success) {
-        navigate("/posts");
-      } else {
-        setError(store.auth.error || "Failed to authenticate with Reddit");
+  const processLoginCallback = useCallback(
+    async (code: string) => {
+      try {
+        setIsRetrying(true);
+        // Exchange the code for tokens
+        const success = await handleCodeExchange(code);
+        if (success) {
+          navigate("/posts");
+        } else {
+          setError(store.auth.error || "Failed to authenticate with Reddit");
+          setIsRetrying(false);
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof AuthenticationError
+            ? err.message
+            : "An unexpected error occurred";
+        console.error("Authentication error:", err);
+        setError(errorMessage);
         setIsRetrying(false);
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof AuthenticationError
-          ? err.message
-          : "An unexpected error occurred";
-      console.error("Authentication error:", err);
-      setError(errorMessage);
-      setIsRetrying(false);
-    }
-  };
+    },
+    [handleCodeExchange, navigate, store.auth.error]
+  );
 
   // Handler for retry button
   const handleRetry = () => {
@@ -55,7 +58,6 @@ export const LoginCallback: FC = () => {
     const loginUrl = authService.getLoginUrl();
     window.location.href = loginUrl;
   };
-
   useEffect(() => {
     const initAuthentication = async () => {
       const query = new URLSearchParams(search);
@@ -83,7 +85,14 @@ export const LoginCallback: FC = () => {
     if (!isRetrying) {
       initAuthentication();
     }
-  }, [search, handleCodeExchange, navigate, store.auth.error, isRetrying]);
+  }, [
+    search,
+    handleCodeExchange,
+    navigate,
+    store.auth.error,
+    isRetrying,
+    processLoginCallback,
+  ]);
 
   // If we're still loading or retrying, show the loader
   if ((store.auth.isLoading || isRetrying) && !error) {

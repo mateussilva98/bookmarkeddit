@@ -4,7 +4,7 @@
  */
 import { FC, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 import { Header } from "../components/Header";
 import { Post, MediaMetadata, VideoInfo } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";

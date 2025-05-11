@@ -2,7 +2,7 @@
  * Main application component for Bookmarkeddit
  * Handles routing and provides global state through StoreProvider
  */
-import { StoreProvider } from "./hooks/use-store";
+import { StoreProvider } from "./hooks/useStore";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Home } from "./pages/Home";
 import { Posts } from "./pages/Posts";

@@ -2,7 +2,7 @@ import { FC, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Home.module.scss";
 import { Sun } from "../components/icons/Sun";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 import { Moon } from "../components/icons/Moon";
 import { Search } from "../components/icons/Search";
 import { Refresh } from "../components/icons/Refresh";

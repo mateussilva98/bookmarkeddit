@@ -3,7 +3,7 @@ import { X } from "./icons/X";
 import { Sun } from "./icons/Sun";
 import { Moon } from "./icons/Moon";
 import styles from "./SettingsModal.module.scss";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 
 interface SettingsModalProps {
   isOpen: boolean;

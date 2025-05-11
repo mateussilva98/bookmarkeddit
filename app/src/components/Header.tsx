@@ -4,7 +4,7 @@ import styles from "./Header.module.scss";
 import { Settings } from "./icons/Settings";
 import LOGO from "../assets/images/logo.svg";
 import LOGO_WHITE from "../assets/images/logo_white.svg";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 
 interface HeaderProps {
   onSettingsClick?: () => void;

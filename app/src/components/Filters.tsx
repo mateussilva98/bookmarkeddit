@@ -4,7 +4,7 @@ import { Up } from "./icons/Up";
 import { Down } from "./icons/Down";
 import { Refresh } from "./icons/Refresh";
 import { Tooltip } from "./ui/Tooltip";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 
 type SubredditCount = {
   subreddit: string;

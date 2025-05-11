@@ -6,7 +6,7 @@ import { X } from "./icons/X";
 import { Up } from "./icons/Up";
 import { List } from "./icons/List";
 import { Grid } from "./icons/Grid";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 import { ToastContainer, ToastType } from "./ui/Toast";
 import { v4 as uuidv4 } from "uuid";
 

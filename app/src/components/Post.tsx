@@ -9,7 +9,7 @@ import { Bookmark } from "./icons/Bookmark";
 import { Share } from "./icons/Share";
 import { ImageSlider } from "./ImageSlider";
 import { VideoPlayer } from "./VideoPlayer";
-import { useStore } from "../hooks/use-store";
+import { useStore } from "../hooks/useStore";
 import { Tooltip } from "./ui/Tooltip";
 import { ConfirmModal } from "./ui/ConfirmModal";
 import { redditApi, ApiError } from "../api";
