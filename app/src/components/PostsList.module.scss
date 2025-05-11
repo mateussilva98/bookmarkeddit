@@ -162,6 +162,9 @@
   justify-content: center;
   background-color: var(--bg-primary);
   z-index: 5;
+  /* Position relative to the postsContainer instead of the entire page */
+  position: absolute;
+  pointer-events: none; /* Allow clicks to pass through */
 
   p {
     margin-top: 1rem;

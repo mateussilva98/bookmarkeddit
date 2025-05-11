@@ -32,10 +32,11 @@ export const PostsList: FC<PostsListProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const postsListRef = useRef<HTMLDivElement>(null);
+
   const postsContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [isGridCalculating, setIsGridCalculating] = useState(true);
+  const [isGridCalculating, setIsGridCalculating] = useState(false);
   const { store, changeLayout, changeSortBy } = useStore();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
@@ -148,31 +149,44 @@ export const PostsList: FC<PostsListProps> = ({
         if (pendingCalculations === 0) {
           setIsGridCalculating(false);
         }
-      };
-
-      // Check if there are any images that haven't loaded yet
-      const hasUnloadedImages = Array.from(images).some((img) => !img.complete);
-
-      if (images.length > 0 && hasUnloadedImages) {
-        // Set up onload/onerror handlers for the first unloaded image
-        const firstUnloadedImage = Array.from(images).find(
-          (img) => !img.complete
-        );
-        if (firstUnloadedImage) {
-          firstUnloadedImage.onload = () => {
+      }; // Check only the first image, regardless of whether other images are loaded
+      if (images.length > 0) {
+        const firstImage = images[0];
+        if (firstImage.complete) {
+          calculateRowSpan();
+        } else {
+          firstImage.onload = () => {
             calculateRowSpan();
           };
-          firstUnloadedImage.onerror = () => {
+          firstImage.onerror = () => {
             calculateRowSpan();
           };
         }
       } else if (video && video.readyState < 1) {
-        // Wait for video metadata to load
+        // Wait for video metadata to load with a timeout to prevent getting stuck
         const onLoadedMetadata = () => {
           calculateRowSpan();
           video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          video.removeEventListener("error", onVideoError);
+          clearTimeout(metadataTimeout);
         };
+
+        const onVideoError = () => {
+          calculateRowSpan();
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          video.removeEventListener("error", onVideoError);
+          clearTimeout(metadataTimeout);
+        };
+
+        // Set a timeout to prevent getting stuck waiting for metadata
+        const metadataTimeout = setTimeout(() => {
+          calculateRowSpan();
+          video.removeEventListener("loadedmetadata", onLoadedMetadata);
+          video.removeEventListener("error", onVideoError);
+        }, 2000); // 2 seconds timeout
+
         video.addEventListener("loadedmetadata", onLoadedMetadata);
+        video.addEventListener("error", onVideoError);
       } else {
         calculateRowSpan();
       }
@@ -423,13 +437,20 @@ export const PostsList: FC<PostsListProps> = ({
               Loading more posts...
             </div>
           )}
+
+          {/* Place the overlay inside the posts container instead of outside it */}
+          {isGridCalculating && store.layout === "grid" && (
+            <div className={styles.calculatingOverlay}>
+              <div className={styles.calculatingSpinner}></div>
+              <p>Arranging posts...</p>
+            </div>
+          )}
         </div>
       ) : (
         <div className={styles.noResults}>
           No posts match your search criteria
         </div>
-      )}
-
+      )}{" "}
       {showScrollToTop && (
         <button
           className={`${styles.scrollToTopButton}`}
@@ -439,14 +460,6 @@ export const PostsList: FC<PostsListProps> = ({
           <Up />
         </button>
       )}
-
-      {isGridCalculating && store.layout === "grid" && (
-        <div className={styles.calculatingOverlay}>
-          <div className={styles.calculatingSpinner}></div>
-          <p>Arranging posts...</p>
-        </div>
-      )}
-
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
