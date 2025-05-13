@@ -3,7 +3,8 @@ Next up:
     ☐ show/hide filters
       ☐ use filter icon on the right side of the input text filter to toggle the filters on mobile
 
-
+remove console.logs
+new setting to load better quality images
 
 
 
@@ -30,6 +31,7 @@ Backlog - to implement:
     ☐ Option 2: Debounce Search and Resize: - Debounce the search input and grid resize calculations to avoid excessive re-renders and recalculations. (can i calculate based on image properties and associate them with the posts?)
     ☐ Option 3: Optimize Grid Calculations - Consider using CSS-only masonry layouts (e.g., grid-template-rows: masonry) if browser support is sufficient, or switch to a simpler layout for large lists.
     ☐ Option 4: Pagination or Infinite Scroll - Instead of showing all posts, implement pagination or infinite scrolling to load posts in chunks. (Infinite scroll is already implemented, but maybe not in the best way)
+    ☐ Option 5: Load low quality images first - Load low-quality images. Since it's just a preview, you can load lower-quality images first and then replace them with higher-quality ones once they are loaded. This can be done using the `srcset` attribute or by using a library like `react-lazyload` or `react-lazyload-image-component`.
   ☐ highlight the seached text on the posts (and show how many posts matched) 
   ☐ replace implemented logic with a library like Winston, Pino, Morgan, Buyan or log4js that sabes the logs to a file and/or sends them to a remote server for analysis.
   
