@@ -5,6 +5,7 @@
   padding: 2rem; /* Add some padding */
   width: 100%;
   box-sizing: border-box;
+  max-width: 100%;
 }
 
 .controlsContainer {
@@ -12,6 +13,8 @@
   gap: 1rem;
   margin-bottom: 1.5rem;
   align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .searchInputContainer {
@@ -19,6 +22,8 @@
   flex: 1;
   display: flex;
   align-items: center;
+  min-width: 0; /* Allow container to shrink */
+  width: 100%;
 }
 
 .searchInput {
@@ -120,6 +125,8 @@
   flex-direction: column;
   /* gap: 2rem; */
   position: relative; /* Added for overlay positioning */
+  width: 100%;
+  max-width: 100%;
 
   &.grid {
     /* True masonry with items placed horizontally first */
@@ -127,12 +134,14 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     grid-auto-rows: 1px; /* This is a placeholder that will be overridden by JavaScript */
     gap: 1.5rem; /* Space between grid items */
+    width: 100%;
   }
 
   &.list {
     display: flex;
     flex-direction: column;
     /* gap: 2rem; */
+    width: 100%;
   }
 
   &.calculating {
@@ -248,7 +257,8 @@
 
 @media (max-width: 480px) {
   .root {
-    padding: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    width: 100vw;
   }
 
   .controlsContainer {
@@ -269,5 +279,51 @@
   .statsContainer {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .postsContainer {
+    &.grid {
+      grid-template-columns: repeat(
+        auto-fill,
+        minmax(250px, 1fr)
+      ); /* Smaller grid items on mobile */
+      gap: 1rem;
+      padding: 0;
+    }
+  }
+
+  .scrollToTopButton {
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .root {
+    padding: 0.5rem 0.25rem;
+  }
+
+  .controlsContainer {
+    gap: 0.3rem;
+  }
+
+  .postsContainer {
+    &.grid {
+      grid-template-columns: 1fr; /* Single column for smallest screens */
+    }
+  }
+
+  .layoutSelect {
+    gap: 0.3rem;
+  }
+
+  .scrollToTopButton {
+    bottom: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
   }
 }

@@ -73,6 +73,8 @@
   display: flex;
   flex: 1;
   height: calc(100% - 40px); /* Adjust for notification bar */
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Update styles to ensure both Filters and PostsList use 100% height and scroll if content overflows */
@@ -110,6 +112,8 @@
   height: 100%; /* Ensure full height */
   display: flex;
   flex-direction: column;
+  width: 100%; /* Ensure full width */
+  max-width: 100%; /* Prevent overflow */
 }
 
 /* Error state styling */
@@ -257,6 +261,10 @@
     padding: 5px 10px;
     font-size: 0.85rem;
   }
+
+  .filters {
+    width: 200px; /* Smaller width on tablets */
+  }
 }
 
 @media (max-width: 480px) {
@@ -279,5 +287,23 @@
   .fetchMoreBtn {
     padding: 4px 8px;
     font-size: 0.8rem;
+  }
+
+  .filters {
+    display: none; /* Hide filters on mobile devices */
+  }
+
+  .filtersToggle {
+    display: none; /* Hide filter toggle on mobile devices */
+  }
+  .mainContent {
+    width: 100%; /* Full width on mobile */
+    max-width: 100vw; /* Use viewport width */
+  }
+
+  .postsList {
+    width: 100%; /* Full width on mobile */
+    max-width: 100vw; /* Use viewport width */
+    padding: 0;
   }
 }

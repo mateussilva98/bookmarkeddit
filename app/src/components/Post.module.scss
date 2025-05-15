@@ -1,10 +1,16 @@
 .root {
   padding: 0.5rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
-.root:hover {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
+/* Only apply hover effect on non-mobile devices */
+@media (min-width: 769px) {
+  .root:hover {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+  }
 }
 
 .header {
@@ -214,6 +220,15 @@
 @media (max-width: 480px) {
   .root {
     padding: 0.5rem;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Explicitly override hover effect for mobile */
+  .root:hover {
+    background-color: transparent;
+    border-radius: 0;
   }
 
   .header h5 a {
@@ -226,13 +241,23 @@
 
   .postContent {
     font-size: 0.85rem;
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .actions {
     gap: 0.5rem;
   }
-
   .postInfosContainer {
     font-size: 0.75rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  /* Ensure no hover effects on tiny screens */
+  .root:hover {
+    background-color: transparent;
+    border-radius: 0;
   }
 }
