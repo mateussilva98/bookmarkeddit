@@ -105,10 +105,17 @@
 
   .userSection {
     gap: 0.5rem;
+    flex-grow: 1; /* Allow user section to take up more space */
+    justify-content: flex-end; /* Align content to the right */
+    margin-left: auto; /* Push user section to the right */
   }
 
   .buttons {
     gap: 0.5rem;
+  }
+
+  .username {
+    max-width: 100px; /* Restrict username width on tablet */
   }
 
   /*  .logoutBtn {
@@ -120,6 +127,11 @@
 @media (max-width: 480px) {
   .root {
     padding: 0.5rem 0.3rem;
+    justify-content: flex-end; /* Align content to the right */
+  }
+
+  .logoContainer {
+    display: none; /* Hide logo on mobile devices */
   }
 
   .logoContainer .logo {
@@ -131,7 +143,7 @@
   }
 
   .username {
-    max-width: 60px;
+    max-width: 120px; /* Increase username width since we've removed the logo */
   }
 
   /*  .logoutBtn {
@@ -141,5 +153,30 @@
 
   .buttons {
     gap: 0.3rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .root {
+    padding: 0.5rem 0.2rem;
+    justify-content: flex-end; /* Align content to the right */
+  }
+
+  .userInfo {
+    padding: 0.25rem 0.1rem;
+  }
+
+  .username {
+    max-width: 80px;
+  }
+
+  .userAvatar {
+    width: 25px !important;
+    height: 25px !important;
+  }
+
+  .buttons {
+    gap: 0.2rem;
   }
 }
