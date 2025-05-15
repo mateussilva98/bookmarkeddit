@@ -123,8 +123,7 @@ export const PostsList: FC<PostsListProps> = ({
       }
     },
     [addToast, onPostUnsave]
-  );
-  // Resize grid items for masonry layout
+  ); // Resize grid items for masonry layout
   const resizeGridItems = useCallback(() => {
     // Don't perform grid calculations on mobile
     if (isMobile || store.layout !== "grid" || !postsContainerRef.current) {
@@ -133,6 +132,25 @@ export const PostsList: FC<PostsListProps> = ({
     }
 
     setIsGridCalculating(true);
+
+    // We'll use a single safety timeout that's cleared when calculation completes
+    const safetyTimeout = setTimeout(() => {
+      // If we're still calculating after 2 seconds, force items to show
+      if (postsContainerRef.current) {
+        const allItems =
+          postsContainerRef.current.querySelectorAll<HTMLElement>(
+            ":scope > div"
+          );
+        allItems.forEach((item) => {
+          item.style.opacity = "1";
+          item.style.visibility = "visible";
+        });
+
+        // Force a reflow/repaint to ensure the grid renders correctly
+        postsContainerRef.current.offsetHeight;
+      }
+      setIsGridCalculating(false);
+    }, 2000);
 
     const grid = postsContainerRef.current;
     const rowHeight = parseInt(
@@ -147,22 +165,50 @@ export const PostsList: FC<PostsListProps> = ({
 
     if (pendingCalculations === 0) {
       setIsGridCalculating(false);
+      clearTimeout(safetyTimeout);
       return;
     }
+
+    // Helper function to show all items and complete calculation
+    const finishCalculation = () => {
+      if (postsContainerRef.current) {
+        const allItems =
+          postsContainerRef.current.querySelectorAll<HTMLElement>(
+            ":scope > div"
+          );
+        allItems.forEach((gridItem) => {
+          gridItem.style.opacity = "1";
+          gridItem.style.visibility = "visible";
+        });
+
+        // Force a reflow/repaint to ensure the grid renders correctly
+        postsContainerRef.current.offsetHeight;
+      }
+      setIsGridCalculating(false);
+      clearTimeout(safetyTimeout);
+    };
 
     items.forEach((item) => {
       const content = item.querySelector<HTMLElement>(":scope > .post-content");
       if (!content) {
         pendingCalculations--;
         if (pendingCalculations === 0) {
-          setIsGridCalculating(false);
+          finishCalculation();
         }
         return;
       }
       const images = content.querySelectorAll<HTMLImageElement>("img");
       const video = content.querySelector<HTMLVideoElement>("video");
-
       const calculateRowSpan = () => {
+        // Ensure we can get an accurate measurement by temporarily making the content visible
+        // but keeping it visually hidden using visibility
+        item.style.opacity = "0";
+        item.style.visibility = "hidden";
+
+        // Force a reflow to ensure the browser updates the layout
+        postsContainerRef.current?.offsetHeight;
+
+        // Now get an accurate height measurement
         const contentHeight = content.getBoundingClientRect().height;
         const rowSpan = Math.ceil(
           (contentHeight + rowGap) / (rowHeight + rowGap)
@@ -171,21 +217,39 @@ export const PostsList: FC<PostsListProps> = ({
 
         pendingCalculations--;
         if (pendingCalculations === 0) {
-          setIsGridCalculating(false);
+          // Only reveal all items when all calculations are done
+          finishCalculation();
         }
-      }; // Check only the first image, regardless of whether other images are loaded
+      }; // Check images within the post content
       if (images.length > 0) {
-        const firstImage = images[0];
-        if (firstImage.complete) {
-          calculateRowSpan();
-        } else {
-          firstImage.onload = () => {
-            calculateRowSpan();
-          };
-          firstImage.onerror = () => {
-            calculateRowSpan();
-          };
-        }
+        // For each image in the post, ensure we recalculate when it loads
+        images.forEach((img, index) => {
+          // If image is already loaded
+          if (img.complete) {
+            if (index === 0) calculateRowSpan();
+          } else {
+            img.onload = () => {
+              // Only trigger calculation on first image
+              if (index === 0) calculateRowSpan();
+              // If this isn't the first image, force a resize after it loads
+              // This helps with the case where posts shift after all images load
+              else if (item.style.opacity === "1") {
+                const currentHeight = content.getBoundingClientRect().height;
+                const newRowSpan = Math.ceil(
+                  (currentHeight + rowGap) / (rowHeight + rowGap)
+                );
+                item.style.gridRowEnd = `span ${newRowSpan}`;
+
+                // Force a reflow/repaint to apply changes
+                postsContainerRef.current?.offsetHeight;
+              }
+            };
+
+            img.onerror = () => {
+              if (index === 0) calculateRowSpan();
+            };
+          }
+        });
       } else if (video && video.readyState < 1) {
         // Wait for video metadata to load with a timeout to prevent getting stuck
         const onLoadedMetadata = () => {
@@ -215,6 +279,9 @@ export const PostsList: FC<PostsListProps> = ({
         calculateRowSpan();
       }
     });
+
+    // Return the cleanup function to clear the safety timeout
+    return () => clearTimeout(safetyTimeout);
   }, [store.layout, isMobile]);
 
   // Filter posts based on search term
@@ -287,26 +354,43 @@ export const PostsList: FC<PostsListProps> = ({
         listElement.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [sortedPosts.length]);
-  // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
+  }, [sortedPosts.length]); // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
   useEffect(() => {
     if (!isMobile && store.layout === "grid") {
       setIsGridCalculating(true);
+
+      // Allow the grid calculation to run completely via the resizeGridItems function
+      // which has its own safety timeout that will be cleared when calculation completes
+      const calculationResult = resizeGridItems();
+
+      // No need for additional safety timer as resizeGridItems handles this
+      return calculationResult;
     } else {
       setIsGridCalculating(false);
     }
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (store.layout === "grid" && !isMobile) {
+        // If any observed element changes size, we may need to recalculate
+        if (entries.length > 0) {
+          // Check if we're currently calculating to avoid redundant calculations
+          if (!isGridCalculating) {
+            // Debounce the grid recalculation
+            const recalcTimer = setTimeout(() => {
+              resizeGridItems();
+            }, 100);
 
-    resizeGridItems();
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (store.layout === "grid") {
-        resizeGridItems();
+            return () => clearTimeout(recalcTimer);
+          }
+        }
       }
     });
 
     if (postsContainerRef.current) {
       const postElements =
         postsContainerRef.current.querySelectorAll<HTMLElement>(":scope > div");
+
+      // Observe both the container and each post element
+      resizeObserver.observe(postsContainerRef.current);
       postElements.forEach((el) => resizeObserver.observe(el));
     }
 
@@ -322,13 +406,43 @@ export const PostsList: FC<PostsListProps> = ({
     store.showImages,
     resizeGridItems,
     isMobile,
-  ]);
-  // Recalculate grid sizes when more posts are loaded (infinite scroll)
+  ]); // Recalculate grid sizes when more posts are loaded (infinite scroll)
   useEffect(() => {
     if (!isMobile && store.layout === "grid") {
       resizeGridItems();
     }
   }, [visibleCount, store.layout, resizeGridItems, isMobile]);
+
+  // Add an effect to handle document load completion - this ensures all images are properly loaded
+  useEffect(() => {
+    if (!isMobile && store.layout === "grid") {
+      // When the window is fully loaded (including all resources)
+      const handleLoad = () => {
+        // Short delay to allow any final rendering to complete
+        setTimeout(() => {
+          if (postsContainerRef.current) {
+            // Force a recalculation once everything is fully loaded
+            resizeGridItems();
+          }
+        }, 300);
+      };
+
+      // Add event listener for window load
+      window.addEventListener("load", handleLoad);
+
+      // Also add a failsafe timeout to recalculate after a delay
+      const recalculateTimeout = setTimeout(() => {
+        if (postsContainerRef.current) {
+          resizeGridItems();
+        }
+      }, 1000);
+
+      return () => {
+        window.removeEventListener("load", handleLoad);
+        clearTimeout(recalculateTimeout);
+      };
+    }
+  }, [isMobile, store.layout, resizeGridItems]);
 
   // Function to scroll back to top and focus search input
   const scrollToTopAndFocusSearch = useCallback(() => {
@@ -442,14 +556,19 @@ export const PostsList: FC<PostsListProps> = ({
           }`}
           ref={postsContainerRef}
         >
+          {" "}
           {sortedPosts.slice(0, visibleCount).map((post) => (
             <div
               key={post.id}
               className={
-                isGridCalculating && store.layout === "grid"
+                isGridCalculating && store.layout === "grid" && !isMobile
                   ? styles.hiddenContent
                   : ""
               }
+              style={{
+                opacity: store.layout === "grid" ? 0 : 1, // Start with opacity 0 for grid layout
+                visibility: store.layout === "grid" ? "hidden" : "visible", // Start hidden for grid layout
+              }}
             >
               <div className="post-content">
                 <PostComponent
@@ -460,16 +579,15 @@ export const PostsList: FC<PostsListProps> = ({
               </div>
               <hr />
             </div>
-          ))}
+          ))}{" "}
           {/* Loader for infinite scroll */}
           {visibleCount < sortedPosts.length && (
             <div className={styles.infiniteScrollLoader}>
               Loading more posts...
             </div>
           )}
-
-          {/* Place the overlay inside the posts container instead of outside it */}
-          {isGridCalculating && store.layout === "grid" && (
+          {/* Show the arranging posts overlay during grid calculation */}
+          {isGridCalculating && store.layout === "grid" && !isMobile && (
             <div className={styles.calculatingOverlay}>
               <div className={styles.calculatingSpinner}></div>
               <p>Arranging posts...</p>

@@ -127,7 +127,6 @@
   position: relative; /* Added for overlay positioning */
   width: 100%;
   max-width: 100%;
-
   &.grid {
     /* True masonry with items placed horizontally first */
     display: grid;
@@ -135,6 +134,15 @@
     grid-auto-rows: 1px; /* This is a placeholder that will be overridden by JavaScript */
     gap: 1.5rem; /* Space between grid items */
     width: 100%;
+
+    /* Make items visible by default */
+    > div {
+      opacity: 0; /* Start hidden until calculation complete */
+      visibility: hidden; /* Start hidden */
+      transition: opacity 0.3s ease, visibility 0.3s ease; /* Smoother transition */
+      transform: translateZ(0); /* Force GPU acceleration */
+      will-change: opacity, visibility; /* Optimize for these changes */
+    }
   }
 
   &.list {
@@ -151,12 +159,22 @@
 
 /* Hidden content while grid calculates */
 .hiddenContent {
-  opacity: 0;
-  transition: opacity 0.3s ease-in-out;
+  opacity: 0; /* Hide items completely during calculation */
+  visibility: hidden; /* Ensure items are fully hidden */
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* Smoother transition */
+  transform: translateZ(0); /* Force GPU acceleration */
+  will-change: opacity, visibility; /* Optimize for these changes */
+}
 
-  /* When not in hidden state, fade in smoothly */
-  &:not(.hiddenContent) {
-    opacity: 1;
+/* Calculating state modifications */
+.calculating {
+  > div {
+    opacity: 0; /* Hide items during calculation */
+    visibility: hidden; /* Fully hide items */
+    transition: opacity 0.4s ease, visibility 0.4s ease; /* Smoother transition */
+    transform: translateZ(0); /* Force GPU acceleration */
+    will-change: opacity, visibility; /* Optimize for these changes */
+    pointer-events: none; /* Prevent interaction while calculating */
   }
 }
 
@@ -172,11 +190,10 @@
   justify-content: center;
   background-color: var(--bg-primary);
   z-index: 10;
-  /* Ensure it's fully visible */
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  pointer-events: none; /* Allow clicks to pass through */
+  pointer-events: none;
 
   p {
     margin-top: 1rem;
@@ -268,7 +285,7 @@
 
   .searchInput {
     font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
+    /* padding: 0.4rem 0.8rem; */
   }
 
   .categoriesContainer {
