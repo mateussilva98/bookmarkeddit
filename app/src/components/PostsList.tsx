@@ -41,6 +41,30 @@ export const PostsList: FC<PostsListProps> = ({
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [visibleCount, setVisibleCount] = useState(50); // For infinite scroll
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // Check for mobile screen size on mount and window resize
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+
+    // Initial check
+    checkMobileView();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobileView);
+
+    // Clean up
+    return () => window.removeEventListener("resize", checkMobileView);
+  }, []);
+
+  // Force list layout on mobile
+  useEffect(() => {
+    if (isMobile && store.layout !== "list") {
+      changeLayout("list");
+    }
+  }, [isMobile, store.layout, changeLayout]);
 
   // Update local posts when parent posts change
   useEffect(() => {
@@ -100,10 +124,10 @@ export const PostsList: FC<PostsListProps> = ({
     },
     [addToast, onPostUnsave]
   );
-
   // Resize grid items for masonry layout
   const resizeGridItems = useCallback(() => {
-    if (store.layout !== "grid" || !postsContainerRef.current) {
+    // Don't perform grid calculations on mobile
+    if (isMobile || store.layout !== "grid" || !postsContainerRef.current) {
       setIsGridCalculating(false);
       return;
     }
@@ -191,7 +215,7 @@ export const PostsList: FC<PostsListProps> = ({
         calculateRowSpan();
       }
     });
-  }, [store.layout]);
+  }, [store.layout, isMobile]);
 
   // Filter posts based on search term
   const filteredPosts = useMemo(() => {
@@ -264,10 +288,9 @@ export const PostsList: FC<PostsListProps> = ({
       }
     };
   }, [sortedPosts.length]);
-
   // Effect for resizing grid items on posts change, layout change, or settings change that affect post dimensions
   useEffect(() => {
-    if (store.layout === "grid") {
+    if (!isMobile && store.layout === "grid") {
       setIsGridCalculating(true);
     } else {
       setIsGridCalculating(false);
@@ -288,7 +311,6 @@ export const PostsList: FC<PostsListProps> = ({
     }
 
     window.addEventListener("resize", resizeGridItems);
-
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", resizeGridItems);
@@ -299,14 +321,14 @@ export const PostsList: FC<PostsListProps> = ({
     store.compactText,
     store.showImages,
     resizeGridItems,
+    isMobile,
   ]);
-
   // Recalculate grid sizes when more posts are loaded (infinite scroll)
   useEffect(() => {
-    if (store.layout === "grid") {
+    if (!isMobile && store.layout === "grid") {
       resizeGridItems();
     }
-  }, [visibleCount, store.layout, resizeGridItems]);
+  }, [visibleCount, store.layout, resizeGridItems, isMobile]);
 
   // Function to scroll back to top and focus search input
   const scrollToTopAndFocusSearch = useCallback(() => {
@@ -373,7 +395,7 @@ export const PostsList: FC<PostsListProps> = ({
             >
               <X />
             </button>
-          )}
+          )}{" "}
         </div>
         <div className={styles.sortBy}>
           <select
@@ -386,31 +408,35 @@ export const PostsList: FC<PostsListProps> = ({
             <option value="comments">Most Comments</option>
           </select>
         </div>
-        <div className={styles.layoutSelect}>
-          <button
-            className={`btn-icon ${
-              store.layout === "grid" ? styles.active : ""
-            }`}
-            onClick={() => changeLayout("grid")}
-            aria-label="Grid view"
-          >
-            <Grid />
-          </button>
-          <button
-            className={`btn-icon ${
-              store.layout === "list" ? styles.active : ""
-            }`}
-            onClick={() => changeLayout("list")}
-            aria-label="List view"
-          >
-            <List />
-          </button>
-        </div>
-      </div>
+        {!isMobile && (
+          <div className={styles.layoutSelect}>
+            <button
+              className={`btn-icon ${
+                store.layout === "grid" ? styles.active : ""
+              }`}
+              onClick={() => changeLayout("grid")}
+              aria-label="Grid view"
+            >
+              <Grid />
+            </button>
+            <button
+              className={`btn-icon ${
+                store.layout === "list" ? styles.active : ""
+              }`}
+              onClick={() => changeLayout("list")}
+              aria-label="List view"
+            >
+              <List />
+            </button>
+          </div>
+        )}
+      </div>{" "}
       {sortedPosts.length > 0 ? (
         <div
-          className={`${styles.postsContainer} ${styles[store.layout]} ${
-            isGridCalculating && store.layout === "grid"
+          className={`${styles.postsContainer} ${
+            styles[isMobile ? "list" : store.layout]
+          } ${
+            isGridCalculating && store.layout === "grid" && !isMobile
               ? styles.calculating
               : ""
           }`}

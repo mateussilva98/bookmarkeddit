@@ -281,14 +281,19 @@
     justify-content: center;
   }
 
+  /* Hide layout selection on mobile */
+  .layoutSelect {
+    display: none;
+  }
+
   .postsContainer {
     &.grid {
-      grid-template-columns: repeat(
-        auto-fill,
-        minmax(250px, 1fr)
-      ); /* Smaller grid items on mobile */
-      gap: 1rem;
-      padding: 0;
+      /* Force grid layout to behave like list on mobile */
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0 !important;
+      grid-template-columns: unset !important;
+      grid-auto-rows: unset !important;
     }
   }
 
