@@ -35,6 +35,8 @@
   --btn-border-radius: 9999px;
   --btn-hover-color: #ef6a3a;
   --bg-selected: #3a536b;
+  --header-height: 60px; /* Default header height */
+
   .light {
     --bg-primary: #dae0e6;
     --bg-secondary: #fff;
@@ -207,3 +209,16 @@ button {
 /* .btn-secondary {
   background-color: transparent;
 } */
+
+/* Media queries for responsive layout */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 55px; /* Slightly smaller header on tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --header-height: 50px; /* Even smaller header on mobile phones */
+  }
+}

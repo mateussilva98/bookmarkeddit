@@ -138,3 +138,61 @@
     }
   }
 }
+
+/* Media queries for responsive layout */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    max-width: 450px;
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+
+  .section {
+    padding: 0.75rem;
+  }
+
+  .formGroup {
+    margin-bottom: 0.75rem;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    width: 95%;
+    max-width: 100%;
+    max-height: 85vh;
+  }
+
+  .header {
+    padding: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .section {
+    padding: 0.5rem;
+  }
+
+  .formGroup {
+    margin-bottom: 0.5rem;
+  }
+
+  label {
+    font-size: 0.85rem;
+  }
+
+  .buttonGroup {
+    padding: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}

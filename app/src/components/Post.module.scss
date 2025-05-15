@@ -194,3 +194,45 @@
     }
   }
 }
+
+/* Media queries for responsive layout */
+@media (max-width: 768px) {
+  .root {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .postContent {
+    font-size: 0.9rem;
+  }
+
+  .postInfosContainer {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .root {
+    padding: 0.5rem;
+  }
+
+  .header h5 a {
+    font-size: 0.95rem;
+  }
+
+  .header h6 {
+    font-size: 0.75rem;
+  }
+
+  .postContent {
+    font-size: 0.85rem;
+  }
+
+  .actions {
+    gap: 0.5rem;
+  }
+
+  .postInfosContainer {
+    font-size: 0.75rem;
+  }
+}

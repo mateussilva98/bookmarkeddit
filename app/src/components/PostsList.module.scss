@@ -3,6 +3,8 @@
   height: 100%; /* Full height */
   overflow-y: auto; /* Allow scrolling if content overflows */
   padding: 2rem; /* Add some padding */
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .controlsContainer {
@@ -226,4 +228,46 @@
   padding: 3rem 0;
   color: var(--color-secondary);
   font-size: 1.1rem;
+}
+
+/* Media queries for responsive layout */
+@media (max-width: 768px) {
+  .root {
+    padding: 1rem;
+  }
+
+  .controlsContainer {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .searchInput {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .root {
+    padding: 0.75rem;
+  }
+
+  .controlsContainer {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .searchInput {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .categoriesContainer {
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .statsContainer {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 }

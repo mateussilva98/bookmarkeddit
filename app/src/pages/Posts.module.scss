@@ -3,8 +3,11 @@
   display: flex;
   flex-direction: column;
   height: calc(
-    100vh - 60px
-  ); /* Adjust for header height (replace 60px with actual header height) */
+    100vh - var(--header-height, 60px)
+  ); /* Use CSS variable with fallback */
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 /* Background fetching and new posts notification styles */
@@ -235,5 +238,46 @@
       background-color: var(--bg-primary);
       border-color: var(--color-primary);
     }
+  }
+}
+
+/* Media queries for responsive layout */
+@media (max-width: 768px) {
+  .notificationBar {
+    padding: 6px;
+  }
+
+  .backgroundFetching,
+  .newPostsNotification {
+    font-size: 0.85rem;
+  }
+
+  .updateButton,
+  .fetchMoreBtn {
+    padding: 5px 10px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notificationBar {
+    padding: 4px;
+  }
+
+  .backgroundFetching,
+  .newPostsNotification {
+    font-size: 0.8rem;
+  }
+
+  .fetchingSpinner {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+  }
+
+  .updateButton,
+  .fetchMoreBtn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
   }
 }
