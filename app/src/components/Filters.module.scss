@@ -46,8 +46,35 @@
 }
 
 @media (max-width: 480px) {
+  .overlay {
+    display: none; /* Hidden by default */
+  }
+
+  .active {
+    display: block !important; /* Show when active - important to override */
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
   .root {
-    display: none; /* Hide on mobile as a fallback */
+    position: fixed; /* Position fixed for overlay effect */
+    top: 0; /* Below the header */
+    left: 0;
+    bottom: 0;
+    width: 100%; /* Width of the sidebar */
+    /* max-width: 300px; */
+    z-index: 1000; /* High z-index to appear above content */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+    transform: translateX(-105%); /* Start offscreen with extra margin */
+    transition: transform 0.3s ease, visibility 0.3s ease;
+    background-color: var(--bg-secondary); /* Ensure background color is set */
+    overflow-y: auto; /* Enable scrolling */
+    border-right: var(--border);
+    visibility: hidden; /* Hide by default */
+  }
+
+  .mobileVisible {
+    transform: translateX(0) !important; /* Force slide in */
+    visibility: visible !important; /* Show when active */
   }
 }
 
@@ -188,3 +215,12 @@
     height: 100%;
   }
 }
+
+.mobileVisible {
+  transform: translateX(0) !important; /* Force slide in */
+  display: flex !important; /* Ensure it's displayed */
+  visibility: visible !important; /* Ensure visibility */
+  opacity: 1 !important; /* Ensure opacity */
+}
+
+/* Mobile specific rules are now handled in MobileFilters.module.scss */

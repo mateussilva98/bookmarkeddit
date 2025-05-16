@@ -6,6 +6,7 @@ import { FC, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../hooks/useStore";
 import { Header } from "../components/Header";
+import { MobileFilters } from "../components/MobileFilters";
 import { Post, MediaMetadata, VideoInfo } from "../types/Post";
 import { Filters, SelectedFilters } from "../components/Filters";
 import { PostsList } from "../components/PostsList";
@@ -40,7 +41,8 @@ export const Posts: FC = () => {
     type: null,
     nsfw: null,
   });
-
+  const [isMobileFiltersVisible, setIsMobileFiltersVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   // New state for background fetching and updates
   const [backgroundFetching, setBackgroundFetching] = useState<boolean>(false);
   const [toasts, setToasts] = useState<
@@ -50,6 +52,22 @@ export const Posts: FC = () => {
   // Rate limiting state management
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
   const [isWaitingToRetry, setIsWaitingToRetry] = useState<boolean>(false);
+
+  // Check for mobile screen size on mount and window resize
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+
+    // Initial check
+    checkMobileView();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobileView);
+
+    // Clean up
+    return () => window.removeEventListener("resize", checkMobileView);
+  }, []);
 
   // Refs for timers and state tracking
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -72,11 +90,11 @@ export const Posts: FC = () => {
       console.error("Error saving posts to localStorage:", error);
     }
   }, []);
-
   /**
    * Clears posts-related data from localStorage
    * Called when user logs out
-   */ const clearPostsFromLocalStorage = useCallback(() => {
+   */
+  const clearPostsFromLocalStorage = useCallback(() => {
     try {
       // Clearing posts data when user logs out to maintain privacy
       localStorage.removeItem(POSTS_STORAGE_KEY);
@@ -605,81 +623,46 @@ export const Posts: FC = () => {
     setActiveFilters(newFilters);
   }, []);
   /**
-   * Handles post unsave action from PostsList
-   * Updates posts array and manages community filters if a community has no more posts
-   */ const handlePostUnsave = useCallback(
-    (postId: string) => {
-      // Processing post unsave action with tracking ID
-      // Checking active community filters for potential updates
+   * Toggle mobile filters visibility
+   */
+  const toggleMobileFilters = useCallback(() => {
+    // Only proceed if we're on mobile
+    if (isMobile) {
+      setIsMobileFiltersVisible((prev) => !prev);
+    }
+  }, [isMobile]);
 
-      setPosts((prevPosts) => {
-        // Find the post that was unsaved
-        const unsavedPost = prevPosts.find((post) => post.id === postId);
-        const newPosts = prevPosts.filter((post) => post.id !== postId);
+  // Close mobile filters when clicking outside
+  useEffect(() => {
+    if (!isMobile) {
+      // If we switch from mobile to desktop, close the mobile filters
+      if (isMobileFiltersVisible) {
+        setIsMobileFiltersVisible(false);
+      }
+      return;
+    }
+    const handleClickOutside = (e: MouseEvent) => {
+      // Only run this effect if the filters are visible on mobile
+      if (isMobileFiltersVisible) {
+        // Check if click was outside the filters component
+        const target = e.target as HTMLElement;
+        const isFilterElement = target.closest(`.${styles.filters}`);
+        const isFilterButton =
+          target.closest("button") &&
+          target.closest("button")?.getAttribute("aria-label") === "Filters";
 
-        if (unsavedPost) {
-          // Post identified for tracking community filter updates
+        if (!isFilterElement && !isFilterButton) {
+          setIsMobileFiltersVisible(false);
         }
+      }
+    };
 
-        // If we found the unsaved post and have active community filters
-        if (unsavedPost && activeFilters.communities.length > 0) {
-          const unsavedCommunity = unsavedPost.subreddit;
+    document.addEventListener("mousedown", handleClickOutside);
 
-          // Check if this was the last post from this community
-          const remainingPostsInCommunity = newPosts.filter(
-            (post) => post.subreddit === unsavedCommunity
-          ).length;
-
-          // Tracking number of remaining posts from this subreddit community
-          // Checking if this community is in active filters for potential cleanup
-
-          // If this was the last post from this community and it was in our active filters
-          if (
-            remainingPostsInCommunity === 0 &&
-            activeFilters.communities.includes(unsavedCommunity)
-          ) {
-            // Last post from community unsaved - removing from filters since no more content exists
-
-            // Remove this community from active filters
-            setActiveFilters((prev) => {
-              const updatedCommunities = prev.communities.filter(
-                (community) => community !== unsavedCommunity
-              );
-
-              // Community filter updated after removing empty subreddit
-
-              // Show notification when a subreddit is completely removed
-              addToast(
-                `No more posts from r/${unsavedCommunity}, removed from filters`,
-                "info"
-              );
-
-              return {
-                ...prev,
-                communities: updatedCommunities,
-              };
-            });
-          }
-        }
-
-        // Also update localStorage
-        savePostsToLocalStorage(newPosts);
-
-        // Show toast notification for the unsaved post
-        if (unsavedPost) {
-          addToast(
-            `Post "${unsavedPost.title.substring(0, 30)}${
-              unsavedPost.title.length > 30 ? "..." : ""
-            }" removed`,
-            "info"
-          );
-        }
-
-        return newPosts;
-      });
-    },
-    [savePostsToLocalStorage, addToast, activeFilters, setActiveFilters]
-  );
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobile, isMobileFiltersVisible]);
 
   /**
    * Effect to handle logout - clears posts data from localStorage
@@ -825,6 +808,7 @@ export const Posts: FC = () => {
       { nsfw: "Only non-NSFW posts", count: nonNsfwCount },
     ];
   }, [posts]);
+
   /**
    * Apply active filters to the posts
    */
@@ -857,12 +841,30 @@ export const Posts: FC = () => {
     });
   }, [posts, activeFilters]);
 
+  /**
+   * Handler for when a post is unsaved from the UI
+   * @param postId ID of the post that was unsaved
+   */
+  const handlePostUnsave = useCallback((postId: string) => {
+    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+
+    // Show a toast notification
+    setToasts((prev) => [
+      ...prev,
+      {
+        id: uuidv4(),
+        message: "Post removed from your saved items",
+        type: "success" as ToastType,
+      },
+    ]);
+  }, []);
   return (
     <>
-      <Header onSettingsClick={handleSettingsClick} />
-
+      <Header
+        onSettingsClick={handleSettingsClick}
+        onFilterClick={toggleMobileFilters}
+      />
       {loading && !isWaitingToRetry && <Loader isVisible={true} />}
-
       {isWaitingToRetry && retryAfter && (
         <div className={styles.retryContainer}>
           <RateLimitCountdown
@@ -888,7 +890,6 @@ export const Posts: FC = () => {
           </div>
         </div>
       )}
-
       {error && !loading && !isWaitingToRetry && (
         <div className={styles.errorContainer}>
           <p className={styles.errorMessage}>{error}</p>
@@ -897,14 +898,12 @@ export const Posts: FC = () => {
           </button>
         </div>
       )}
-
       {!loading && !error && !isWaitingToRetry && posts.length === 0 && (
         <div className={styles.emptyState}>
           <h2>No saved posts found</h2>
           <p>Start saving posts on Reddit to see them here!</p>
         </div>
       )}
-
       {!loading && !error && !isWaitingToRetry && posts.length > 0 && (
         <main className={styles.root}>
           {/* Show background fetching indicator */}
@@ -915,15 +914,13 @@ export const Posts: FC = () => {
                 Updating posts in background...
               </div>
             </div>
-          )}
-
+          )}{" "}
           {/* Toast container for notifications */}
           <ToastContainer toasts={toasts} removeToast={removeToast} />
-
           <div className={styles.mainContent}>
-            {store.showFilters ? (
+            {" "}
+            {store.showFilters && !isMobile ? (
               <div className={styles.filters}>
-                {" "}
                 <Filters
                   subredditCounts={subredditCounts}
                   typeCounts={typeCounts}
@@ -933,9 +930,10 @@ export const Posts: FC = () => {
                   onRefresh={handleRetry}
                   onToggleVisibility={toggleFiltersVisibility}
                   currentFilters={activeFilters}
+                  isMobileVisible={false}
                 />
               </div>
-            ) : (
+            ) : !isMobile ? (
               <div className={styles.filtersToggle}>
                 <button
                   className="btn-icon"
@@ -945,7 +943,7 @@ export const Posts: FC = () => {
                   <span className={styles.toggleIcon}>⟩</span>
                 </button>
               </div>
-            )}
+            ) : null}
             <div className={styles.postsList}>
               <PostsList
                 posts={filteredPosts}
@@ -953,11 +951,26 @@ export const Posts: FC = () => {
                 onPostUnsave={handlePostUnsave}
               />
             </div>
-          </div>
+          </div>{" "}
         </main>
       )}
-
       <SettingsModal isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+      {/* Independent mobile filters system */}
+      {isMobile && (
+        <>
+          <MobileFilters
+            isVisible={isMobileFiltersVisible}
+            onClose={() => setIsMobileFiltersVisible(false)}
+            subredditCounts={subredditCounts}
+            typeCounts={typeCounts}
+            nsfwCounts={nsfwCounts}
+            onFilterChange={handleFilterChange}
+            totalPosts={posts.length}
+            onRefresh={handleRetry}
+            currentFilters={activeFilters}
+          />
+        </>
+      )}
     </>
   );
 };

@@ -1,0 +1,86 @@
+.mobileFilterContainer {
+  position: fixed;
+  top: var(--header-height, 60px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Backdrop overlay */
+.mobileFilterBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.visible .mobileFilterBackdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.closeButton {
+  position: absolute;
+  top: var(--header-height + 5px, 65px);
+  left: 72%;
+  z-index: 10000;
+  background-color: var(--bg-primary);
+  color: var(--btn-hover-color);
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+
+  svg {
+    color: var(--btn-hover-color);
+    width: 40px;
+    height: 40px;
+    transition: all 0.3s ease;
+  }
+}
+
+.mobileFilterSidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 70%;
+  max-width: 320px;
+  background-color: var(--bg-secondary);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: var(--border);
+  /* border-top: var(--border); */
+}
+
+.visible .mobileFilterSidebar {
+  transform: translateX(0);
+}
+
+.mobileFilterContent {
+  flex: 1;
+  overflow-y: auto;
+  /* padding: 0 0.5rem; */
+}

@@ -288,9 +288,12 @@
     padding: 4px 8px;
     font-size: 0.8rem;
   }
-
   .filters {
-    display: none; /* Hide filters on mobile devices */
+    position: static !important; /* Override for mobile filters */
+    width: 0 !important; /* No width but still present in the DOM */
+    height: 0 !important; /* No height but still present in the DOM */
+    overflow: visible !important; /* Allow content to overflow */
+    display: block !important; /* Keep displayed */
   }
 
   .filtersToggle {

@@ -124,10 +124,25 @@
   } */
 }
 
+.mobileFilterButton {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+  margin-left: 15px;
+}
+
+.filterButton {
+  color: var(--orange);
+
+  &:hover {
+    background-color: var(--bg-hover);
+  }
+}
+
 @media (max-width: 480px) {
   .root {
     padding: 0.5rem 0.3rem;
-    justify-content: flex-end; /* Align content to the right */
+    justify-content: space-between; /* Changed from flex-end to space-between */
   }
 
   .logoContainer {
@@ -136,6 +151,12 @@
 
   .logoContainer .logo {
     max-height: 24px;
+  }
+
+  .mobileFilterButton {
+    display: flex;
+    align-items: center;
+    margin-right: auto; /* Push to the left side */
   }
 
   .userInfo {

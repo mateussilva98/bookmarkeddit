@@ -27,6 +27,7 @@ type FiltersProps = {
   onRefresh: () => void;
   onToggleVisibility?: () => void;
   currentFilters?: SelectedFilters;
+  isMobileVisible?: boolean; // New prop to control mobile visibility
 };
 
 export const Filters: FC<FiltersProps> = ({
@@ -38,6 +39,7 @@ export const Filters: FC<FiltersProps> = ({
   onRefresh,
   onToggleVisibility,
   currentFilters,
+  isMobileVisible = false,
 }) => {
   const { toggleFiltersVisibility } = useStore();
 
@@ -56,6 +58,7 @@ export const Filters: FC<FiltersProps> = ({
   const [selectedNSFW, setSelectedNSFW] = useState<string | null>(
     currentFilters?.nsfw || null
   );
+
   // Update selected filters when currentFilters prop changes
   useEffect(() => {
     if (currentFilters) {
@@ -121,7 +124,7 @@ export const Filters: FC<FiltersProps> = ({
     setCommunitySearch("");
   };
 
-  // Use the callback from props if provided, otherwise use the one from the store
+  // Handle toggling filter visibility
   const handleToggleVisibility = () => {
     if (onToggleVisibility) {
       onToggleVisibility();
@@ -131,151 +134,174 @@ export const Filters: FC<FiltersProps> = ({
   };
 
   return (
-    <div className={styles.root}>
-      <div className={styles.totalPosts}>
-        <div className={styles.totalPostsInfo}>
-          <span className={styles.totalPostsCount}>{totalPosts}</span>
-          <span className={styles.totalPostsLabel}>saved posts</span>
-        </div>
-        <Tooltip text="Refresh saved posts" position="left">
-          <button
-            className="btn-icon"
-            onClick={onRefresh}
-            aria-label="Refresh saved posts"
-          >
-            <div className={styles.refreshIcon}>
-              <Refresh />
-            </div>
-          </button>
-        </Tooltip>
-      </div>
-
-      <div>
+    <>
+      {/* Backdrop overlay for mobile that appears behind the filters */}
+      {isMobileVisible && (
         <div
-          className={styles.header}
-          onClick={() => setShowCommunities(!showCommunities)}
-        >
-          <p>Communities</p>
-          {showCommunities ? <Up /> : <Down />}
-        </div>
+          className={`${styles.overlay} ${
+            isMobileVisible ? styles.overlayVisible : ""
+          }`}
+          onClick={handleToggleVisibility}
+        />
+      )}
 
-        {showCommunities && (
-          <div
-            className={`${styles.itemContainer} ${
-              showCommunities ? styles.fadeIn : styles.fadeOut
-            }`}
-          >
-            <input
-              type="text"
-              placeholder="Search communities"
-              value={communitySearch}
-              onChange={handleSearchChange}
-            />
-
-            {filteredSubreddits.map(({ subreddit, count }) => (
-              <div
-                className={styles.item}
-                key={subreddit}
-                onClick={() => handleCommunityClick(subreddit)}
-                style={{
-                  backgroundColor: selectedCommunities.includes(subreddit)
-                    ? "var(--btn-hover-color)"
-                    : undefined,
-                }}
-              >
-                <h4>r/{subreddit}</h4>
-                <p>{count}</p>
-              </div>
-            ))}
+      <div
+        className={`${styles.root} ${
+          isMobileVisible ? styles.mobileVisible : ""
+        }`}
+      >
+        <div className={styles.totalPosts}>
+          <div className={styles.totalPostsInfo}>
+            <span className={styles.totalPostsCount}>{totalPosts}</span>
+            <span className={styles.totalPostsLabel}>saved posts</span>
           </div>
-        )}
-      </div>
-
-      <hr
-        style={{
-          margin: "10px 0",
-          border: "1px solid var(--border-color)!important",
-        }}
-      />
-
-      <div>
-        <div className={styles.header} onClick={() => setShowTypes(!showTypes)}>
-          <p>Type</p>
-          {showTypes ? <Up /> : <Down />}
+          <Tooltip text="Refresh saved posts" position="left">
+            <button
+              className="btn-icon"
+              onClick={onRefresh}
+              aria-label="Refresh saved posts"
+            >
+              <div className={styles.refreshIcon}>
+                <Refresh />
+              </div>
+            </button>
+          </Tooltip>
         </div>
 
-        {showTypes && (
+        <div>
           <div
-            className={`${styles.itemContainer} ${
-              showTypes ? styles.fadeIn : styles.fadeOut
-            }`}
+            className={styles.header}
+            onClick={() => setShowCommunities(!showCommunities)}
           >
-            {sortedTypeCounts.map(({ type, count }) => (
-              <div
-                className={styles.item}
-                key={type}
-                onClick={() => handleTypeClick(type)}
-                style={{
-                  backgroundColor:
-                    selectedType === type
+            <p>Communities</p>
+            {showCommunities ? <Up /> : <Down />}
+          </div>
+
+          {showCommunities && (
+            <div
+              className={`${styles.itemContainer} ${
+                showCommunities ? styles.fadeIn : styles.fadeOut
+              }`}
+            >
+              <input
+                type="text"
+                placeholder="Search communities"
+                value={communitySearch}
+                onChange={handleSearchChange}
+              />
+
+              {filteredSubreddits.map(({ subreddit, count }) => (
+                <div
+                  className={styles.item}
+                  key={subreddit}
+                  onClick={() => handleCommunityClick(subreddit)}
+                  style={{
+                    backgroundColor: selectedCommunities.includes(subreddit)
                       ? "var(--btn-hover-color)"
                       : undefined,
-                }}
-              >
-                <h4>{type}</h4>
-                <p>{count}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <hr
-        style={{
-          margin: "10px 0",
-          border: "1px solid var(--border-color)!important",
-        }}
-      />
-
-      <div>
-        <div className={styles.header} onClick={() => setShowNSFW(!showNSFW)}>
-          <p>NSFW</p>
-          {showNSFW ? <Up /> : <Down />}
+                  }}
+                >
+                  <h4>r/{subreddit}</h4>
+                  <p>{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {showNSFW && (
+        <hr
+          style={{
+            margin: "10px 0",
+            border: "1px solid var(--border-color)!important",
+          }}
+        />
+
+        <div>
           <div
-            className={`${styles.itemContainer} ${
-              showNSFW ? styles.fadeIn : styles.fadeOut
-            }`}
+            className={styles.header}
+            onClick={() => setShowTypes(!showTypes)}
           >
-            {sortedNSFWCounts.map(({ nsfw, count }) => (
-              <div
-                className={styles.item}
-                key={nsfw}
-                onClick={() => handleNSFWClick(nsfw)}
-                style={{
-                  backgroundColor:
-                    selectedNSFW === nsfw
-                      ? "var(--btn-hover-color)"
-                      : undefined,
-                }}
-              >
-                <h4>{nsfw}</h4>
-                <p>{count}</p>
-              </div>
-            ))}
+            <p>Type</p>
+            {showTypes ? <Up /> : <Down />}
           </div>
-        )}
+
+          {showTypes && (
+            <div
+              className={`${styles.itemContainer} ${
+                showTypes ? styles.fadeIn : styles.fadeOut
+              }`}
+            >
+              {sortedTypeCounts.map(({ type, count }) => (
+                <div
+                  className={styles.item}
+                  key={type}
+                  onClick={() => handleTypeClick(type)}
+                  style={{
+                    backgroundColor:
+                      selectedType === type
+                        ? "var(--btn-hover-color)"
+                        : undefined,
+                  }}
+                >
+                  <h4>{type}</h4>
+                  <p>{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <hr
+          style={{
+            margin: "10px 0",
+            border: "1px solid var(--border-color)!important",
+          }}
+        />
+
+        <div>
+          <div className={styles.header} onClick={() => setShowNSFW(!showNSFW)}>
+            <p>NSFW</p>
+            {showNSFW ? <Up /> : <Down />}
+          </div>
+
+          {showNSFW && (
+            <div
+              className={`${styles.itemContainer} ${
+                showNSFW ? styles.fadeIn : styles.fadeOut
+              }`}
+            >
+              {sortedNSFWCounts.map(({ nsfw, count }) => (
+                <div
+                  className={styles.item}
+                  key={nsfw}
+                  onClick={() => handleNSFWClick(nsfw)}
+                  style={{
+                    backgroundColor:
+                      selectedNSFW === nsfw
+                        ? "var(--btn-hover-color)"
+                        : undefined,
+                  }}
+                >
+                  <h4>{nsfw}</h4>
+                  <p>{count}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.actionButtons}>
+          <button className={styles.clearFilters} onClick={handleClearFilters}>
+            Clear filters
+          </button>
+          <button
+            className={styles.hideButton}
+            onClick={handleToggleVisibility}
+          >
+            Hide filters
+          </button>
+        </div>
       </div>
-      <div className={styles.actionButtons}>
-        <button className={styles.clearFilters} onClick={handleClearFilters}>
-          Clear filters
-        </button>
-        <button className={styles.hideButton} onClick={handleToggleVisibility}>
-          Hide filters
-        </button>
-      </div>
-    </div>
+    </>
   );
 };

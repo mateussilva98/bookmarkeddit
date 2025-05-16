@@ -1,18 +1,37 @@
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Header.module.scss";
 import { Settings } from "./icons/Settings";
+import { Filter } from "./icons/Filter";
 import LOGO from "../assets/images/logo.svg";
 import LOGO_WHITE from "../assets/images/logo_white.svg";
 import { useStore } from "../hooks/useStore";
 
 interface HeaderProps {
   onSettingsClick?: () => void;
+  onFilterClick?: () => void;
 }
 
-export const Header: FC<HeaderProps> = ({ onSettingsClick }) => {
+export const Header: FC<HeaderProps> = ({ onSettingsClick, onFilterClick }) => {
   const { store, logout } = useStore();
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  // Check for mobile screen size on mount and window resize
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobile(window.innerWidth <= 480);
+    };
+
+    // Initial check
+    checkMobileView();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkMobileView);
+
+    // Clean up
+    return () => window.removeEventListener("resize", checkMobileView);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -25,7 +44,6 @@ export const Header: FC<HeaderProps> = ({ onSettingsClick }) => {
       "_blank"
     );
   };
-
   return (
     <header className={styles.root}>
       <div className={styles.logoContainer}>
@@ -33,9 +51,19 @@ export const Header: FC<HeaderProps> = ({ onSettingsClick }) => {
           src={store.theme === "dark" ? LOGO_WHITE : LOGO}
           alt="Bookmarkeddit logo"
           className={styles.logo}
-        />
-      </div>
-
+        />{" "}
+      </div>{" "}
+      {isMobile && onFilterClick && (
+        <div className={styles.mobileFilterButton}>
+          <button
+            className={`btn-icon ${styles.filterButton}`}
+            onClick={onFilterClick}
+            aria-label="Filters"
+          >
+            <Filter />
+          </button>
+        </div>
+      )}
       <div className={styles.userSection}>
         {store.auth.user && (
           <div
@@ -53,8 +81,7 @@ export const Header: FC<HeaderProps> = ({ onSettingsClick }) => {
             )}
             <span className={styles.username}>u/{store.auth.user.name}</span>
           </div>
-        )}
-
+        )}{" "}
         <div className={styles.buttons}>
           <button
             id="settings"
