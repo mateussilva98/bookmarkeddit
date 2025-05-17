@@ -4,7 +4,8 @@
  */
 
 // Base URLs for API endpoints
-const PROXY_BASE_URL = "http://localhost:3000";
+const PROXY_BASE_URL =
+  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:3000";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
 // Cache for user profile data to reduce API calls

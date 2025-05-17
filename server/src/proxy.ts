@@ -19,13 +19,25 @@ app.use(express.json());
 // Request logging middleware - captures all incoming requests
 app.use(requestLogger);
 
-// Register API routes
-app.use("/reddit", redditRoutes);
-app.use("/reddit/auth", authRoutes);
+// This could be kept as a general API request logger
+app.use("/api", (req, res, next) => {
+  // Log the request method and URL
+  /* console.log(`API Request received: ${req.method} ${req.url}`); */
+  next(); // Add next() to continue to the actual route handlers
+});
+
+// Register API routes with /api prefix
+app.use("/api/reddit", redditRoutes);
+app.use("/api/reddit/auth", authRoutes);
 
 // Health check endpoint
 app.get("/", (req, res) => {
   res.json({ status: "Proxy server is running" });
+});
+
+// API Health check endpoint
+app.get("/api", (req, res) => {
+  res.json({ status: "API is running" });
 });
 
 // 404 handler for undefined routes - must be after all defined routes

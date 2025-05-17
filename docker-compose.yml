@@ -1,41 +1,56 @@
 version: "3.8"
 
 services:
-  # Backend server
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: bookmarkeddit-server
-    restart: unless-stopped
-    env_file:
-      - ./server/.env
-    ports:
-      - "3000:3000"
-    networks:
-      - bookmarkeddit-network
-    volumes:
-      - server-logs:/usr/src/app/logs
-
-  # Frontend app
-  app:
+  client:
+    image: bookmarkeddit-client:latest
     build:
       context: ./app
       dockerfile: Dockerfile
-    container_name: bookmarkeddit-app
-    restart: unless-stopped
-    env_file:
-      - ./app/.env
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    networks:
+      - app-network
+
+  server:
+    image: bookmarkeddit:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    environment:
+      - NODE_ENV=production
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:latest
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
     depends_on:
       - server
+      - client
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
     networks:
-      - bookmarkeddit-network
+      - app-network
 
 networks:
-  bookmarkeddit-network:
-    driver: bridge
-
-volumes:
-  server-logs:
+  app-network:
+    driver: overlay

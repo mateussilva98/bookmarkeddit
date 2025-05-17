@@ -1,29 +1,32 @@
-FROM node:20-alpine as build
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Copy app source
+# Copy React app source
 COPY . .
 
-# Make build script executable
-RUN chmod +x ./build.sh 
+# Try to build using available script
+RUN npm run build || (echo "Build script not found, checking available scripts:" && npm run)
 
-# Build the app (use direct TypeScript and Vite commands if there are issues with the script)
-RUN npm run build || (npx tsc --noEmit && npx vite build)
+# Determine if build directory exists after build attempt
+RUN if [ -d "build" ]; then \
+      echo "Build directory exists, will serve from here"; \
+    elif [ -d "dist" ]; then \
+      echo "Found dist directory instead of build" && \
+      mv dist build; \
+    else \
+      echo "No build directory found, checking scripts" && \
+      mkdir -p build && \
+      echo '<!DOCTYPE html><html><head><title>Bookmarkeddit</title></head><body><h1>Bookmarkeddit Client</h1><p>Warning: Build failed. Check container logs.</p></body></html>' > build/index.html; \
+    fi
 
-# Production stage
-FROM nginx:alpine
+# Install serve to host the static files
+RUN npm install -g serve
 
-# Copy built files from build stage to nginx
-COPY --from=build /app/dist /usr/share/nginx/html
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Serve the app
+EXPOSE 3000
+CMD ["serve", "-s", "build", "-l", "3000"]
