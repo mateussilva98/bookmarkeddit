@@ -1,32 +1,24 @@
-FROM node:18-alpine
+# Use official Node.js image for build
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
 COPY package*.json ./
 RUN npm install
 
-# Copy React app source
 COPY . .
+RUN npm run build
 
-# Try to build using available script
-RUN npm run build || (echo "Build script not found, checking available scripts:" && npm run)
+# Production image
+FROM node:18-alpine AS production
 
-# Determine if build directory exists after build attempt
-RUN if [ -d "build" ]; then \
-      echo "Build directory exists, will serve from here"; \
-    elif [ -d "dist" ]; then \
-      echo "Found dist directory instead of build" && \
-      mv dist build; \
-    else \
-      echo "No build directory found, checking scripts" && \
-      mkdir -p build && \
-      echo '<!DOCTYPE html><html><head><title>Bookmarkeddit</title></head><body><h1>Bookmarkeddit Client</h1><p>Warning: Build failed. Check container logs.</p></body></html>' > build/index.html; \
-    fi
+WORKDIR /app
 
-# Install serve to host the static files
+# Install serve to serve the build
 RUN npm install -g serve
 
-# Serve the app
+# Copy build output from builder
+COPY --from=builder /app/dist ./build
+
 EXPOSE 3000
 CMD ["serve", "-s", "build", "-l", "3000"]

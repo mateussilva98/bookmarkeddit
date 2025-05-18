@@ -1,20 +1,21 @@
-FROM node:20-alpine
-
+# Build stage
+FROM node:20-alpine AS builder
 WORKDIR /usr/src/app
 
-# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
-
-# Copy app source
 COPY . .
-
-# Build the TypeScript app
 RUN npm run build
 
-# Set environment variables
+# Production stage
+FROM node:20-alpine AS production
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /usr/src/app/dist ./dist
+
 ENV NODE_ENV=production
 
 EXPOSE 3000
-
 CMD ["node", "dist/proxy.js"]

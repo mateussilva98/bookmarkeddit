@@ -1,5 +1,6 @@
+
 Deployment:
-  ☐ dockerize the app (docker-compose) and make sure everything is working as expected
+  ✔ dockerize the app (docker-compose) and make sure everything is working as expected @done(25-05-17 21:09)
   ☐ get a vps and configure from scratch (caddy for ssl, nginx for reverse proxy, etc.) and make sure everything is working as expected - maybe get vps from https://www.hetzner.com/
   ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
   ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it

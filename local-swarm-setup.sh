@@ -9,8 +9,8 @@ else
 fi
 
 # Create required directories
-mkdir -p nginx/conf.d
-mkdir -p nginx/ssl
+#mkdir -p nginx/conf.d
+#mkdir -p nginx/ssl
 
 # Build the application image
 docker build -t bookmarkeddit:latest .

@@ -19,7 +19,7 @@ services:
   server:
     image: bookmarkeddit:latest
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile
     deploy:
       replicas: 5
@@ -33,24 +33,45 @@ services:
     networks:
       - app-network
 
-  nginx:
-    image: nginx:latest
+  # Uncomment the following section if you want to use Nginx as a reverse proxy - it was replaced by Caddy - keep in mind that with ngix you need to manage SSL certificates yourself or set up a cron job to renew them weith certbot (letsencrypt)
+  #nginx:
+  #  image: nginx:latest
+  #  ports:
+  #    - "80:80"
+  #    - "443:443"
+  #  volumes:
+  #    - ./nginx/conf.d:/etc/nginx/conf.d
+  #    - ./nginx/ssl:/etc/nginx/ssl
+  #  depends_on:
+  #    - server
+  #    - client
+  #  deploy:
+  #    replicas: 1
+  #    placement:
+  #      constraints: [node.role == manager]
+  #  networks:
+  #    - app-network
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - server
       - client
-    deploy:
-      replicas: 1
-      placement:
-        constraints: [node.role == manager]
     networks:
       - app-network
 
 networks:
   app-network:
     driver: overlay
+
+volumes:
+  caddy_data:
+  caddy_config:
