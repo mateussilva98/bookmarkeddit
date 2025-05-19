@@ -28,8 +28,10 @@ jobs:
       - name: Ensure Docker secrets exist on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "\
-            echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID - 2>/dev/null || true; \
-            echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET - 2>/dev/null || true; \
+            echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret rm CLIENT_ID 2>/dev/null; \
+            echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID -; \
+            echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret rm CLIENT_SECRET 2>/dev/null; \
+            echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET -; \
           "
 
       - name: Ensure repo is cloned on VPS
