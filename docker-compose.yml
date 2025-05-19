@@ -25,10 +25,12 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    # Use Docker secrets for sensitive config
+    # Use Docker secrets for sensitive config, mount as REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET
     secrets:
-      - CLIENT_ID
-      - CLIENT_SECRET
+      - source: CLIENT_ID
+        target: REDDIT_CLIENT_ID
+      - source: CLIENT_SECRET
+        target: REDDIT_CLIENT_SECRET
     deploy:
       replicas: 5
       update_config:
