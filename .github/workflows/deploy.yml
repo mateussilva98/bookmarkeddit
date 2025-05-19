@@ -46,7 +46,7 @@ jobs:
 
       - name: Create app/.env.production on VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=http://${{ secrets.VPS_HOST }}/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=http://bookmarkeddit.com/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
 
       - name: Ensure Docker Swarm is initialized
         run: |
