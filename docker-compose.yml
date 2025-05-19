@@ -86,6 +86,6 @@ volumes:
 
 secrets:
   CLIENT_ID:
-    file: ./secrets/CLIENT_ID
+    external: true
   CLIENT_SECRET:
-    file: ./secrets/CLIENT_SECRET
+    external: true
