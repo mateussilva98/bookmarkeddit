@@ -36,6 +36,10 @@ jobs:
             echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET - 2>/dev/null || true; \
           "
 
+      - name: Ensure repo is cloned on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "if [ ! -d '${{ secrets.VPS_DEPLOY_PATH }}/.git' ]; then git clone https://github.com/${{ github.repository }} ${{ secrets.VPS_DEPLOY_PATH }}; fi"
+
       - name: Deploy with Docker Swarm
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }} && docker stack deploy -c docker-compose.yml bookmarkeddit"
