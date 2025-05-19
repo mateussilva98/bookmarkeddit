@@ -1,0 +1,4 @@
+# .env and secrets are ignored for safety
+.env
+# Ignore the secrets directory
+secrets/

@@ -6,8 +6,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+ARG VITE_MODE=production
+
 COPY . .
-RUN npm run build
+RUN npm run build -- --mode $VITE_MODE
 
 # Production image
 FROM node:18-alpine AS production

@@ -6,6 +6,7 @@ import { Request, Response } from "express";
 import fetch from "node-fetch";
 import { formatErrorResponse } from "../utils/responses.js";
 import { logInfo, logError, logWarn } from "../utils/logger.js";
+import { getSecret } from "../utils/getSecret.js";
 
 /**
  * Handle token exchange from authorization code
@@ -17,8 +18,9 @@ import { logInfo, logError, logWarn } from "../utils/logger.js";
 export async function exchangeToken(req: Request, res: Response) {
   try {
     const { code, redirectUri } = req.body;
-    const clientId = process.env.CLIENT_ID;
-    const clientSecret = process.env.CLIENT_SECRET;
+    // Use getSecret for prod, fallback to env for dev
+    const clientId = getSecret("REDDIT_CLIENT_ID");
+    const clientSecret = getSecret("REDDIT_CLIENT_SECRET");
 
     // Validate required parameters
     if (!code || !redirectUri) {
@@ -136,8 +138,8 @@ export async function exchangeToken(req: Request, res: Response) {
 export async function refreshToken(req: Request, res: Response) {
   try {
     const { refreshToken } = req.body;
-    const clientId = process.env.CLIENT_ID;
-    const clientSecret = process.env.CLIENT_SECRET;
+    const clientId = getSecret("REDDIT_CLIENT_ID");
+    const clientSecret = getSecret("REDDIT_CLIENT_SECRET");
 
     // Validate required parameters
     if (!refreshToken) {

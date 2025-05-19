@@ -9,56 +9,56 @@ if ($swarmStatus -eq "inactive") {
 }
 
 # Create required directories
-New-Item -ItemType Directory -Force -Path nginx\conf.d
-New-Item -ItemType Directory -Force -Path nginx\ssl
+#New-Item -ItemType Directory -Force -Path nginx\conf.d
+#New-Item -ItemType Directory -Force -Path nginx\ssl
 
 # Add nginx configuration
-$nginxConfig = @"
-upstream api {
-    server server:3000;
-}
-
-upstream client_upstream {
-    server client:3000;
-}
-
-server {
-    listen 80;
-    server_name localhost;
-    
-    # React app frontend
-    location / {
-        proxy_pass http://client_upstream/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade `$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host `$host;
-        proxy_cache_bypass `$http_upgrade;
-        
-        # Add additional headers for WebSocket support
-        proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto `$scheme;
-        proxy_read_timeout 86400;
-    }
-
-    # API endpoints
-    location /api {
-        proxy_pass http://api;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade `$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host `$host;
-        proxy_cache_bypass `$http_upgrade;
-    }
-}
-"@
-
-Set-Content -Path "nginx\conf.d\default.conf" -Value $nginxConfig
+#$nginxConfig = @"
+#upstream api {
+#    server server:3000;
+#}
+#
+#upstream client_upstream {
+#    server client:3000;
+#}
+#
+#server {
+#    listen 80;
+#    server_name localhost;
+#    
+#    # React app frontend
+#    location / {
+#        proxy_pass http://client_upstream/;
+#        proxy_http_version 1.1;
+#        proxy_set_header Upgrade `$http_upgrade;
+#        proxy_set_header Connection 'upgrade';
+#        proxy_set_header Host `$host;
+#        proxy_cache_bypass `$http_upgrade;
+#        
+#        # Add additional headers for WebSocket support
+#        proxy_set_header X-Forwarded-For `$proxy_add_x_forwarded_for;
+#        proxy_set_header X-Forwarded-Proto `$scheme;
+#        proxy_read_timeout 86400;
+#    }
+#
+#    # API endpoints
+#    location /api {
+#        proxy_pass http://api;
+#        proxy_http_version 1.1;
+#        proxy_set_header Upgrade `$http_upgrade;
+#        proxy_set_header Connection 'upgrade';
+#        proxy_set_header Host `$host;
+#        proxy_cache_bypass `$http_upgrade;
+#    }
+#}
+#"@
+#
+#Set-Content -Path "nginx\conf.d\default.conf" -Value $nginxConfig
 
 # Build the images
 Write-Host "Building server and client images..." -ForegroundColor Yellow
-docker build -t bookmarkeddit:latest .
-docker build -t bookmarkeddit-client:latest ./app
+docker build -t bookmarkeddit:latest -f server/Dockerfile server
+docker build -t bookmarkeddit-client:latest --build-arg VITE_MODE=compose ./app
 
 # Deploy the stack
 Write-Host "Deploying the stack..." -ForegroundColor Yellow

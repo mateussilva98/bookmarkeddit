@@ -3,9 +3,15 @@
  * This file contains services for authentication flow and Reddit API interactions
  */
 
-// Base URLs for API endpoints
+// Base URLs for API endpoints - vite handles NODE_ENV var automatically
 const PROXY_BASE_URL =
-  process.env.NODE_ENV === "production" ? "/api" : "http://localhost:3000";
+  typeof import.meta !== "undefined" &&
+  import.meta.env &&
+  import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL
+    : process.env.NODE_ENV === "production"
+    ? "/api"
+    : "http://localhost:3000";
 const REDDIT_BASE_URL = "https://www.reddit.com";
 
 // Cache for user profile data to reduce API calls

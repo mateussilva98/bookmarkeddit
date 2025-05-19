@@ -28,6 +28,10 @@ Modern tool to organize your Reddit saved posts and comments
 
 - improve logic on login. when going to main sure, if there's already tokens, redirect to posts page
 
+## Environment-specific Redirect URI
+
+To support different OAuth callback URLs in development, Docker Compose, and production, set VITE_REDIRECT_URI in the appropriate .env file or in your Docker Compose config. See the main README and .env.example for details.
+
 ## Useful links
 
 https://www.youtube.com/watch?v=ilDSd3W_6UI&t=733s

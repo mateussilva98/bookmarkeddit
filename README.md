@@ -151,6 +151,29 @@ View posts in an attractive grid layout or detailed list view depending on your 
 
 5. Navigate to `http://localhost:5173` in your browser
 
+## Environment-specific Redirect URI
+
+Bookmarkeddit uses VITE_REDIRECT_URI to configure the OAuth callback for Reddit. You should set this variable differently for each environment:
+
+- **Local development:**
+  - In `app/.env.development` or `app/.env.local`:
+    ```
+    VITE_REDIRECT_URI=http://localhost:5173/login/callback
+    ```
+- **Docker Compose local:**
+  - In `app/.env.compose` and run Vite with `--mode compose`, or set in `docker-compose.yml`:
+    ```yaml
+    environment:
+      - VITE_REDIRECT_URI=http://localhost/login/callback
+    ```
+- **Production:**
+  - In `app/.env.production` or set in your deployment environment:
+    ```
+    VITE_REDIRECT_URI=https://yourdomain.com/login/callback
+    ```
+
+Vite will automatically pick the correct variable based on the mode or environment. See `.env.example` for more details.
+
 ## 🐳 Docker Deployment
 
 Bookmarkeddit supports Docker for easy deployment. Follow these steps to run the application using Docker:
