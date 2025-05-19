@@ -1,0 +1,38 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+
+      - name: Copy docker-compose and env files to VPS
+        run: |
+          scp -o StrictHostKeyChecking=no docker-compose.yml Caddyfile ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
+          scp -o StrictHostKeyChecking=no app/.env.production ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production
+
+      - name: Ensure Docker secrets exist on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "\
+            echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID - 2>/dev/null || true; \
+            echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET - 2>/dev/null || true; \
+          "
+
+      - name: Deploy with Docker Swarm
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }} && docker stack deploy -c docker-compose.yml bookmarkeddit"
+
+# Required GitHub secrets:
+# VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_DEPLOY_PATH
+# SERVER_CLIENT_ID, SERVER_CLIENT_SECRET

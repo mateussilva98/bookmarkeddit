@@ -6,9 +6,10 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    # For local/dev, use env_file. For prod, use secrets (see below)
+    # Use .env.production for production deployments
+    # Use .env.compose for local testing
     env_file:
-      - ./app/.env.compose
+      - ./app/.env.production
     deploy:
       replicas: 3
       update_config:
@@ -24,12 +25,10 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    # For local/dev, use env_file. For prod, use secrets (see below)
-    env_file:
-      - ./server/.env
-    # For production, uncomment the secrets section below and remove env_file
-    # secrets:
-    #   - MY_SECRET
+    # Use Docker secrets for sensitive config
+    secrets:
+      - CLIENT_ID
+      - CLIENT_SECRET
     deploy:
       replicas: 5
       update_config:
@@ -84,7 +83,9 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
-# For production, define secrets here. Example:
-# secrets:
-#   MY_SECRET:
-#     file: ./secrets/MY_SECRET
+
+secrets:
+  CLIENT_ID:
+    file: ./secrets/CLIENT_ID
+  CLIENT_SECRET:
+    file: ./secrets/CLIENT_SECRET

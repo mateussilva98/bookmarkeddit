@@ -1,3 +1,6 @@
+remove unused code
+refactor readme
+
 
 Deployment:
   ✔ dockerize the app (docker-compose) and make sure everything is working as expected @done(25-05-17 21:09)
@@ -43,8 +46,15 @@ Bug Fixes and Improvements:
 
 
 
+  Your public key will be at:
+    C:\Users\<YourUser>\.ssh\id_ed25519.pub
+
+    and your private key at:
+
+      C:\Users\<YourUser>\.ssh\id_ed25519
 
 
+      Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub
 
 If you want just one container (e.g., the Node.js server) to have multiple replicas for load balancing — even on a single VPS — here’s what you should consider:
 
