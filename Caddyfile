@@ -1,7 +1,7 @@
 # Caddyfile for Bookmarkeddit with Automatic SSL
 # Replace "yourdomain.com" with your real domain name
 
-49.13.230.217 {
+http://49.13.230.217 {
     reverse_proxy /api/* server:3000
     reverse_proxy /* client:3000
 }
