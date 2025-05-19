@@ -25,13 +25,19 @@ jobs:
         run: |
           scp -o StrictHostKeyChecking=no docker-compose.yml Caddyfile ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
 
+      - name: Remove stack before updating secrets
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker stack rm bookmarkeddit || true && sleep 10"
+
       - name: Ensure Docker secrets exist on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "\
-            echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret rm CLIENT_ID 2>/dev/null; \
+            docker secret rm CLIENT_ID 2>/dev/null || true; \
             echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID -; \
-            echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret rm CLIENT_SECRET 2>/dev/null; \
+            docker secret rm CLIENT_SECRET 2>/dev/null || true; \
             echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET -; \
+            docker secret rm JWT_SECRET 2>/dev/null || true; \
+            echo '${{ secrets.SERVER_JWT_SECRET }}' | docker secret create JWT_SECRET -; \
           "
 
       - name: Ensure repo is cloned on VPS
