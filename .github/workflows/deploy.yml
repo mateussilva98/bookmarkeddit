@@ -40,6 +40,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=https://${{ secrets.VPS_HOST }}/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
 
+      - name: Ensure Docker Swarm is initialized
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker info | grep 'Swarm: active' || docker swarm init"
+
       - name: Deploy with Docker Swarm
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }} && docker stack deploy -c docker-compose.yml bookmarkeddit"
