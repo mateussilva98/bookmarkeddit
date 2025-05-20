@@ -72,6 +72,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker build -t bookmarkeddit:latest -f server/Dockerfile server && docker build -t bookmarkeddit-client:latest -f app/Dockerfile app"
 
+      - name: Run Plausible DB migrations before starting app
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker compose run --rm plausible /entrypoint.sh db migrate"
+
       - name: Deploy with Docker Swarm
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker stack deploy -c docker-compose.yml bookmarkeddit"

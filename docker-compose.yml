@@ -116,6 +116,10 @@ services:
     image: plausible/analytics:latest
     restart: unless-stopped
     entrypoint: ["/plausible-entrypoint.sh"]
+    command: ["/entrypoint.sh", "db", "migrate"]
+    deploy:
+      restart_policy:
+        condition: on-failure
     depends_on:
       - plausible_db
       - plausible_events_db
