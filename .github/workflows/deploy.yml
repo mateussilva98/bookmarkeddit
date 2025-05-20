@@ -52,6 +52,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "if [ ! -d '${{ secrets.VPS_DEPLOY_PATH }}/.git' ]; then rm -rf '${{ secrets.VPS_DEPLOY_PATH }}'; git clone https://github.com/${{ github.repository }} ${{ secrets.VPS_DEPLOY_PATH }}; fi"
 
+      - name: Make plausible entrypoint script executable on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod 755 ${{ secrets.VPS_DEPLOY_PATH }}/plausible-entrypoint.sh"
+
       - name: Create app/.env.production on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=https://bookmarkeddit.com/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
