@@ -101,10 +101,9 @@ services:
   plausible:
     image: plausible/analytics:latest
     restart: always
-    command: sh -c "/entrypoint.sh db migrate && /entrypoint.sh run"
+    command: sh -c "while ! nc -z plausible_db 5432; do echo 'Waiting for PostgreSQL...'; sleep 1; done; echo 'PostgreSQL is up, proceeding with Plausible startup.'; /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
-      plausible_db:
-        condition: service_healthy
+      - plausible_db
     ports:
       - "8000:8000"
     env_file:
