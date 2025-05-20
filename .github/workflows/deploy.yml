@@ -21,10 +21,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}"
 
-      #- name: Copy docker-compose and env files to VPS
-      #  run: |
-      #    scp -o StrictHostKeyChecking=no docker-compose.yml Caddyfile ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
-
       - name: Ensure repo is cloned on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "if [ ! -d '${{ secrets.VPS_DEPLOY_PATH }}/.git' ]; then rm -rf '${{ secrets.VPS_DEPLOY_PATH }}'; git clone https://github.com/${{ github.repository }} ${{ secrets.VPS_DEPLOY_PATH }}; fi"
@@ -36,10 +32,6 @@ jobs:
       - name: Update code to latest commit
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }}"
-
-      - name: Make plausible entrypoint script executable on VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod 755 ${{ secrets.VPS_DEPLOY_PATH }}/plausible-entrypoint.sh"
 
       - name: Remove stack before updating secrets
         run: |
@@ -56,39 +48,11 @@ jobs:
             echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID -; \
             docker secret rm CLIENT_SECRET 2>/dev/null || true; \
             echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET -; \
-            docker secret rm PLAUSIBLE_POSTGRES_USER 2>/dev/null || true; \
-            echo '${{ secrets.PLAUSIBLE_POSTGRES_USER }}' | docker secret create PLAUSIBLE_POSTGRES_USER -; \
-            docker secret rm PLAUSIBLE_POSTGRES_PASSWORD 2>/dev/null || true; \
-            echo '${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}' | docker secret create PLAUSIBLE_POSTGRES_PASSWORD -; \
-            docker secret rm PLAUSIBLE_CLICKHOUSE_USER 2>/dev/null || true; \
-            echo '${{ secrets.PLAUSIBLE_CLICKHOUSE_USER }}' | docker secret create PLAUSIBLE_CLICKHOUSE_USER -; \
-            docker secret rm PLAUSIBLE_CLICKHOUSE_PASSWORD 2>/dev/null || true; \
-            echo '${{ secrets.PLAUSIBLE_CLICKHOUSE_PASSWORD }}' | docker secret create PLAUSIBLE_CLICKHOUSE_PASSWORD -; \
-            docker secret rm PLAUSIBLE_SECRET_KEY 2>/dev/null || true; \
-            echo '${{ secrets.PLAUSIBLE_SECRET_KEY }}' | docker secret create PLAUSIBLE_SECRET_KEY -; \
           "
 
       - name: Build server and client images on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker build -t bookmarkeddit:latest -f server/Dockerfile server && docker build -t bookmarkeddit-client:latest -f app/Dockerfile app"
-
-      - name: Start plausible_db and plausible_events_db containers
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker compose up -d plausible_db plausible_events_db"
-
-      - name: Wait for Postgres to be ready
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && until docker compose exec plausible_db pg_isready -U ${{ secrets.PLAUSIBLE_POSTGRES_USER }}; do echo 'Waiting for Postgres...'; sleep 2; done"
-
-      - name: Run Plausible DB migrations before starting app
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && \
-            PLAUSIBLE_POSTGRES_USER='${{ secrets.PLAUSIBLE_POSTGRES_USER }}' \
-            PLAUSIBLE_POSTGRES_PASSWORD='${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}' \
-            PLAUSIBLE_CLICKHOUSE_USER='${{ secrets.PLAUSIBLE_CLICKHOUSE_USER }}' \
-            PLAUSIBLE_CLICKHOUSE_PASSWORD='${{ secrets.PLAUSIBLE_CLICKHOUSE_PASSWORD }}' \
-            PLAUSIBLE_SECRET_KEY='${{ secrets.PLAUSIBLE_SECRET_KEY }}' \
-            docker compose run --rm plausible db migrate"
 
       - name: Deploy with Docker Swarm
         run: |

@@ -76,85 +76,18 @@ services:
     networks:
       - app-network
 
-  plausible_db:
-    image: postgres:14-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: plausible_db
-      POSTGRES_USER_FILE: /run/secrets/PLAUSIBLE_POSTGRES_USER
-      POSTGRES_PASSWORD_FILE: /run/secrets/PLAUSIBLE_POSTGRES_PASSWORD
-    volumes:
-      - plausible_db_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-
-  plausible_events_db:
-    image: clickhouse/clickhouse-server:22.3-alpine
-    restart: unless-stopped
-    environment:
-      CLICKHOUSE_DB: plausible_events_db
-      CLICKHOUSE_USER_FILE: /run/secrets/PLAUSIBLE_CLICKHOUSE_USER
-      CLICKHOUSE_PASSWORD_FILE: /run/secrets/PLAUSIBLE_CLICKHOUSE_PASSWORD
-    volumes:
-      - plausible_events_db_data:/var/lib/clickhouse
-    networks:
-      - app-network
-
-  # plausible_mail:
-  #   image: bytemark/smtp
-  #   restart: unless-stopped
-  #   networks:
-  #     - app-network
-
-  plausible:
-    image: plausible/analytics:latest
-    restart: unless-stopped
-    entrypoint: ["/plausible-entrypoint.sh"]
-    command: ["/entrypoint.sh", "db", "migrate"]
-    deploy:
-      restart_policy:
-        condition: on-failure
-    depends_on:
-      - plausible_db
-      - plausible_events_db
-    #  - plausible_mail
-    environment:
-      - BASE_URL=https://analytics.bookmarkeddit.com
-      - SECRET_KEY_FILE=/run/secrets/PLAUSIBLE_SECRET_KEY
-      - ANONYMIZE_IP=true
-      - DISABLE_REGISTRATION=true
-    # DATABASE_URL and CLICKHOUSE_DATABASE_URL are set by entrypoint script
-    secrets:
-      - PLAUSIBLE_POSTGRES_USER
-      - PLAUSIBLE_POSTGRES_PASSWORD
-      - PLAUSIBLE_CLICKHOUSE_USER
-      - PLAUSIBLE_CLICKHOUSE_PASSWORD
-      - PLAUSIBLE_SECRET_KEY
-    networks:
-      - app-network
-    volumes:
-      - ./plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
-
 networks:
   app-network:
     driver: overlay
-    attachable: true
 
 volumes:
   caddy_data:
     external: true
   caddy_config:
     external: true
-  plausible_db_data:
-    external: false
-  plausible_events_db_data:
-    external: false
 
 secrets:
-  PLAUSIBLE_POSTGRES_USER:
-  PLAUSIBLE_POSTGRES_PASSWORD:
-  PLAUSIBLE_CLICKHOUSE_USER:
-  PLAUSIBLE_CLICKHOUSE_PASSWORD:
-  PLAUSIBLE_SECRET_KEY:
   CLIENT_ID:
+    external: true
   CLIENT_SECRET:
+    external: true
