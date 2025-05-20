@@ -149,7 +149,9 @@ volumes:
   caddy_data:
   caddy_config:
   plausible_db_data:
+    external: true
   plausible_events_db_data:
+    external: true
 
 secrets:
   PLAUSIBLE_POSTGRES_USER:
