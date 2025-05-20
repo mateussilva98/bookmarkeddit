@@ -78,7 +78,7 @@ jobs:
 
       - name: Wait for Postgres to be ready
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "until docker compose exec plausible_db pg_isready -U ${{ secrets.PLAUSIBLE_POSTGRES_USER }}; do echo 'Waiting for Postgres...'; sleep 2; done"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && until docker compose exec plausible_db pg_isready -U ${{ secrets.PLAUSIBLE_POSTGRES_USER }}; do echo 'Waiting for Postgres...'; sleep 2; done"
 
       - name: Run Plausible DB migrations before starting app
         run: |
