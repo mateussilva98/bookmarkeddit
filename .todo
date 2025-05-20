@@ -1,6 +1,7 @@
 remove unused code
 refactor readme
 remove everything related to the compose and simplify readme
+improve clickhouse/postgres connection to use secrets
 
 
 Deployment:
