@@ -149,3 +149,12 @@ volumes:
     external: false
   plausible_events_db_data:
     external: false
+
+secrets:
+  PLAUSIBLE_POSTGRES_USER:
+  PLAUSIBLE_POSTGRES_PASSWORD:
+  PLAUSIBLE_CLICKHOUSE_USER:
+  PLAUSIBLE_CLICKHOUSE_PASSWORD:
+  PLAUSIBLE_SECRET_KEY:
+  CLIENT_ID:
+  CLIENT_SECRET:
