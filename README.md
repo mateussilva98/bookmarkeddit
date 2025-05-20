@@ -3,26 +3,44 @@
 <div align="center">
   <img src="./app/src/assets/images/logo.svg" alt="Bookmarkeddit Logo" width="300" />
   <p><strong>Reddit's missing save manager: Finally organize what matters to you</strong></p>
-  <p>A modern tool to organize, search, and manage your Reddit saved posts and comments</p>
+  <p>A modern tool to organize, search, and manage your Reddit saved posts and comments.</p>
+  <p>
+    <a href="https://bookmarkeddit.com" target="_blank"><strong>Live Demo</strong></a> |
+    <a href="#features">Features</a> |
+    <a href="#getting-started">Getting Started</a> |
+    <a href="#docker-swarm-deployment-with-caddy">Deployment</a>
+  </p>
 </div>
 
 ## 🌟 Overview
 
 **Bookmarkeddit** is the solution to Reddit's limited saved post management. Easily organize, filter, search, and rediscover your saved content without the limitations of Reddit's native interface.
 
-Built with React, TypeScript, and powered by Reddit's API, Bookmarkeddit provides privacy-first functionality right from your browser - your data never leaves your device.
+Built with React, TypeScript, and powered by Reddit's API, Bookmarkeddit provides a privacy-first experience—your data never leaves your browser.
 
-## ✨ Main Features
+## ✨ Features
 
-- **🔍 Smart Search** - Full-text search through titles and content of your saved posts
-- **🗂️ Intelligent Filters** - Filter by subreddit, post type (text/image/video), or NSFW content
-- **🔄 Dynamic Layout Options** - Switch between grid and list views to browse your content
-- **⬆️ Custom Sorting** - Sort posts by most recent, most upvotes, or most comments
-- **🔄 Incremental Fetching** - Automatically fetches all your saved posts, handling Reddit's API limits
-- **🌓 Light/Dark Mode** - Choose your preferred theme for comfortable browsing
-- **🛡️ Private Experience** - Your data stays in your browser, nothing is stored on our servers
+### Core Functionality
 
-## 🖼️ Features Showcase
+- **🔍 Smart Search**: Full-text search through titles and content of your saved posts.
+- **🗂️ Intelligent Filters**: Filter by subreddit, post type (text/image/video), or NSFW status.
+- **🔄 Dynamic Layouts**: Switch between grid and list views.
+- **⬆️ Custom Sorting**: Sort by recency, upvotes, or comments.
+- **🔄 Incremental Fetching**: Automatically fetches all saved posts, handling Reddit's API limits.
+- **🌓 Light/Dark Mode**: Choose your preferred theme.
+- **🛡️ Privacy First**: Your data stays in your browser; nothing is stored on our servers.
+
+### Technical Highlights
+
+- **📱 Responsive Design**: Seamless experience on desktop and mobile.
+- **🗄️ Efficient Data Management**: Optimized state management for handling post data.
+- **⌨️ Keyboard Shortcuts**: `Ctrl+F` for search, `Ctrl+R` to refresh.
+- **🔍 Fuzzy Search**: Find content with partial or inexact matches.
+- **📊 Masonry Grid Layout**: Visually appealing display for posts of varying heights.
+- **🎥 Media Support**: View images and videos directly in the app.
+- **🛑 NSFW Handling**: Option to blur NSFW images with one-click reveal.
+- **📦 Infinite Scroll**: Efficiently load and display large numbers of posts.
+- **🚀 Performance Optimized**: Fast rendering and data handling.
 
 ### Powerful Filtering System
 
@@ -34,84 +52,83 @@ Search through all your saved content with instant results and sort by recency, 
 
 ### Content Management
 
-Easily unsave posts you no longer need with confirmation to prevent accidental removal.
+Easily unsave posts you no longer need, with confirmation to prevent accidental removal.
 
 ### Saved Post Organization
 
-View posts in an attractive grid layout or detailed list view depending on your preference.
-
-## 🔧 Technical Features
-
-- **📱 Responsive Design** - Works across desktop and mobile devices
-- **🗄️ Efficient Data Management** - Intelligent handling of post data with optimized state management
-- **⌨️ Keyboard Shortcuts** - Ctrl+F to quickly focus search, Ctrl+R to refresh posts
-- **🔍 Fuzzy Search** - Find content even with partial or inexact matches
-- **📊 Masonry Grid Layout** - Beautiful display of posts with varying heights
-- **🎥 Media Support** - View images and videos directly within the app
-- **🛑 NSFW Content Handling** - Option to blur NSFW images with one-click reveal
-- **📦 Infinite Scroll** - Load and display large numbers of posts efficiently
-- **🚀 Performance Optimizations** - Efficient rendering and data handling
+View posts in an attractive grid layout or a detailed list view.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- Reddit account with saved posts
+- Node.js (v16 or higher recommended)
+- A Reddit account
 - Reddit Developer Application credentials (see below)
 
 ### Reddit API Credentials Setup
 
-1. Go to [Reddit's App Preferences](https://www.reddit.com/prefs/apps)
-2. Click "Create App" or "Create Another App" button at the bottom
-3. Fill in the following:
-   - Name: Bookmarkeddit (or any name you prefer)
-   - App type: Select "web app"
-   - Description: Optional
-   - About URL: Optional
-   - Redirect URI: `http://localhost:5173/login/callback` (for local development)
-   - Note this URI for your .env file configuration
-4. Click "Create app" button
-5. Note your:
-   - Client ID: The string under the app name
-   - Client Secret: Listed as "secret"
+1. Go to [Reddit's App Preferences](https://www.reddit.com/prefs/apps).
+2. Click "Create App" or "Create Another App".
+3. Fill in the details:
+   - **Name**: Bookmarkeddit (or your preferred name)
+   - **App type**: Select "web app"
+   - **Description**: (Optional)
+   - **About URL**: (Optional)
+   - **Redirect URI**:
+     - For local development: `http://localhost:5173/login/callback`
+     - _(Ensure this matches your `VITE_REDIRECT_URI` in the respective `.env` file)_
+4. Click "Create app".
+5. Note your **Client ID** (under the app name) and **Client Secret**.
 
-### Installation & Setup (Development)
+### Installation & Local Development
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/bookmarkeddit.git
+   git clone https://github.com/mateussilva98/bookmarkeddit.git
+   # Replace with your fork if applicable
    cd bookmarkeddit
    ```
 
-2. Install dependencies for both the app and the server:
+2. Install dependencies for both the client app and the server:
 
    ```bash
-   # Install app dependencies
+   # Install client app dependencies
    cd app
    npm install
 
    # Install server dependencies
    cd ../server
    npm install
+   cd ..
+   # Return to root for next steps
    ```
 
-3. Create and configure the environment files:
+3. Create and configure environment files:
 
-   **For the server:**
+   **For the server (`server/.env`):**
 
-   ```bash
-   cp server/example.env server/.env
-   # Edit server/.env with your Reddit API credentials
+   Copy `server/example.env` to `server/.env` and fill in:
+
+   ```env
+   NODE_ENV=development
+   PORT=3000 # Or your preferred port for the proxy server
+   REDDIT_CLIENT_ID=YOUR_REDDIT_CLIENT_ID
+   REDDIT_CLIENT_SECRET=YOUR_REDDIT_CLIENT_SECRET
    ```
 
-   **For the app:**
+   **For the client app (`app/.env):**
 
-   ```bash
-   cp app/.env.example app/.env
-   # Edit app/.env with your Reddit API credentials
+   Copy `app/example.env` to `app/.env` and fill in:
+
+   ```env
+   VITE_API_URL=http://localhost:3000/api # Points to the proxy server
+   VITE_CLIENT_ID=YOUR_REDDIT_CLIENT_ID
+   VITE_REDIRECT_URI=http://localhost:5173/login/callback
    ```
+
+   _(Note: `VITE_CLIENT_ID` in the app is the same as `REDDIT_CLIENT_ID` for the server)_
 
 4. Start the development servers:
 
@@ -121,89 +138,56 @@ View posts in an attractive grid layout or detailed list view depending on your 
    npm run dev
 
    # In another terminal, start the frontend
-   cd app
+   cd ../app
+   # or cd app from the root directory if you opened a new terminal
    npm run dev
    ```
 
-5. Navigate to `http://localhost:5173` in your browser
-
-## Environment-specific Redirect URI
-
-Bookmarkeddit uses VITE_REDIRECT_URI to configure the OAuth callback for Reddit. You should set this variable differently for each environment:
-
-- **Local development:**
-  - In `app/.env.development` or `app/.env.local`:
-    ```
-    VITE_REDIRECT_URI=http://localhost:5173/login/callback
-    ```
-- **Production:**
-  - In `app/.env.production` or set in your deployment environment:
-    ```
-    VITE_REDIRECT_URI=https://yourdomain.com/login/callback
-    ```
-
-Vite will automatically pick the correct variable based on the mode or environment. See `.env.example` for more details.
-
-## 🐳 Docker Swarm Deployment (with Caddy)
-
-Bookmarkeddit supports production deployment using Docker Swarm and Caddy as a reverse proxy for HTTPS.
-
-### Steps
-
-1. Ensure you have Docker and Docker Swarm initialized on your server.
-2. Copy and edit the environment files for both the app and server as described above.
-3. Edit the `Caddyfile` to match your domain and SSL requirements.
-4. Deploy the stack:
-
-   ```bash
-   docker stack deploy -c docker-compose.yml bookmarkeddit
-   ```
-
-5. Caddy will automatically handle SSL certificates and reverse proxying.
-6. Access your application at your configured domain (e.g., https://yourdomain.com).
-
-> **Note:** The provided `docker-compose.yml` is designed for Docker Swarm and uses Caddy as the reverse proxy.
+5. Open your browser and navigate to `http://localhost:5173`.
 
 ## 📄 Authentication & Permissions
 
-Bookmarkeddit requires the following Reddit API permissions:
+Bookmarkeddit requires the following Reddit API permissions during OAuth:
 
-- **identity** - To see your username and profile picture
-- **history** - To access your saved posts
-- **save** - To unsave posts when requested
+- `identity`: To display your username and profile picture.
+- `history`: To access your saved posts and comments.
+- `save`: To allow unsaving posts/comments from within the app.
 
 ## 🔒 Privacy
 
-Your Reddit data never leaves your browser. Bookmarkeddit acts as a client-side interface to your Reddit saved posts, with a minimal proxy server only used to make authenticated API requests to Reddit.
+Your Reddit data (saved posts, username) is fetched by the client app and stored in your browser's local storage. The backend server only proxies requests to the Reddit API and does not store any of your personal Reddit data.
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: React, TypeScript, SCSS Modules, Vite
-- **Backend**: Node.js, Express, TypeScript
+- **Backend (Proxy Server)**: Node.js, Express, TypeScript
 - **API**: Reddit API
-- **State Management**: React Context API, custom hooks
+- **State Management**: Zustand (as per `useStore.ts`)
 - **Deployment**: Docker, Docker Swarm, Caddy
+- **Analytics**: Self-hosted Plausible
 
 ## 🔮 Upcoming Features
 
-- Export saved posts to CSV
-- Markdown rendering for post content
-- Dashboard with statistics about your saved content
-- Pin important posts to the top
-- Advanced caching for faster loading
-- Customizable text styling options
+- Export saved posts (e.g., to CSV/JSON).
+- Enhanced Markdown rendering for post content.
+- Dashboard with statistics about saved content.
+- Pin important posts to the top.
+- Advanced caching strategies.
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions, issues, and feature requests are welcome! Please feel free to:
+
+- Open an issue to discuss a bug or feature.
+- Submit a Pull Request with your improvements.
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ## 🙏 Acknowledgements
 
-Created by [Mateus Silva](https://github.com/mateussilva98/)
+- Created by [Mateus Silva](https://github.com/mateussilva98/)
 
 ---
 

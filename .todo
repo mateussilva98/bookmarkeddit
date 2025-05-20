@@ -2,19 +2,39 @@ remove unused code
 refactor readme
 remove everything related to the compose and simplify readme
 improve clickhouse/postgres connection to use secrets
+maybe setup email for plausible
 
 
-Deployment:
-  ✔ dockerize the app (docker-compose) and make sure everything is working as expected @done(25-05-17 21:09)
-  ☐ get a vps and configure from scratch (caddy for ssl, nginx for reverse proxy, etc.) and make sure everything is working as expected - maybe get vps from https://www.hetzner.com/
-  ☐ get a domain and configure it to point to the vps and make sure everything is working as expected
-  ☐ add a readme file to the repo with instructions on how to run the app locally and how to deploy it
-  ☐ add a license file to the repo (maybe MIT or something like that)
-  ☐ add a .env file to the repo with instructions on how to create it and what to put in it
-  ☐ create a github actions file to automate the deployment process (build and push the docker image to docker hub, and deploy it to the vps)
-  ☐ add an image to track the app usage (maybe using google analytics or something like that)
-  ☐ Docker Swarm? Even tho i don't plan to scale your app across multiple VPS nodes (i.e., clustering), I still want built-in service discovery, load balancing, and failover, zero-downtime rolling updates for services and its a simpler alternative to Kubernetes for orchestrating containers.
-  
+reeven feeback:
+  line between categories,
+  search is filter but not in filters and not reset when  clear filters is clicked (it literally says filter by title) xdd,
+  space between profile and settings icon and logout is not equal,
+  clear filters and hide filters feel weirdly positioned,
+  hide filters is unintuitive at least description wise, would never have imagined it closed the sidebar thingy,
+  something to try out is making a blocky appearance around the layout thingy, so the spacing doesnt feel different there (aka same kinda markup as for the select and search next to it) might feel more in line with the rest too,
+  sometimes there is a line between items but most of the time there is not, why?,
+  spacong top and bottom refresh button is not equal (also not equal with slightly more down the other line),
+  you have the name of the author, might be nice if you could go to their profile directly, same with subreddit,
+  the go to button could technically be the whole box with all its content like on reddit itself ig,
+  logo feels slightly too large, or not enough space around it, think I'd try to make it a tad smaller,
+  accessibility wise the select state of the only nsfw posts is not great, particularly the post count, hard to read in darkmode,
+  4 saved posts is not aligned with the filters below it, aligjtly more inward, also refresh icon compared to accordion dings,
+  in lightmode the icon of layput display is harsubreddit, make it more obvious you can click on it, hover styles,
+  not sure why, but when i tried ta bbing through everything, i wasnt able to go into the accordions,
+  some buttons and links are missing focus styles,
+  when tabbing through the app, i get trapped on the open the post link, not immediately sure why,
+  lightmode post text is not readable enough,
+  consider adding a skiplink,
+  the go to profile is not a tab-able element, so hidden for screen readers too (maybe)?
+  bunch of buttons without text (see axe core), can make it only visible to screen readers and such, if you're using tailwind (add the "sr-only" class)),
+  saved post in dark mode is not readable enough in theory,
+  bunch of links with no text (again sr only),
+  select needs a label, can be sronly (maybe),
+  lots more contrast issues in lightmode (see axe core),
+  in lightmode the orange could be slightly less bright as a focus style, cus might give of terror vibes, which is not what we want, altho if you use reddit, should be smart enough to understand the color schema, so that might be a pebcak,
+  Uhmn, one last thing, your name in lightmode is not readable enough on your logout homepage, should be readable cus its something to be proud of
+
+
 
 ☐ when finalized, create reddit posts to show off the app
 
@@ -45,140 +65,3 @@ Backlog - (features to consider for future updates):
 Bug Fixes and Improvements:
   ☐ Video sound not working. not really important, but would be nice to have
 
-
-
-
-  Your public key will be at:
-    C:\Users\<YourUser>\.ssh\id_ed25519.pub
-
-    and your private key at:
-
-      C:\Users\<YourUser>\.ssh\id_ed25519
-
-
-      Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub
-
-If you want just one container (e.g., the Node.js server) to have multiple replicas for load balancing — even on a single VPS — here’s what you should consider:
-
-🛠 Best Solution: Docker Swarm
-Docker Compose does not support scaling with built-in load balancing across container replicas. But Docker Swarm does. With Swarm, you can:
-
-Scale a service (e.g., the server) using:
-
-docker service scale server=3
-Get internal load balancing between replicas.
-
-Use a reverse proxy like Traefik or Nginx (Swarm-aware) to balance external HTTP traffic.
-
-🚫 Why not plain Docker Compose?
-You can technically scale with:
-
-
-docker-compose up --scale server=3
-
-But:
-
-It won't automatically load balance traffic to those replicas.
-
-It creates multiple containers with no built-in way to spread traffic unless you manually configure an external load balancer.
-
-
-🔁 Alternatives:
-Traefik or Nginx manually configured in Docker Compose to balance across multiple server containers.
-
-
-✅ Recommendation (for a single VPS with replica needs):
-Use Docker Swarm for proper container-level service scaling and built-in load balancing.
-
-Or, use Docker Compose + Nginx as a load balancer, but this requires more manual setup.
-
-
-
-If you want to track visits to your website running on your MERN + Docker Swarm stack, here are three solid approaches, depending on how detailed and privacy-aware you want the tracking to be:
-
-✅ Option 1: Use a Self-Hosted Web Analytics Tool (Recommended)
-These tools work similarly to Google Analytics but run on your own server, which:
-
-Gives you full control of the data
-
-Is often GDPR-compliant out of the box
-
-Can be deployed as Docker services alongside your stack
-
-🔧 Recommended tools:
-1. Plausible Analytics (lightweight, privacy-focused)
-Easy to self-host (Docker)
-
-Script-based frontend tracking (like Google Analytics)
-
-Dashboards + metrics like page views, bounce rate, referral sources
-
-Deployment: Add it to your Swarm stack:
-
-yaml
-
-plausible:
-  image: plausible/analytics
-  environment:
-    - BASE_URL=https://yourdomain.com
-    - SECRET_KEY=your-super-secret
-  ports:
-    - "8000:8000"
-  networks:
-    - mern-net
-👉 GitHub
-
-2. Matomo (formerly Piwik, full GA replacement)
-Much more advanced
-
-Supports event tracking, goals, heatmaps, user behavior
-
-Heavier to run, but works great for high-traffic.
-
-✅ Option 2: Use Nginx Access Logs for Passive Tracking
-If you already use Nginx as a reverse proxy, you can:
-
-Enable access logs
-
-Pipe logs into GoAccess or Matomo Log Analytics
-
-Example:
-nginx
-Copiar
-Editar
-log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                '$status $body_bytes_sent "$http_referer" '
-                '"$http_user_agent"';
-
-access_log /var/log/nginx/access.log main;
-Then analyze with:
-
-bash
-Copiar
-Editar
-goaccess /var/log/nginx/access.log --log-format=COMBINED --real-time-html
-🧠 This is a no-JavaScript, low-resource solution. Good for simple stats like IPs, paths, referrers.
-
-✅ Option 3: Use Google Analytics or Cloud-based Trackers (Quick & Free)
-If you're okay with a 3rd-party tool:
-
-Drop the GA4 or Plausible JS snippet into your React app:
-
-js
-Copiar
-Editar
-// index.js or App.js
-ReactGA.initialize('G-XXXXXXX');
-ReactGA.pageview(window.location.pathname + window.location.search);
-But:
-
-You don't control the data.
-
-It may conflict with privacy regulations depending on your audience.
-
-🧠 TL;DR Recommendations:
-Use Case	Tool	Pros	Cons
-Privacy-friendly, easy	Plausible	Lightweight, Docker-ready	Limited advanced features
-Deep analytics, complex	Matomo	Full-featured	Heavier, more setup
-Fast, no JS, basic logs	Nginx + GoAccess	Lightweight, no cookies	No event/session tracking
-Quickest, least control	Google Analytics	Free, simple	Not privacy-respecting
