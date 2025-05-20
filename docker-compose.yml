@@ -129,7 +129,7 @@ services:
     networks:
       - app-network
     volumes:
-      - plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
+      - ./plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
     secrets:
       - PLAUSIBLE_POSTGRES_USER
       - PLAUSIBLE_POSTGRES_PASSWORD
