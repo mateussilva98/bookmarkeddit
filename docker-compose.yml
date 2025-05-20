@@ -144,6 +144,7 @@ services:
 networks:
   app-network:
     driver: overlay
+    attachable: true
 
 volumes:
   caddy_data:
