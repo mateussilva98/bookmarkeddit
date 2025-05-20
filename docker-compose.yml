@@ -6,8 +6,6 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
-    # Use .env.production for production deployments
-    # Use .env.compose for local testing
     env_file:
       - ./app/.env.production
     deploy:

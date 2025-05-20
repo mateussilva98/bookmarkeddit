@@ -5,9 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode development",
-    "dev:compose": "vite --mode compose",
     "build": "vite build --mode production",
-    "build:compose": "vite build --mode compose",
     "preview": "vite preview --mode production",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },

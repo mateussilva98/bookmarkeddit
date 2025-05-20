@@ -2,9 +2,7 @@
 
 <div align="center">
   <img src="./app/src/assets/images/logo.svg" alt="Bookmarkeddit Logo" width="300" />
-
   <p><strong>Reddit's missing save manager: Finally organize what matters to you</strong></p>
-  
   <p>A modern tool to organize, search, and manage your Reddit saved posts and comments</p>
 </div>
 
@@ -71,14 +69,14 @@ View posts in an attractive grid layout or detailed list view depending on your 
    - App type: Select "web app"
    - Description: Optional
    - About URL: Optional
-   - Redirect URI: `http://localhost/login/callback` (for local development)
+   - Redirect URI: `http://localhost:5173/login/callback` (for local development)
    - Note this URI for your .env file configuration
 4. Click "Create app" button
 5. Note your:
    - Client ID: The string under the app name
    - Client Secret: Listed as "secret"
 
-### Installation & Setup
+### Installation & Setup (Development)
 
 1. Clone the repository:
 
@@ -103,38 +101,16 @@ View posts in an attractive grid layout or detailed list view depending on your 
 
    **For the server:**
 
-   Copy the example environment file:
-
    ```bash
    cp server/example.env server/.env
-   ```
-
-   Edit `server/.env` with your Reddit API credentials:
-
-   ```
-   # Reddit API credentials
-   CLIENT_ID=your_reddit_client_id
-   CLIENT_SECRET=your_reddit_client_secret
-
-   # Server configuration
-   PORT=3000
-   NODE_ENV=development
+   # Edit server/.env with your Reddit API credentials
    ```
 
    **For the app:**
 
-   Copy the example environment file:
-
    ```bash
    cp app/.env.example app/.env
-   ```
-
-   Edit `app/.env` with your Reddit API credentials:
-
-   ```
-   # Reddit API Configuration
-   VITE_CLIENT_ID=your_reddit_client_id
-   VITE_REDIRECT_URI=http://localhost/login/callback
+   # Edit app/.env with your Reddit API credentials
    ```
 
 4. Start the development servers:
@@ -160,12 +136,6 @@ Bookmarkeddit uses VITE_REDIRECT_URI to configure the OAuth callback for Reddit.
     ```
     VITE_REDIRECT_URI=http://localhost:5173/login/callback
     ```
-- **Docker Compose local:**
-  - In `app/.env.compose` and run Vite with `--mode compose`, or set in `docker-compose.yml`:
-    ```yaml
-    environment:
-      - VITE_REDIRECT_URI=http://localhost/login/callback
-    ```
 - **Production:**
   - In `app/.env.production` or set in your deployment environment:
     ```
@@ -174,95 +144,25 @@ Bookmarkeddit uses VITE_REDIRECT_URI to configure the OAuth callback for Reddit.
 
 Vite will automatically pick the correct variable based on the mode or environment. See `.env.example` for more details.
 
-## 🐳 Docker Deployment
+## 🐳 Docker Swarm Deployment (with Caddy)
 
-Bookmarkeddit supports Docker for easy deployment. Follow these steps to run the application using Docker:
+Bookmarkeddit supports production deployment using Docker Swarm and Caddy as a reverse proxy for HTTPS.
 
-### Using Docker Compose
+### Steps
 
-1. Make sure you have Docker and Docker Compose installed on your system
-
-2. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/bookmarkeddit.git
-   cd bookmarkeddit
-   ```
-
-3. Create the necessary environment files:
+1. Ensure you have Docker and Docker Swarm initialized on your server.
+2. Copy and edit the environment files for both the app and server as described above.
+3. Edit the `Caddyfile` to match your domain and SSL requirements.
+4. Deploy the stack:
 
    ```bash
-   # For the server
-   cp server/example.env server/.env
-
-   # For the app
-   cp app/.env.example app/.env
-
-   # For docker-compose
-   cp .env.example .env
+   docker stack deploy -c docker-compose.yml bookmarkeddit
    ```
 
-4. Edit the `.env` files with your Reddit API credentials and other configuration
+5. Caddy will automatically handle SSL certificates and reverse proxying.
+6. Access your application at your configured domain (e.g., https://yourdomain.com).
 
-5. Build and start the containers:
-
-   ```bash
-   docker-compose up -d
-   ```
-
-6. Access the application at http://localhost
-
-### Restarting Docker Compose
-
-There are two ways to restart the Docker Compose containers:
-
-#### Method 1: Using Docker Compose Commands
-
-```bash
-# Stop the containers
-docker-compose down
-
-# Start the containers again
-docker-compose up -d
-```
-
-#### Method 2: Using the Provided Script
-
-For convenience, you can use the included restart script:
-
-```bash
-# Make the script executable (first time only)
-chmod +x restart-containers.sh
-
-# Run the restart script
-./restart-containers.sh
-```
-
-### Building and Running Containers Separately
-
-#### Backend Server
-
-```bash
-cd server
-docker build -t bookmarkeddit-server .
-docker run -p 3000:3000 --env-file .env -d bookmarkeddit-server
-```
-
-#### Frontend App
-
-```bash
-cd app
-docker build -t bookmarkeddit-app .
-docker run -p 80:80 -d bookmarkeddit-app
-```
-
-### Production Deployment
-
-For production deployment, consider:
-
-1. Setting appropriate environment variables for production
-2. Setting up proper SSL/TLS with a reverse proxy like Caddy or Nginx
-3. Using Docker Swarm for better container orchestration and zero-downtime updates
+> **Note:** The provided `docker-compose.yml` is designed for Docker Swarm and uses Caddy as the reverse proxy.
 
 ## 📄 Authentication & Permissions
 
@@ -278,11 +178,11 @@ Your Reddit data never leaves your browser. Bookmarkeddit acts as a client-side 
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, TypeScript, SCSS Modules
+- **Frontend**: React, TypeScript, SCSS Modules, Vite
+- **Backend**: Node.js, Express, TypeScript
 - **API**: Reddit API
-- **State Management**: React Context API
-- **Build Tool**: Vite
-- **Deployment**: Docker support for easy deployment
+- **State Management**: React Context API, custom hooks
+- **Deployment**: Docker, Docker Swarm, Caddy
 
 ## 🔮 Upcoming Features
 
