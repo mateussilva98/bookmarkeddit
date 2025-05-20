@@ -33,4 +33,4 @@ ls -l /
 cat /entrypoint.sh || true
 
 # Start Plausible
-exec /entrypoint.sh
+exec /entrypoint.sh run
