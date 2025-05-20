@@ -6,6 +6,10 @@ bookmarkeddit.com, www.bookmarkeddit.com {
     reverse_proxy /* client:3000
 }
 
+analitycs.bookmarkeddit.com {
+    reverse_proxy plausible:8000
+}
+
 #localhost {
 #    reverse_proxy /api/* server:3000
 #    reverse_proxy /* client:3000

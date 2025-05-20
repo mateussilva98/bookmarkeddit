@@ -36,8 +36,16 @@ jobs:
             echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID -; \
             docker secret rm CLIENT_SECRET 2>/dev/null || true; \
             echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET -; \
-            docker secret rm JWT_SECRET 2>/dev/null || true; \
-            echo '${{ secrets.SERVER_JWT_SECRET }}' | docker secret create JWT_SECRET -; \
+            docker secret rm PLAUSIBLE_POSTGRES_USER 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_POSTGRES_USER }}' | docker secret create PLAUSIBLE_POSTGRES_USER -; \
+            docker secret rm PLAUSIBLE_POSTGRES_PASSWORD 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}' | docker secret create PLAUSIBLE_POSTGRES_PASSWORD -; \
+            docker secret rm PLAUSIBLE_CLICKHOUSE_USER 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_CLICKHOUSE_USER }}' | docker secret create PLAUSIBLE_CLICKHOUSE_USER -; \
+            docker secret rm PLAUSIBLE_CLICKHOUSE_PASSWORD 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_CLICKHOUSE_PASSWORD }}' | docker secret create PLAUSIBLE_CLICKHOUSE_PASSWORD -; \
+            docker secret rm PLAUSIBLE_SECRET_KEY 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_SECRET_KEY }}' | docker secret create PLAUSIBLE_SECRET_KEY -; \
           "
 
       - name: Ensure repo is cloned on VPS

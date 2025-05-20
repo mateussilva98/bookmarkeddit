@@ -76,6 +76,68 @@ services:
     networks:
       - app-network
 
+  plausible_db:
+    image: postgres:14-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: plausible_db
+      POSTGRES_USER_FILE: /run/secrets/PLAUSIBLE_POSTGRES_USER
+      POSTGRES_PASSWORD_FILE: /run/secrets/PLAUSIBLE_POSTGRES_PASSWORD
+    volumes:
+      - plausible_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    secrets:
+      - PLAUSIBLE_POSTGRES_USER
+      - PLAUSIBLE_POSTGRES_PASSWORD
+
+  plausible_events_db:
+    image: clickhouse/clickhouse-server:22.3-alpine
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_DB: plausible_events_db
+      CLICKHOUSE_USER_FILE: /run/secrets/PLAUSIBLE_CLICKHOUSE_USER
+      CLICKHOUSE_PASSWORD_FILE: /run/secrets/PLAUSIBLE_CLICKHOUSE_PASSWORD
+    volumes:
+      - plausible_events_db_data:/var/lib/clickhouse
+    networks:
+      - app-network
+    secrets:
+      - PLAUSIBLE_CLICKHOUSE_USER
+      - PLAUSIBLE_CLICKHOUSE_PASSWORD
+
+  # plausible_mail:
+  #   image: bytemark/smtp
+  #   restart: unless-stopped
+  #   networks:
+  #     - app-network
+
+  plausible:
+    image: plausible/analytics:latest
+    restart: unless-stopped
+    depends_on:
+      - plausible_db
+      - plausible_events_db
+      - plausible_mail
+    environment:
+      - BASE_URL=https://analitycs.bookmarkeddit.com
+      - SECRET_KEY_FILE=/run/secrets/PLAUSIBLE_SECRET_KEY
+      - DATABASE_URL=postgresql://{{.PLAUSIBLE_POSTGRES_USER}}:{{.PLAUSIBLE_POSTGRES_PASSWORD}}@plausible_db:5432/plausible_db
+      - CLICKHOUSE_DATABASE_URL=clickhouse://{{.PLAUSIBLE_CLICKHOUSE_USER}}:{{.PLAUSIBLE_CLICKHOUSE_PASSWORD}}@plausible_events_db:9000/plausible_events_db
+      #- MAILER_EMAIL=plausible@yourdomain.com # Uncomment and set to a real address if you want Plausible to send emails (password reset, invites, etc.)
+      #- SMTP_HOST=plausible_mail
+      #- SMTP_PORT=25
+      - ANONYMIZE_IP=true
+      - DISABLE_REGISTRATION=true
+    networks:
+      - app-network
+    secrets:
+      - PLAUSIBLE_POSTGRES_USER
+      - PLAUSIBLE_POSTGRES_PASSWORD
+      - PLAUSIBLE_CLICKHOUSE_USER
+      - PLAUSIBLE_CLICKHOUSE_PASSWORD
+      - PLAUSIBLE_SECRET_KEY
+
 networks:
   app-network:
     driver: overlay
@@ -83,8 +145,20 @@ networks:
 volumes:
   caddy_data:
   caddy_config:
+  plausible_db_data:
+  plausible_events_db_data:
 
 secrets:
+  PLAUSIBLE_POSTGRES_USER:
+    external: true
+  PLAUSIBLE_POSTGRES_PASSWORD:
+    external: true
+  PLAUSIBLE_CLICKHOUSE_USER:
+    external: true
+  PLAUSIBLE_CLICKHOUSE_PASSWORD:
+    external: true
+  PLAUSIBLE_SECRET_KEY:
+    external: true
   CLIENT_ID:
     external: true
   CLIENT_SECRET:
