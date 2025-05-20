@@ -77,6 +77,24 @@ services:
     networks:
       - app-network
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    restart: always
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   plausible_db:
     image: postgres:14
     restart: always
@@ -101,9 +119,10 @@ services:
   plausible:
     image: plausible/analytics:latest
     restart: always
-    command: sh -c "while ! nc -z plausible_db 5432; do echo 'Waiting for PostgreSQL...'; sleep 1; done; echo 'PostgreSQL is up, proceeding with Plausible startup.'; /entrypoint.sh db migrate && /entrypoint.sh run"
+    command: sh -c "echo 'Waiting for plausible_db (PostgreSQL) DNS resolution...'; while ! getent hosts plausible_db > /dev/null; do echo 'plausible_db not resolvable, sleeping...'; sleep 1; done; echo 'plausible_db DNS resolved.'; echo 'Waiting for PostgreSQL port 5432...'; while ! nc -z plausible_db 5432; do echo 'PostgreSQL port not open, sleeping...'; sleep 1; done; echo 'PostgreSQL is up.'; echo 'Waiting for clickhouse DNS resolution...'; while ! getent hosts clickhouse > /dev/null; do echo 'clickhouse not resolvable, sleeping...'; sleep 1; done; echo 'clickhouse DNS resolved.'; echo 'Waiting for ClickHouse port 8123...'; while ! nc -z clickhouse 8123; do echo 'ClickHouse port not open, sleeping...'; sleep 1; done; echo 'ClickHouse is up.'; echo 'Proceeding with Plausible startup.'; /entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
       - plausible_db
+      - clickhouse
     ports:
       - "8000:8000"
     env_file:
@@ -121,6 +140,7 @@ volumes:
   caddy_config:
     external: true
   plausible_db_data: {}
+  clickhouse_data: {}
 
 secrets:
   CLIENT_ID:
