@@ -147,9 +147,11 @@ networks:
 
 volumes:
   caddy_data:
-  caddy_config:
-  plausible_db_data:
     external: true
+  caddy_config:
+    external: true
+  plausible_db_data:
+    external: false
   plausible_events_db_data:
     external: false
 
