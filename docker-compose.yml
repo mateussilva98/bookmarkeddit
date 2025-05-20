@@ -81,7 +81,7 @@ services:
     image: postgres:13
     restart: always
     volumes:
-      - ./plausible_db_data:/var/lib/postgresql/data
+      - plausible_db_data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD_FILE=/run/secrets/plausible_db_password
       - POSTGRES_USER=postgres
