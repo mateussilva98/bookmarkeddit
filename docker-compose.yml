@@ -103,7 +103,8 @@ services:
     restart: always
     command: sh -c "/entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
-      - plausible_db
+      plausible_db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     env_file:
