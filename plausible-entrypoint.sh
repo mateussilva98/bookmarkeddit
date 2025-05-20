@@ -9,6 +9,10 @@ echo "PLAUSIBLE_POSTGRES_PASSWORD: $(cat /run/secrets/PLAUSIBLE_POSTGRES_PASSWOR
 echo "PLAUSIBLE_CLICKHOUSE_USER: $(cat /run/secrets/PLAUSIBLE_CLICKHOUSE_USER)"
 echo "PLAUSIBLE_CLICKHOUSE_PASSWORD: $(cat /run/secrets/PLAUSIBLE_CLICKHOUSE_PASSWORD)"
 echo "PLAUSIBLE_SECRET_KEY: $(cat /run/secrets/PLAUSIBLE_SECRET_KEY)"
+echo "ls -l /run/secrets/"
+ls -l /run/secrets/
+echo "ls -l /"
+ls -l /
 
 # Read secrets from Docker secrets
 PLAUSIBLE_POSTGRES_USER="$(cat /run/secrets/PLAUSIBLE_POSTGRES_USER)"
@@ -25,4 +29,5 @@ export DATABASE_URL="postgresql://$PLAUSIBLE_POSTGRES_USER:$PLAUSIBLE_POSTGRES_P
 export CLICKHOUSE_DATABASE_URL="clickhouse://$PLAUSIBLE_CLICKHOUSE_USER:$PLAUSIBLE_CLICKHOUSE_PASSWORD@plausible_events_db:9000/plausible_events_db"
 
 # Start Plausible
-exec docker-entrypoint.sh
+sleep 60
+# exec docker-entrypoint.sh
