@@ -158,16 +158,10 @@ volumes:
 
 secrets:
   PLAUSIBLE_POSTGRES_USER:
-    file: ./dummy_secret
   PLAUSIBLE_POSTGRES_PASSWORD:
-    file: ./dummy_secret
   PLAUSIBLE_CLICKHOUSE_USER:
-    file: ./dummy_secret
   PLAUSIBLE_CLICKHOUSE_PASSWORD:
-    file: ./dummy_secret
   PLAUSIBLE_SECRET_KEY:
     file: ./dummy_secret
   CLIENT_ID:
-    file: ./dummy_secret
   CLIENT_SECRET:
-    file: ./dummy_secret
