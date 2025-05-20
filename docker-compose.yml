@@ -151,7 +151,7 @@ volumes:
   plausible_db_data:
     external: true
   plausible_events_db_data:
-    external: true
+    external: false
 
 secrets:
   PLAUSIBLE_POSTGRES_USER:
