@@ -21,13 +21,33 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}"
 
-      - name: Copy docker-compose and env files to VPS
+      #- name: Copy docker-compose and env files to VPS
+      #  run: |
+      #    scp -o StrictHostKeyChecking=no docker-compose.yml Caddyfile ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
+
+      - name: Ensure repo is cloned on VPS
         run: |
-          scp -o StrictHostKeyChecking=no docker-compose.yml Caddyfile ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "if [ ! -d '${{ secrets.VPS_DEPLOY_PATH }}/.git' ]; then rm -rf '${{ secrets.VPS_DEPLOY_PATH }}'; git clone https://github.com/${{ github.repository }} ${{ secrets.VPS_DEPLOY_PATH }}; fi"
+
+      - name: Create app/.env.production on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=https://bookmarkeddit.com/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
+
+      - name: Update code to latest commit
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }}"
+
+      - name: Make plausible entrypoint script executable on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod 755 ${{ secrets.VPS_DEPLOY_PATH }}/plausible-entrypoint.sh"
 
       - name: Remove stack before updating secrets
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker stack rm bookmarkeddit || true && sleep 10"
+
+      - name: Ensure Docker Swarm is initialized
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker info | grep 'Swarm: active' || docker swarm init"
 
       - name: Ensure Docker secrets exist on VPS
         run: |
@@ -48,29 +68,13 @@ jobs:
             echo '${{ secrets.PLAUSIBLE_SECRET_KEY }}' | docker secret create PLAUSIBLE_SECRET_KEY -; \
           "
 
-      - name: Ensure repo is cloned on VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "if [ ! -d '${{ secrets.VPS_DEPLOY_PATH }}/.git' ]; then rm -rf '${{ secrets.VPS_DEPLOY_PATH }}'; git clone https://github.com/${{ github.repository }} ${{ secrets.VPS_DEPLOY_PATH }}; fi"
-
-      - name: Make plausible entrypoint script executable on VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "chmod 755 ${{ secrets.VPS_DEPLOY_PATH }}/plausible-entrypoint.sh"
-
-      - name: Create app/.env.production on VPS
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_DEPLOY_PATH }}/app && echo 'VITE_API_URL=/api' > ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_REDIRECT_URI=https://bookmarkeddit.com/login/callback' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production && echo 'VITE_CLIENT_ID=${{ secrets.SERVER_CLIENT_ID }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/app/.env.production"
-
-      - name: Ensure Docker Swarm is initialized
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker info | grep 'Swarm: active' || docker swarm init"
-
       - name: Build server and client images on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker build -t bookmarkeddit:latest -f server/Dockerfile server && docker build -t bookmarkeddit-client:latest -f app/Dockerfile app"
 
       - name: Deploy with Docker Swarm
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && git fetch --all && git reset --hard ${{ github.sha }} && docker stack deploy -c docker-compose.yml bookmarkeddit"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker stack deploy -c docker-compose.yml bookmarkeddit"
 
 # Required GitHub secrets:
 # VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_DEPLOY_PATH
