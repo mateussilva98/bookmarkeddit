@@ -29,10 +29,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "docker stack rm bookmarkeddit || true && sleep 10"
 
-      - name: Remove old local secret directories on VPS (if any)
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "rm -rf ${{ secrets.VPS_DEPLOY_PATH }}/secrets/PLAUSIBLE_POSTGRES_USER ${{ secrets.VPS_DEPLOY_PATH }}/secrets/PLAUSIBLE_POSTGRES_PASSWORD ${{ secrets.VPS_DEPLOY_PATH }}/secrets/PLAUSIBLE_CLICKHOUSE_USER ${{ secrets.VPS_DEPLOY_PATH }}/secrets/PLAUSIBLE_CLICKHOUSE_PASSWORD ${{ secrets.VPS_DEPLOY_PATH }}/secrets/PLAUSIBLE_SECRET_KEY || true"
-
       - name: Ensure Docker secrets exist on VPS
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "\
