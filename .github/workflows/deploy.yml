@@ -82,7 +82,13 @@ jobs:
 
       - name: Run Plausible DB migrations before starting app
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && docker compose run --rm plausible db migrate"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd ${{ secrets.VPS_DEPLOY_PATH }} && \
+            PLAUSIBLE_POSTGRES_USER='${{ secrets.PLAUSIBLE_POSTGRES_USER }}' \
+            PLAUSIBLE_POSTGRES_PASSWORD='${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}' \
+            PLAUSIBLE_CLICKHOUSE_USER='${{ secrets.PLAUSIBLE_CLICKHOUSE_USER }}' \
+            PLAUSIBLE_CLICKHOUSE_PASSWORD='${{ secrets.PLAUSIBLE_CLICKHOUSE_PASSWORD }}' \
+            PLAUSIBLE_SECRET_KEY='${{ secrets.PLAUSIBLE_SECRET_KEY }}' \
+            docker compose run --rm plausible db migrate"
 
       - name: Deploy with Docker Swarm
         run: |

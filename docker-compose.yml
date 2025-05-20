@@ -24,11 +24,6 @@ services:
       context: ./server
       dockerfile: Dockerfile
     # Use Docker secrets for sensitive config, mount as REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET
-    secrets:
-      - source: CLIENT_ID
-        target: REDDIT_CLIENT_ID
-      - source: CLIENT_SECRET
-        target: REDDIT_CLIENT_SECRET
     deploy:
       replicas: 5
       update_config:
@@ -38,6 +33,11 @@ services:
         condition: on-failure
     environment:
       - NODE_ENV=production
+    secrets:
+      - source: CLIENT_ID
+        target: REDDIT_CLIENT_ID
+      - source: CLIENT_SECRET
+        target: REDDIT_CLIENT_SECRET
     networks:
       - app-network
 
@@ -87,9 +87,6 @@ services:
       - plausible_db_data:/var/lib/postgresql/data
     networks:
       - app-network
-    secrets:
-      - PLAUSIBLE_POSTGRES_USER
-      - PLAUSIBLE_POSTGRES_PASSWORD
 
   plausible_events_db:
     image: clickhouse/clickhouse-server:22.3-alpine
@@ -102,9 +99,6 @@ services:
       - plausible_events_db_data:/var/lib/clickhouse
     networks:
       - app-network
-    secrets:
-      - PLAUSIBLE_CLICKHOUSE_USER
-      - PLAUSIBLE_CLICKHOUSE_PASSWORD
 
   # plausible_mail:
   #   image: bytemark/smtp
@@ -130,16 +124,16 @@ services:
       - ANONYMIZE_IP=true
       - DISABLE_REGISTRATION=true
     # DATABASE_URL and CLICKHOUSE_DATABASE_URL are set by entrypoint script
-    networks:
-      - app-network
-    volumes:
-      - ./plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
     secrets:
       - PLAUSIBLE_POSTGRES_USER
       - PLAUSIBLE_POSTGRES_PASSWORD
       - PLAUSIBLE_CLICKHOUSE_USER
       - PLAUSIBLE_CLICKHOUSE_PASSWORD
       - PLAUSIBLE_SECRET_KEY
+    networks:
+      - app-network
+    volumes:
+      - ./plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
 
 networks:
   app-network:
@@ -155,19 +149,3 @@ volumes:
     external: false
   plausible_events_db_data:
     external: false
-
-secrets:
-  PLAUSIBLE_POSTGRES_USER:
-    external: false
-  PLAUSIBLE_POSTGRES_PASSWORD:
-    external: false
-  PLAUSIBLE_CLICKHOUSE_USER:
-    external: false
-  PLAUSIBLE_CLICKHOUSE_PASSWORD:
-    external: false
-  PLAUSIBLE_SECRET_KEY:
-    file: ./dummy_secret
-  CLIENT_ID:
-    external: true
-  CLIENT_SECRET:
-    external: true
