@@ -121,7 +121,7 @@ services:
       - plausible_events_db
       - plausible_mail
     environment:
-      - BASE_URL=https://analitycs.bookmarkeddit.com
+      - BASE_URL=https://analytics.bookmarkeddit.com
       - SECRET_KEY_FILE=/run/secrets/PLAUSIBLE_SECRET_KEY
       - ANONYMIZE_IP=true
       - DISABLE_REGISTRATION=true

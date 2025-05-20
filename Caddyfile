@@ -6,7 +6,7 @@ bookmarkeddit.com, www.bookmarkeddit.com {
     reverse_proxy /* client:3000
 }
 
-analitycs.bookmarkeddit.com {
+analytics.bookmarkeddit.com {
     reverse_proxy plausible:8000
 }
 
