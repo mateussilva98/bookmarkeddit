@@ -119,7 +119,7 @@ services:
     depends_on:
       - plausible_db
       - plausible_events_db
-      - plausible_mail
+    #  - plausible_mail
     environment:
       - BASE_URL=https://analytics.bookmarkeddit.com
       - SECRET_KEY_FILE=/run/secrets/PLAUSIBLE_SECRET_KEY
