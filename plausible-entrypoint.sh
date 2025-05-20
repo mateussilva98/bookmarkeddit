@@ -18,4 +18,4 @@ export DATABASE_URL="postgresql://$PLAUSIBLE_POSTGRES_USER:$PLAUSIBLE_POSTGRES_P
 export CLICKHOUSE_DATABASE_URL="clickhouse://$PLAUSIBLE_CLICKHOUSE_USER:$PLAUSIBLE_CLICKHOUSE_PASSWORD@plausible_events_db:9000/plausible_events_db"
 
 # Start Plausible
-exec entrypoint.sh
+exec /entrypoint.sh
