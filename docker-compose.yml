@@ -158,13 +158,13 @@ volumes:
 
 secrets:
   PLAUSIBLE_POSTGRES_USER:
-    external: true
+    external: false
   PLAUSIBLE_POSTGRES_PASSWORD:
-    external: true
+    external: false
   PLAUSIBLE_CLICKHOUSE_USER:
-    external: true
+    external: false
   PLAUSIBLE_CLICKHOUSE_PASSWORD:
-    external: true
+    external: false
   PLAUSIBLE_SECRET_KEY:
     file: ./dummy_secret
   CLIENT_ID:
