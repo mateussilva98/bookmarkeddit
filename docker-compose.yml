@@ -91,13 +91,20 @@ services:
         target: plausible_db_password
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   plausible:
     image: plausible/analytics:latest
     restart: always
-    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+    command: sh -c "/entrypoint.sh db migrate && /entrypoint.sh run"
     depends_on:
-      - plausible_db
+      plausible_db:
+        condition: service_healthy
     ports:
       - "8000:8000"
     env_file:
