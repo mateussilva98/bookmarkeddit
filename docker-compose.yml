@@ -78,7 +78,7 @@ services:
       - app-network
 
   plausible_db:
-    image: postgres:13
+    image: postgres:14
     restart: always
     volumes:
       - plausible_db_data:/var/lib/postgresql/data
