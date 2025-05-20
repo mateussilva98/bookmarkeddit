@@ -48,7 +48,13 @@ jobs:
             echo '${{ secrets.SERVER_CLIENT_ID }}' | docker secret create CLIENT_ID -; \
             docker secret rm CLIENT_SECRET 2>/dev/null || true; \
             echo '${{ secrets.SERVER_CLIENT_SECRET }}' | docker secret create CLIENT_SECRET -; \
+            docker secret rm PLAUSIBLE_DB_PASSWORD 2>/dev/null || true; \
+            echo '${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}' | docker secret create PLAUSIBLE_DB_PASSWORD -; \
           "
+
+      - name: Create plausible.env on VPS
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "echo 'BASE_URL=https://analytics.bookmarkeddit.com' > ${{ secrets.VPS_DEPLOY_PATH }}/plausible.env && echo 'DATABASE_URL=postgres://postgres:${{ secrets.PLAUSIBLE_POSTGRES_PASSWORD }}@plausible_db:5432/plausible_db' >> ${{ secrets.VPS_DEPLOY_PATH }}/plausible.env && echo 'SECRET_KEY_BASE=${{ secrets.PLAUSIBLE_SECRET_KEY }}' >> ${{ secrets.VPS_DEPLOY_PATH }}/plausible.env"
 
       - name: Build server and client images on VPS
         run: |
@@ -60,4 +66,4 @@ jobs:
 
 # Required GitHub secrets:
 # VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_DEPLOY_PATH
-# SERVER_CLIENT_ID, SERVER_CLIENT_SECRET
+# SERVER_CLIENT_ID, SERVER_CLIENT_SECRET, PLAUSIBLE_POSTGRES_PASSWORD

@@ -73,6 +73,35 @@ services:
     depends_on:
       - server
       - client
+      - plausible
+    networks:
+      - app-network
+
+  plausible_db:
+    image: postgres:13
+    restart: always
+    volumes:
+      - ./plausible_db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD_FILE=/run/secrets/plausible_db_password
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=plausible_db
+    secrets:
+      - source: PLAUSIBLE_DB_PASSWORD
+        target: plausible_db_password
+    networks:
+      - app-network
+
+  plausible:
+    image: plausible/analytics:latest
+    restart: always
+    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+    depends_on:
+      - plausible_db
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./plausible.env
     networks:
       - app-network
 
@@ -85,9 +114,12 @@ volumes:
     external: true
   caddy_config:
     external: true
+  plausible_db_data: {}
 
 secrets:
   CLIENT_ID:
     external: true
   CLIENT_SECRET:
+    external: true
+  PLAUSIBLE_DB_PASSWORD:
     external: true
