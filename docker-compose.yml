@@ -115,6 +115,7 @@ services:
   plausible:
     image: plausible/analytics:latest
     restart: unless-stopped
+    entrypoint: ["/plausible-entrypoint.sh"]
     depends_on:
       - plausible_db
       - plausible_events_db
@@ -122,15 +123,13 @@ services:
     environment:
       - BASE_URL=https://analitycs.bookmarkeddit.com
       - SECRET_KEY_FILE=/run/secrets/PLAUSIBLE_SECRET_KEY
-      - DATABASE_URL=postgresql://{{.PLAUSIBLE_POSTGRES_USER}}:{{.PLAUSIBLE_POSTGRES_PASSWORD}}@plausible_db:5432/plausible_db
-      - CLICKHOUSE_DATABASE_URL=clickhouse://{{.PLAUSIBLE_CLICKHOUSE_USER}}:{{.PLAUSIBLE_CLICKHOUSE_PASSWORD}}@plausible_events_db:9000/plausible_events_db
-      #- MAILER_EMAIL=plausible@yourdomain.com # Uncomment and set to a real address if you want Plausible to send emails (password reset, invites, etc.)
-      #- SMTP_HOST=plausible_mail
-      #- SMTP_PORT=25
       - ANONYMIZE_IP=true
       - DISABLE_REGISTRATION=true
+    # DATABASE_URL and CLICKHOUSE_DATABASE_URL are set by entrypoint script
     networks:
       - app-network
+    volumes:
+      - plausible-entrypoint.sh:/plausible-entrypoint.sh:ro
     secrets:
       - PLAUSIBLE_POSTGRES_USER
       - PLAUSIBLE_POSTGRES_PASSWORD
