@@ -1,8 +1,20 @@
+add animations on homepage
+add screenshots to readme and homepage
+
+
 remove unused code
 refactor readme
 remove everything related to the compose and simplify readme
 improve clickhouse/postgres connection to use secrets
 maybe setup email for plausible
+
+
+https://examples.motion.dev/react/warp-overlay
+https://examples.motion.dev/react/family-dialog
+https://examples.motion.dev/react/notifications-stack
+https://examples.motion.dev/react/hold-to-confirm
+https://examples.motion.dev/react/cursor-hover-follow
+
 
 
 reeven feeback:
@@ -36,7 +48,6 @@ reeven feeback:
 
 
 
-☐ when finalized, create reddit posts to show off the app
 
 Backlog - to implement:
   ☐ post content in markdown 

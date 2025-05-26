@@ -18,6 +18,14 @@
 
 Built with React, TypeScript, and powered by Reddit's API, Bookmarkeddit provides a privacy-first experience—your data never leaves your browser.
 
+## 🖼️ App Preview
+
+![Bookmarkeddit Desktop Preview](./app/src/assets/demo/mockup_desktop.png)
+_Desktop View_
+
+![Bookmarkeddit Mobile Preview](./app/src/assets/demo/mockup_mobile.png)
+_Mobile View_
+
 ## ✨ Features
 
 ### Core Functionality
