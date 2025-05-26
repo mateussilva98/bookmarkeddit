@@ -178,6 +178,91 @@
   margin-top: 1rem;
 }
 
+.appPreviewSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 3rem;
+  width: 100%;
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    position: relative;
+    display: inline-block;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--orange);
+      border-radius: 3px;
+    }
+  }
+}
+
+.appPreviewImages {
+  display: flex;
+  justify-content: center;
+  align-items: stretch; // Or 'center' if preferred for vertical alignment of items with fixed height
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.desktopPreview,
+.mobilePreview {
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  object-fit: contain;
+  height: 350px; // Increased from 200px
+  width: auto; // Allow width to adjust based on aspect ratio and fixed height
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.desktopPreview {
+  max-width: 500px;
+  // height: auto; // Removed, now in common style
+  // object-fit: contain; // Removed, now in common style
+  // width: auto; // Removed, now in common style
+}
+
+.mobilePreview {
+  max-width: 250px;
+  // height: auto; // Removed, now in common style
+}
+
+.appPreviewLinks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+
+  a {
+    color: var(--orange);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    &:hover {
+      background-color: rgba(255, 69, 0, 0.1);
+      text-decoration: underline;
+    }
+  }
+}
+
 .permissions {
   max-width: 700px;
   width: 100%;
@@ -316,6 +401,25 @@
     .permissionName {
       margin-right: 0;
     }
+  }
+
+  .appPreviewImages {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .desktopPreview,
+  .mobilePreview {
+    height: auto; // Adjust height for mobile
+    max-width: 90%; // Allow them to take more width if stacked
+  }
+
+  .desktopPreview {
+    max-height: 250px; // Example max height for desktop preview on mobile
+  }
+
+  .mobilePreview {
+    max-height: 200px; // Example max height for mobile preview on mobile
   }
 }
 

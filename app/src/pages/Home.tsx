@@ -10,6 +10,8 @@ import { Chart } from "../components/icons/Chart";
 import { Lock } from "../components/icons/Lock";
 import LOGO from "../assets/images/logo.svg";
 import LOGO_WHITE from "../assets/images/logo_white.svg";
+import MOCKUP_DESKTOP from "../assets/demo/mockup_desktop.png";
+import MOCKUP_MOBILE from "../assets/demo/mockup_mobile.png";
 import { authService } from "../api";
 import { FeatureCard } from "../components/ui/FeatureCard";
 
@@ -88,6 +90,38 @@ export const Home: FC = () => {
               title="Privacy First"
               description="Your data never leaves your browser - complete privacy guaranteed"
             />
+          </div>
+        </div>
+
+        <div className={styles.appPreviewSection}>
+          <h2>App Preview</h2>
+          <div className={styles.appPreviewImages}>
+            <img
+              src={MOCKUP_DESKTOP}
+              alt="Desktop Preview"
+              className={styles.desktopPreview}
+            />
+            <img
+              src={MOCKUP_MOBILE}
+              alt="Mobile Preview"
+              className={styles.mobilePreview}
+            />
+          </div>
+          <div className={styles.appPreviewLinks}>
+            <a
+              href="https://imgur.com/a/5c7KBQm"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Desktop Video Demo
+            </a>
+            <a
+              href="https://imgur.com/a/GQWOYfW"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Mobile Video Demo
+            </a>
           </div>
         </div>
 
