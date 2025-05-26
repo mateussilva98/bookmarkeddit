@@ -26,6 +26,8 @@ _Desktop View_
 ![Bookmarkeddit Mobile Preview](./app/src/assets/demo/mockup_mobile.png)
 _Mobile View_
 
+[**Desktop Demo**](https://imgur.com/a/5c7KBQm) | [**Mobile Demo**](https://imgur.com/a/GQWOYfW)
+
 ## ✨ Features
 
 ### Core Functionality
