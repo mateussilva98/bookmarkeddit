@@ -98,12 +98,12 @@ export const Home: FC = () => {
           <div className={styles.appPreviewImages}>
             <img
               src={MOCKUP_DESKTOP}
-              alt="Desktop Preview"
+              alt="Desktop preview of Bookmarkeddit showing saved Reddit posts"
               className={styles.desktopPreview}
             />
             <img
               src={MOCKUP_MOBILE}
-              alt="Mobile Preview"
+              alt="Mobile preview of Bookmarkeddit interface displaying organized Reddit saves"
               className={styles.mobilePreview}
             />
           </div>
