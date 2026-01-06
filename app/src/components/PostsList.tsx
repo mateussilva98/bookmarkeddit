@@ -8,6 +8,8 @@ import { List } from "./icons/List";
 import { Grid } from "./icons/Grid";
 import { useStore } from "../hooks/useStore";
 import { ToastContainer, ToastType } from "./ui/Toast";
+import { ConfirmModal } from "./ui/ConfirmModal";
+import { redditApi, ApiError } from "../api";
 import { v4 as uuidv4 } from "uuid";
 
 interface PostsListProps {
@@ -37,11 +39,14 @@ export const PostsList: FC<PostsListProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [isGridCalculating, setIsGridCalculating] = useState(false);
-  const { store, changeLayout, changeSortBy } = useStore();
+  const { store, changeLayout, changeSortBy, handleAuthError } = useStore();
   const [localPosts, setLocalPosts] = useState<Post[]>(posts);
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [visibleCount, setVisibleCount] = useState(50); // For infinite scroll
   const [isMobile, setIsMobile] = useState<boolean>(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [postToUnsave, setPostToUnsave] = useState<string | null>(null);
+  const [isUnsaving, setIsUnsaving] = useState(false);
 
   // Check for mobile screen size on mount and window resize
   useEffect(() => {
@@ -102,6 +107,66 @@ export const PostsList: FC<PostsListProps> = ({
   // Function to remove a toast
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  // Handle unsave click from Post component
+  const handleUnsaveClick = useCallback((postId: string) => {
+    setPostToUnsave(postId);
+    setIsConfirmModalOpen(true);
+  }, []);
+
+  // Handle confirm unsave
+  const handleConfirmUnsave = useCallback(async () => {
+    if (!store.auth.access_token || isUnsaving || !postToUnsave) return;
+
+    setIsUnsaving(true);
+
+    try {
+      const post = localPosts.find((p) => p.id === postToUnsave);
+      if (!post) return;
+
+      await redditApi.unsaveItem(store.auth.access_token, post.fullname);
+
+      setLocalPosts((prev) => prev.filter((p) => p.id !== postToUnsave));
+
+      if (onPostUnsave) {
+        onPostUnsave(postToUnsave);
+      }
+
+      addToast("Post unsaved successfully", "success");
+    } catch (error) {
+      console.error("Error unsaving post:", error);
+
+      if (error instanceof ApiError && error.isAuthError) {
+        handleAuthError();
+        return;
+      }
+
+      const errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "Failed to unsave the post. Please try again.";
+
+      addToast(errorMessage, "error");
+    } finally {
+      setIsUnsaving(false);
+      setIsConfirmModalOpen(false);
+      setPostToUnsave(null);
+    }
+  }, [
+    store.auth.access_token,
+    isUnsaving,
+    postToUnsave,
+    localPosts,
+    onPostUnsave,
+    addToast,
+    handleAuthError,
+  ]);
+
+  // Handle cancel unsave
+  const handleCancelUnsave = useCallback(() => {
+    setIsConfirmModalOpen(false);
+    setPostToUnsave(null);
   }, []);
 
   // Function to handle post unsave
@@ -574,6 +639,7 @@ export const PostsList: FC<PostsListProps> = ({
                 <PostComponent
                   post={post}
                   onUnsave={handlePostUnsave}
+                  onUnsaveClick={handleUnsaveClick}
                   addToast={addToast}
                 />
               </div>
@@ -609,6 +675,15 @@ export const PostsList: FC<PostsListProps> = ({
         </button>
       )}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Unsave Post"
+        message="Are you sure you want to unsave this post? This action cannot be undone."
+        confirmText="Unsave"
+        cancelText="Cancel"
+        onConfirm={handleConfirmUnsave}
+        onCancel={handleCancelUnsave}
+      />
     </div>
   );
 };

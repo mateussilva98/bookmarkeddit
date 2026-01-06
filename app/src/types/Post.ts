@@ -33,6 +33,7 @@ export type Post = {
   title: string;
   description?: string;
   url: string;
+  permalink: string; // Always points to Reddit discussion page
   score: number;
   media_metadata?: { [key: string]: MediaMetadata };
   images?: string[]; // Array to store multiple image URLs

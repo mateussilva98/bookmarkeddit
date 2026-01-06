@@ -414,6 +414,9 @@ export const Posts: FC = () => {
             title: post.data.title || post.data.link_title || "",
             description: post.data.selftext || post.data.body || "",
             url: post.data.url || post.data.link_url || "",
+            permalink: post.data.permalink
+              ? `https://www.reddit.com${post.data.permalink}`
+              : `https://www.reddit.com/r/${post.data.subreddit}/comments/${post.data.id}`,
             score: post.data.score,
             media_metadata: post.data.media_metadata,
             images: images.length > 0 ? images : undefined,

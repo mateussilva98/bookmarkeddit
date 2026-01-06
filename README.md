@@ -1,4 +1,4 @@
-# 📚 Bookmarkeddit
+# Bookmarkeddit
 
 <div align="center">
   <img src="./app/src/assets/images/logo.svg" alt="Bookmarkeddit Logo" width="300" />
@@ -12,13 +12,13 @@
   </p>
 </div>
 
-## 🌟 Overview
+## Overview
 
-**Bookmarkeddit** is the solution to Reddit's limited saved post management. Easily organize, filter, search, and rediscover your saved content without the limitations of Reddit's native interface.
+Reddit's native saved posts feature is pretty basic. You save something, it goes into a list, and that's about it. If you're like me and have hundreds (or thousands) of saved posts, finding anything becomes a real pain.
 
-Built with React, TypeScript, and powered by Reddit's API, Bookmarkeddit provides a privacy-first experience—your data never leaves your browser.
+Bookmarkeddit fixes that. It's built with React and TypeScript, connects to Reddit's API, and everything runs in your browser. Your data stays on your machine.
 
-## 🖼️ App Preview
+## Preview
 
 ![Bookmarkeddit Desktop Preview](./app/src/assets/demo/mockup_desktop.png)
 _Desktop View_
@@ -28,45 +28,26 @@ _Mobile View_
 
 [**Desktop Demo**](https://imgur.com/a/5c7KBQm) | [**Mobile Demo**](https://imgur.com/a/GQWOYfW)
 
-## ✨ Features
+## Features
 
-### Core Functionality
+- **Search**: Full-text search across titles and post content
+- **Filters**: Filter by subreddit, post type (text/image/video), or NSFW status
+- **Multiple layouts**: Switch between grid and list views
+- **Sorting**: Sort by date, upvotes, or comment count
+- **Automatic fetching**: Grabs all your saved posts, working around Reddit's API pagination
+- **Light/Dark mode**: Because your eyes matter
+- **Privacy-focused**: Everything runs in your browser, no data stored on servers
 
-- **🔍 Smart Search**: Full-text search through titles and content of your saved posts.
-- **🗂️ Intelligent Filters**: Filter by subreddit, post type (text/image/video), or NSFW status.
-- **🔄 Dynamic Layouts**: Switch between grid and list views.
-- **⬆️ Custom Sorting**: Sort by recency, upvotes, or comments.
-- **🔄 Incremental Fetching**: Automatically fetches all saved posts, handling Reddit's API limits.
-- **🌓 Light/Dark Mode**: Choose your preferred theme.
-- **🛡️ Privacy First**: Your data stays in your browser; nothing is stored on our servers.
+### What else it does
 
-### Technical Highlights
-
-- **📱 Responsive Design**: Seamless experience on desktop and mobile.
-- **🗄️ Efficient Data Management**: Optimized state management for handling post data.
-- **⌨️ Keyboard Shortcuts**: `Ctrl+F` for search, `Ctrl+R` to refresh.
-- **🔍 Fuzzy Search**: Find content with partial or inexact matches.
-- **📊 Masonry Grid Layout**: Visually appealing display for posts of varying heights.
-- **🎥 Media Support**: View images and videos directly in the app.
-- **🛑 NSFW Handling**: Option to blur NSFW images with one-click reveal.
-- **📦 Infinite Scroll**: Efficiently load and display large numbers of posts.
-- **🚀 Performance Optimized**: Fast rendering and data handling.
-
-### Powerful Filtering System
-
-Filter saved posts by community, type, or NSFW status. See exactly how many posts you have in each category.
-
-### Advanced Search & Sorting
-
-Search through all your saved content with instant results and sort by recency, popularity, or engagement.
-
-### Content Management
-
-Easily unsave posts you no longer need, with confirmation to prevent accidental removal.
-
-### Saved Post Organization
-
-View posts in an attractive grid layout or a detailed list view.
+- Works on desktop and mobile
+- Keyboard shortcuts (`Ctrl+F` for search, `Ctrl+R` to refresh)
+- Fuzzy search for when you can't remember the exact words
+- Masonry grid layout that actually looks decent
+- Inline image and video viewing
+- NSFW content blurring with click-to-reveal
+- Infinite scroll for large collections
+- Unsave posts directly from the app
 
 ## 🚀 Getting Started
 
@@ -87,7 +68,9 @@ View posts in an attractive grid layout or a detailed list view.
    - **About URL**: (Optional)
    - **Redirect URI**:
      - For local development: `http://localhost:5173/login/callback`
-     - _(Ensure this matches your `VITE_REDIRECT_URI` in the respective `.env` file)_
+
+## Getting Startedmatches your `VITE_REDIRECT_URI` in the respective `.env` file)\_
+
 4. Click "Create app".
 5. Note your **Client ID** (under the app name) and **Client Secret**.
 
@@ -155,51 +138,48 @@ View posts in an attractive grid layout or a detailed list view.
 
 5. Open your browser and navigate to `http://localhost:5173`.
 
-## 📄 Authentication & Permissions
+## Authentication & Permissions
 
-Bookmarkeddit requires the following Reddit API permissions during OAuth:
+When you log in, Bookmarkeddit requests these Reddit API permissions:
 
-- `identity`: To display your username and profile picture.
-- `history`: To access your saved posts and comments.
-- `save`: To allow unsaving posts/comments from within the app.
+- `identity`: Shows your username and profile picture
+- `history`: Accesses your saved posts and comments
+- `save`: Lets you unsave posts from the app
 
-## 🔒 Privacy
+## Privacy
 
-Your Reddit data (saved posts, username) is fetched by the client app and stored in your browser's local storage. The backend server only proxies requests to the Reddit API and does not store any of your personal Reddit data.
+Your Reddit data gets fetched by the client and stored in your browser's local storage. The backend server just proxies requests to Reddit's API—it doesn't store anything about you or your saved posts.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: React, TypeScript, SCSS Modules, Vite
-- **Backend (Proxy Server)**: Node.js, Express, TypeScript
+- **Backend**: Node.js, Express, TypeScript (just a proxy server)
 - **API**: Reddit API
-- **State Management**: Zustand (as per `useStore.ts`)
+- **State Management**: Zustand
 - **Deployment**: Docker, Docker Swarm, Caddy
 - **Analytics**: Self-hosted Plausible
 
-## 🔮 Upcoming Features
+## Planned Features
 
-- Export saved posts (e.g., to CSV/JSON).
-- Enhanced Markdown rendering for post content.
-- Dashboard with statistics about saved content.
-- Pin important posts to the top.
-- Advanced caching strategies.
+- Export to CSV/JSON
+- Better markdown rendering for post content
+- Stats dashboard
+- Pin posts to the top
+- Better caching
 
-## 🤝 Contributing
+## Contributing
 
-Contributions, issues, and feature requests are welcome! Please feel free to:
-
-- Open an issue to discuss a bug or feature.
-- Submit a Pull Request with your improvements.
+Found a bug or have an idea? Open an issue or submit a PR.
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-## 🙏 Acknowledgements
+## License
 
-- Created by [Mateus Silva](https://github.com/mateussilva98/)
+MIT License - see [LICENSE](./LICENSE) for details.
 
----
+Created by [Mateus Silva](https://github.com/mateussilva98/)
 
 <p align="center">
   <i>Your data, better organized. Never lose a valuable Reddit post again.</i>

@@ -11,8 +11,6 @@ import { ImageSlider } from "./ImageSlider";
 import { VideoPlayer } from "./VideoPlayer";
 import { useStore } from "../hooks/useStore";
 import { Tooltip } from "./ui/Tooltip";
-import { ConfirmModal } from "./ui/ConfirmModal";
-import { redditApi, ApiError } from "../api";
 
 interface PostProps {
   post: Post;
@@ -21,6 +19,7 @@ interface PostProps {
     succeeded: boolean,
     errorMessage?: string
   ) => void;
+  onUnsaveClick?: (postId: string) => void;
   addToast?: (message: string, type: "success" | "error" | "info") => void;
 }
 
@@ -50,10 +49,13 @@ const calculateTimeAgo = (timestamp: number): string => {
   return "just now";
 };
 
-export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
-  const { store, handleAuthError } = useStore();
-  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-  const [isUnsaving, setIsUnsaving] = useState(false);
+export const PostComponent: FC<PostProps> = ({
+  post,
+  onUnsave,
+  onUnsaveClick,
+  addToast,
+}) => {
+  const { store } = useStore();
 
   const share = (url: string) => {
     if (navigator.share) {
@@ -88,49 +90,9 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
     }
   };
   const handleUnsaveClick = () => {
-    setIsConfirmModalOpen(true);
-  };
-
-  const handleConfirmUnsave = async () => {
-    if (!store.auth.access_token || isUnsaving) return;
-
-    setIsUnsaving(true);
-
-    try {
-      // Call the API to unsave the post
-      await redditApi.unsaveItem(store.auth.access_token, post.fullname);
-
-      // Notify parent component of successful unsave
-      if (onUnsave) {
-        onUnsave(post.id, true);
-      }
-    } catch (error) {
-      console.error("Error unsaving post:", error);
-
-      // Check if this is an authentication error (401/403)
-      if (error instanceof ApiError && error.isAuthError) {
-        // Use the auth error handler to clear data and redirect
-        handleAuthError();
-        return;
-      }
-
-      const errorMessage =
-        error instanceof ApiError
-          ? error.message
-          : "Failed to unsave the post. Please try again.";
-
-      // Notify parent component of failed unsave
-      if (onUnsave) {
-        onUnsave(post.id, false, errorMessage);
-      }
-    } finally {
-      setIsUnsaving(false);
-      setIsConfirmModalOpen(false);
+    if (onUnsaveClick) {
+      onUnsaveClick(post.id);
     }
-  };
-
-  const handleCancelUnsave = () => {
-    setIsConfirmModalOpen(false);
   };
 
   return (
@@ -224,7 +186,6 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
             <button
               className={`${styles.unsave} btn-icon`}
               onClick={handleUnsaveClick}
-              disabled={isUnsaving}
             >
               <Bookmark />
             </button>
@@ -237,7 +198,11 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
           </Tooltip>
 
           <Tooltip text="Open in new tab">
-            <a href={post.url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={post.permalink || post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <button className="btn-icon">
                 <Open />
               </button>
@@ -245,16 +210,6 @@ export const PostComponent: FC<PostProps> = ({ post, onUnsave, addToast }) => {
           </Tooltip>
         </div>
       </div>
-
-      <ConfirmModal
-        isOpen={isConfirmModalOpen}
-        title="Unsave Post"
-        message="Are you sure you want to unsave this post? This action cannot be undone."
-        confirmText="Unsave"
-        cancelText="Cancel"
-        onConfirm={handleConfirmUnsave}
-        onCancel={handleCancelUnsave}
-      />
     </div>
   );
 };
